@@ -1,7 +1,8 @@
 var mysql = require('mysql');
 
 var pool  = mysql.createPool({
-    host     : '192.168.59.103',
+//    host     : '192.168.59.103',
+    host     : 'localhost',
     user     : 'root',
     password : 'root',
     database : 'sproutup_db'    
@@ -19,4 +20,7 @@ pool.getConnection(function(err, connection) {
     });
 });
 
-module.exports = pool
+module.exports = {
+    mysql: mysql,
+    pool: pool
+}
