@@ -5,7 +5,7 @@
  */
 var passport = require('passport'),
   LinkedInStrategy = require('passport-linkedin').Strategy,
-  users = require('../../controllers/users.server.controller');
+  users = require('../../user.controller');
 
 module.exports = function (config) {
   // Use linkedin strategy

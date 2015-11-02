@@ -5,7 +5,7 @@
  */
 var passport = require('passport'),
   GithubStrategy = require('passport-github').Strategy,
-  users = require('../../controllers/users.server.controller');
+  users = require('../../user.controller');
 
 module.exports = function (config) {
   // Use github strategy

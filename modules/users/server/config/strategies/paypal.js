@@ -5,7 +5,7 @@
  */
 var passport = require('passport'),
   PayPalStrategy = require('passport-paypal-openidconnect').Strategy,
-  users = require('../../controllers/users.server.controller');
+  users = require('../../user.controller');
 
 module.exports = function (config) {
   passport.use(new PayPalStrategy({

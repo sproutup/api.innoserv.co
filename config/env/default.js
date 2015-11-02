@@ -7,7 +7,7 @@ module.exports = {
     keywords: 'mysql, redis, express, angularjs, node.js, bookshelf, passport',
     googleAnalyticsTrackingID: process.env.GOOGLE_ANALYTICS_TRACKING_ID || 'GOOGLE_ANALYTICS_TRACKING_ID'
   },
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3010,
   templateEngine: 'swig',
   // Session details
   // session expiration is set by default to 24 hours

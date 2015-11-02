@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  mongoose = require('mongoose'),
+  mongoose = require('dynamoose'),
   User = mongoose.model('User'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller'));
+  errorHandler = require(path.resolve('./modules/core/server/errors.controller'));
 
 /**
  * Show the current user

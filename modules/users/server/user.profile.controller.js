@@ -5,9 +5,8 @@
  */
 var _ = require('lodash'),
   fs = require('fs'),
-  path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  mongoose = require('mongoose'),
+  errorHandler = require('modules/core/server/errors.controller'),
+  mongoose = require('dynamoose'),
   User = mongoose.model('User');
 
 /**

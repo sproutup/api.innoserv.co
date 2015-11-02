@@ -5,7 +5,7 @@
  */
 var passport = require('passport'),
   TwitterStrategy = require('passport-twitter').Strategy,
-  users = require('../../controllers/users.server.controller');
+  users = require('../../user.controller');
 
 module.exports = function (config) {
   // Use twitter strategy

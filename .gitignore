@@ -5,6 +5,7 @@
 # Node
 public/lib/
 .bower-*/
+bower_components
 
 # Logs
 logs

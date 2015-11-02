@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 var // bookshelf = require('bookshelf'), 
-  mongoose = require('mongoose'),
+  mongoose = require('dynamoose'),
   Schema = mongoose.Schema,
   crypto = require('crypto'),
   validator = require('validator');
@@ -106,7 +106,7 @@ var UserSchema = new Schema({
 
 /**
  * Hook a pre save method to hash the password
- */
+ * /
 UserSchema.pre('save', function (next) {
   if (this.password && this.isModified('password') && this.password.length > 6) {
     this.salt = crypto.randomBytes(16).toString('base64');
