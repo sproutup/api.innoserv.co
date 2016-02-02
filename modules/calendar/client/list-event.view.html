@@ -1,0 +1,29 @@
+<h1 class="dashboard-section-title" ng-init="vm.find()"><i class="fa fa-calendar"></i>Events</h1>
+<div class="row">
+  <div class="col-sm-12">
+    <a ui-sref="company.navbar.calendar.event.create" class="btn btn-lg sproutup-btn-md-main orange"><i class="fa fa-plus-circle"></i>Add New Event</a>
+  </div>
+</div>
+
+<div class="product-table table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Start</th>
+        <th>Summary</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="event in vm.events">
+        <td class="product-table-edit"><a ui-sref="company.navbar.calendar.event.edit({ eventId: event.id })"><i class="fa fa-pencil"></i></a></td>
+        <td>{{ event.start.dateTime | date: 'short' }}</td>
+        <td>
+            <a ui-sref="company.navbar.calendar.event.view({ eventId: event.id })">{{ event.summary }}</a>
+        </td>
+        <td>{{ event.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,56 @@
+<div class="col-sm-3 col-profile-picture" data-ng-controller="ChangeProfilePictureController">
+  <div up-file-upload ng-model="user.file" on-upload="saveProfilePicture()"></div>
+</div>
+
+
+<div class="col-sm-9 col-profile-info" data-ng-controller="EditProfileController">
+    <form name="userForm" data-ng-submit="updateUserProfile(userForm.$valid)" class="signin" autocomplete="off">
+      <fieldset>
+
+        <!-- Username -->
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" class="form-control form-validate form-input" data-ng-model="user.username" placeholder="Username">
+        </div>
+
+        <!-- First name -->
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" class="form-control form-validate form-input" data-ng-model="user.firstName" placeholder="First Name">
+        </div>
+
+        <!-- Last name -->
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" class="form-control form-validate form-input" data-ng-model="user.lastName" placeholder="Last Name">
+        </div>
+
+        <!-- Last name -->
+        <div class="form-group">
+          <label for="lastName">Url</label>
+          <input type="text" id="url" name="url" class="form-control form-validate form-input" data-ng-model="user.file.url" placeholder="Last Name">
+        </div>
+
+        <!-- TODO: send a verification email is users change email -->
+        <div class="form-group">
+          <label for="email">Email</label>
+<!--           <div><a href="" ng-click="emailConfirmation()" ng-if="!user.emailConfirmed">Send another email confirmation</a></div> -->
+          <input type="email" id="email" name="email" class="form-control form-validate form-input" data-ng-model="user.email" placeholder="Email">
+        </div>
+
+        <!-- TODO: disable Save button unless users change something -->
+        <div class="form-group">
+          <input type="submit" id="submit" class="btn btn-lg sproutup-btn-md-main" value="Save Changes">
+        </div>
+
+        <!-- TODO: change to SproutUp heads-up message style -->
+        <div data-ng-show="success" class="text-center text-success">
+          <strong>Profile Saved Successfully</strong>
+        </div>
+        <div data-ng-show="error" class="text-center text-danger">
+          <strong data-ng-bind="error"></strong>
+        </div>
+      </fieldset>
+    </form>
+</div>
+{{user.avatar}}

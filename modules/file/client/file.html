@@ -1,0 +1,9 @@
+<div ng-init="vm.findOne()">
+  <div>Name {{ vm.file.name }}</div>
+  <div>Bucket {{ vm.file.bucket }}</div>
+  <div>Url {{ vm.file.url }}</div>
+  <div>Size {{ vm.file.size }}</div>
+  <div>Key {{ vm.file.key }}</div>
+  <a ng-href="{{ vm.file.url }}">{{ vm.file.url }}</a>
+  <a ui-sref="company.navbar.file.edit({ fileId: vm.file.id})">edit</a>
+</div>

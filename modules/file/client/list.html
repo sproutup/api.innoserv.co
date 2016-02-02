@@ -1,0 +1,21 @@
+<section ng-init="vm.find()">
+  <div class="page-header">
+    <h1>Files</h1>
+  </div>
+  <div class="list-group">
+    <a ng-repeat="file in vm.files" ui-sref="company.navbar.file.view({fileId: file.id})" class="list-group-item">
+      <small class="list-group-item-text">
+        Posted on
+        <span ng-bind="file.created | date:'mediumDate'"></span>
+        by
+        <span ng-if="file.user" ng-bind="file.user.displayName"></span>
+        <span ng-if="!file.user">Deleted User</span>
+      </small>
+      <h4 class="list-group-item-heading" ng-bind="file.name"></h4>
+      <p class="list-group-item-text" ng-bind="file.bucket"></p>
+    </a>
+  </div>
+  <div class="alert alert-warning text-center" ng-if="vm.files.$resolved && !vm.files.length">
+    No files yet, why don't you <a ui-sref="company.navbar.file.create">create one</a>?
+  </div>
+</section>

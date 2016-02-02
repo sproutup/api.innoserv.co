@@ -1,0 +1,61 @@
+<h1 class="dashboard-section-title" ng-init="vm.find()"><i class="fa fa-file-text-o"></i>Manage Campaign Templates</h1>
+
+<!-- trial template -->
+<div class="row">
+  <div class="col-sm-12">
+    <a ui-sref="company.navbar.template.trialcreate" class="btn btn-lg sproutup-btn-md-main orange">
+      <i class="fa fa-plus-circle"></i>
+      Create Trial Template
+    </a>
+  </div>
+</div>
+
+<div class="product-table table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Template Name</th>
+        <th>Template Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="item in vm.campaigns | filter: {type:'trial', status: -10}">
+        <td class="product-table-edit"><a ui-sref='company.navbar.template.{{ item.type }}edit({ campaignId: item.id })'><i class="fa fa-pencil"></i></a></td>
+        <td class="template-name">{{item.name}}</td>
+        <td class="template-description">{{item.description}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
+<!-- contest template -->
+<div class="row">
+  <div class="col-sm-12">
+    <a ui-sref="company.navbar.template.contestcreate" class="btn btn-lg sproutup-btn-md-main orange">
+      <i class="fa fa-plus-circle"></i>
+      Create Contest Template
+    </a>
+  </div>
+</div>
+
+<div class="product-table table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Template Name</th>
+        <th>Template Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="item in vm.campaigns | filter: {type:'contest', status: -10}">
+        <td class="product-table-edit"><a ui-sref='company.navbar.template.{{ item.type }}edit({ campaignId: item.id })'><i class="fa fa-pencil"></i></a></td>
+        <td class="template-name">{{item.name}}</td>
+        <td class="template-description">{{item.description}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

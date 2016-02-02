@@ -1,0 +1,12 @@
+<section class="row text-center content">
+  <div ng-if="!success">
+  	<h3 class="col-md-12">Email token is invalid.</h3>
+  	<a href="settings/profile" ng-if="!authentication.user">Log in and request a new token</a>
+  	<a href="" class="col-md-12" ng-if="authentication.user" ng-click="emailConfirmation()" style="margin-bottom: 10px">Ask for another email confirmation.</a>
+  </div>
+  <!-- error message -->
+  <p ng-if="message && !success" class="text-danger">{{ message }}</p>
+  <!-- success message -->
+  <h3 ng-if="message && success" class="col-md-12">{{ message }}</h3>
+  <a data-ui-sref="home" class="col-md-12" ng-if="success">Continue to home page</a>
+</section>

@@ -1,0 +1,29 @@
+<div ng-if="vm.user">
+	<up-dashboard-header item="vm.item"></up-dashboard-header>
+	<div ui-view></div>
+</div>
+<!-- Overview card that we decided not to use for the interim -->
+
+<!-- <div class="overview-card-wrapper">
+	<div class="overview-card" ng-repeat="summary in vm.summaries">
+		<img src="modules/core/client/img/Community.png">
+		<span class="overview-card-title">Community</span>
+		<div class="overview-chart-wrapper">
+			<canvas id="line" class="chart chart-line" chart-data="vm.item.data" chart-labels="vm.item.labels" chart-series="vm.item.series">
+		</div>
+		<div class="overview-card-stats-wrapper row">
+			<div class="col-md-4 card-stat" ng-class="{ 'col-md-offset-2': !summary.stats[2]}">
+				<div>18,0388</div>
+				<div>Impressions</div>
+			</div>
+			<div class="col-md-4 card-stat">
+				<div>18,0388</div>
+				<div>Impressions</div>
+			</div>
+			<div class="col-md-4 card-stat">
+				<div>18,0388</div>
+				<div>Impressions</div>
+			</div>
+		</div>
+	</div>
+</div> -->

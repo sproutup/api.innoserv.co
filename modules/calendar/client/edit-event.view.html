@@ -1,0 +1,25 @@
+<h1 class="dashboard-section-title" ng-init="vm.findOne()"><a ui-sref="company.navbar.calendar.event.list"><i class="fa fa-angle-left"></i></a>Edit <span>{{ vm.event.name }}</span></h1>
+<div class="create-event-wrapper" ng-if="vm.event">
+  <div class="row">
+    <form name="eventForm" class="form-horizontal" ng-submit="vm.update(eventForm.$valid)" novalidate>
+      <fieldset>
+        <div class="col-sm-12 form-input-group">
+          <p class="input-group-title">Basic Information</p>
+            <input type="text" class="form-control form-input" placeholder="Summary of this event" required ng-model="vm.event.summary" />
+            <div ng-messages="eventForm.name.$error" role="alert" ng-if="vm.invalid">
+              <p class="help-block text-danger" ng-message="required">Event summary is required.</p>
+            </div>
+        </div>
+        <div class="col-sm-12 form-input-group">
+          <p class="input-group-title">Description</p>
+            <textarea class="form-control form-input-textarea" placeholder="Tell users more about this event." ng-model="vm.event.description"></textarea>
+        </div>
+        <div class="col-sm-12 form-input-group">
+          <input class="btn btn-lg sproutup-btn-md-main" type="submit">
+          <a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+          <a class="btn btn-lg sproutup-btn-md-main trash" href="#" ng-click="vm.openModal(vm.event.id)"><i class="fa fa-trash"></i></a>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>

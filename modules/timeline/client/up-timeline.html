@@ -1,0 +1,12 @@
+<div class="timeline-wrapper" ng-repeat="event in vm.events">
+	<div class="event-time">{{ event.time }}</div>
+	<div class="event-circle">
+		<img ng-if="event.type === 'content'" src="modules/core/client/img/content.png" />
+		<img ng-if="event.type === 'purchase'" src="modules/core/client/img/engagement.png" />
+		<img ng-if="event.type === 'trial'" src="modules/core/client/img/plant.png" />
+	</div>
+	<div class="event-info">
+		<img ng-src="{{ event.user.avatarUrl }}" />
+		<div>{{ event.text }}</div>
+	</div>
+</div>

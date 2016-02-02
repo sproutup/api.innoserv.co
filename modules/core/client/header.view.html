@@ -1,0 +1,43 @@
+<div class="creator-menu">
+  <div class="navbar-header">
+    <button class="navbar-toggle" type="button" data-ng-click="vm.toggleCollapsibleMenu()">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+  </div>
+  <nav role="navigation">
+    <div class="nav-head" ng-if="vm.authentication.user">
+      <div class="nav-item-wrapper creator-company">
+        <a ui-sref="company.navbar.list">{{ company.company.name || 'select company' }}</a>
+      </div>
+      <div class="nav-item-wrapper creator-user">
+        <a ui-sref='company.navbar.user.profile'>
+          <img alt="avatar" src="modules/core/client/img/default-avatar.png"> {{ vm.authentication.user.firstName }}
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-head" ng-if="!vm.authentication.user">
+      <div class="nav-item-wrapper nav-item-main">
+          <a href="/authentication/signin">Sign In</a>
+      </div>
+    </div>
+
+    <div class="nav-section" ng-if="vm.navbar.shouldRender(company.authentication.user);">
+      <div ng-repeat="item in vm.navbar.items | orderBy: 'position'" ng-if="item.shouldRender(company.authentication.user);" ng-switch="item.type" ng-class="{ active: $state.includes(item.state), dropdown: item.type === 'dropdown' }" class="{{item.class}} nav-item-wrapper nav-item-main" dropdown="item.type === 'dropdown'">
+        <a ui-sref="{{item.state}}" ng-bind="item.title"></a>
+      </div>
+    </div>
+
+    <div class="nav-section" ng-if="vm.authentication.user">
+      <div class="nav-item-wrapper nav-item-main">
+        <a href="/api/auth/signout" target="_self">Log out</a>
+      </div>
+    </div>
+
+  </nav>
+</div>
+
+<div ui-view class="dashboard-container"></div>

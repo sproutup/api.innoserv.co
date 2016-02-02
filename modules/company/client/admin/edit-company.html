@@ -1,0 +1,31 @@
+<section ng-init="vm.findOne()">
+  <div class="page-header">
+    <h1>Edit company</h1>
+  </div>
+  <div class="col-md-12">
+    <form name="companyForm" class="form-horizontal" ng-submit="vm.update(companyForm.$valid)" novalidate>
+      <fieldset>
+        <div class="form-group" show-errors>
+          <label for="name">name</label>
+          <input name="name" type="text" ng-model="vm.company.name" id="name" class="form-control" placeholder="name" required>
+          <div ng-messages="companyForm.name.$error" role="alert" ng-if="vm.invalid">
+            <p class="help-block error-text" ng-message="required">Company name is required.</p>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="url">url</label>
+          <textarea name="url" ng-model="vm.company.url" id="url" class="form-control" cols="30" rows="10" placeholder="url"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="submit" value="Update" class="btn btn-default">
+        </div>
+        <div data-ng-if="vm.success" up-banner message-variable="success" fade-out="5000" class="hud success">
+          <strong ng-bind="vm.success"></strong>
+        </div>
+        <div data-ng-if="vm.error" up-banner message-variable="error" fade-out="5000" class="hud error">
+          <strong ng-bind="vm.error"></strong>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+<div ng-controller="AuthenticationController">
+
+  <div class="auth-header">
+    <div class="text-center">
+      <img class="auth-header-logo" src="modules/core/client/img/logo-square-orange.png">
+    </div>
+    <hr>
+  </div>
+
+  <div class="signup-login-header">
+    <h1>Welcome back! Please log in to see awesome stuff.</h1>
+  </div>
+
+  <div class="signup-login-area">
+    <form name="userForm" ng-submit="signin(userForm.$valid)" class="signin" novalidate autocomplete="off">
+      <fieldset>
+        <div class="signup-login-form" show-errors>
+          <div ng-show="true">
+            <div class="signup-login-form--error-message" ng-show="error"><i class="fa fa-minus-circle"></i>Err... seems like invalid email or password</div>
+          </div>
+          <input type="text" id="email" name="email" class="form-control signup-login-input" ng-model="credentials.username" placeholder="Email address" required>
+          <input type="password" id="password" name="password" class="form-control signup-login-input" ng-model="credentials.password" placeholder="Password" required>
+          <!-- log in button -->
+          <button ng-disabled="userForm.$invalid" class="btn btn-lg signup-login-btn" type="submit">Log in</button>
+        </div>
+      </fieldset>
+    </form>
+
+    <!-- footer -->
+    <div class="signup-login-form-footer">
+      <p><a ui-sref="password.forgot">Forgot password?</a></p>
+      <p>Don't have an account? <a ui-sref="home">Sign up</a> here.</p>
+    </div>
+  </div>
+
+</div>

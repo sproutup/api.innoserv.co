@@ -1,0 +1,27 @@
+<h1 class="dashboard-section-title"><a ui-sref="company.navbar.settings.team.list"><i class="fa fa-angle-left"></i></a>Add New Team Member</h1>
+<div class="create-product-wrapper">
+  <div class="row">
+        <form name="productForm" class="form-horizontal" ng-submit="vm.create(productForm.$valid)" novalidate>
+            <fieldset>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Basic Information</p>
+                    <input type="text" class="form-control form-input" placeholder="Name of this product" required ng-model="vm.name" />
+                    <div ng-messages="productForm.name.$error" role="alert" ng-if="vm.invalid">
+                        <p class="help-block text-danger" ng-message="required">Product name is required.</p>
+                    </div>
+                    <input type="text" class="form-control form-input" placeholder="Tagline for this product" ng-model="vm.tagline" />
+<!--                     <input type="text" class="form-control form-input" placeholder="URL of this product" ng-model="vm.url" /> -->
+<!--                     <input type="url" class="form-control form-input" placeholder="URL of an awesome product video"> -->
+                </div>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Description</p>
+                    <textarea class="form-control form-input-textarea" placeholder="Tell users more about this product. What are the cool features? What's the story behind this product?" ng-model="vm.description"></textarea>
+                </div>
+                <div class="col-sm-12 form-input-group">
+                	<input class="btn btn-lg sproutup-btn-md-main" type="submit">
+                	<a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+<div class="dashboard-product-banner" style="background-image: url('https://d30xksqof6w2my.cloudfront.net/564efc2f-199a-4f1c-9b1a-38b6780b151d_0_admin.jpg?w=1600');">
+  <div class="dashboard-product-info-wrapper">
+    <div class="col-sm-12">
+      <div class="product-tagline">
+        <p ng-if="company.company">Woo hoo, you are joining <span>{{ company.company.name }}</span>. 
+        We've sent a message to your email address</p>
+        <p ng-if="!company.company">Woo hoo, thank you for joining. 
+        We've sent a message to your email address</p>
+          <h1>{{ vm.authentication.emailSentTo }}</h1>
+          <h2>Please check your inbox and finish signing up</h2>
+      </div>
+    </div>
+  </div>
+</div>

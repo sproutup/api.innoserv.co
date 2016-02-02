@@ -1,0 +1,26 @@
+<h1 class="dashboard-section-title"><a ui-sref="company.navbar.calendar.event.list"><i class="fa fa-angle-left"></i></a>Add New Event</h1>
+<div class="create-event-wrapper">
+  <div class="row">
+    <form name="eventForm" class="form-horizontal" ng-submit="vm.create(eventForm.$valid)" novalidate>
+      <fieldset>
+        <div class="col-sm-12 form-input-group">
+          <p class="input-group-title">Start Time</p>
+          <input class="form-control form-input" type="text" ng-model="vm.startTime" ng-init="vm.startTime = '2016-10-02T10:00:00-06:00'"/>
+          <p class="input-group-title">End Time</p>
+          <input class="form-control form-input" type="text" ng-model="vm.endTime" ng-init="vm.endTime = '2016-10-02T10:00:00-07:00'"/>
+        </div>
+        <div class="col-sm-12 form-input-group">
+          <p class="input-group-title">Summary</p>
+            <textarea class="form-control form-input-textarea" placeholder="What would you like to call this event?" ng-model="vm.summary"></textarea>
+        </div>
+        <div class="col-sm-12 form-input-group">
+          <input class="btn btn-lg sproutup-btn-md-main" type="submit">
+          <a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+        </div>
+        <div data-ng-show="error" class="text-danger">
+          <strong data-ng-bind="error"></strong>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>

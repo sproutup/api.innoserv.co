@@ -1,0 +1,19 @@
+<section ng-init="vm.find()">
+  <div class="page-header">
+    <h1>Companies</h1>
+  </div>
+  <a ui-sref="company.create" class="btn btn-info">Create New Company</a>
+  <div class="list-group">
+    <a ng-repeat="company in vm.companies" ui-sref="admincompany.view({ companyId: company.id })" class="list-group-item">
+      <small class="list-group-item-text">
+        Created on
+        <span ng-bind="company.created | date:'mediumDate'"></span>
+      </small>
+      <h4 class="list-group-item-heading" ng-bind="company.name"></h4>
+      <p class="list-group-item-text" ng-bind="company.url"></p>
+    </a>
+  </div>
+  <div class="alert alert-warning text-center" ng-if="companies.$resolved && !companies.length">
+    No companies yet, why don't you <a ui-sref="companies.create">create one</a>?
+  </div>
+</section>

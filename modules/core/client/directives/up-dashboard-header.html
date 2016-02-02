@@ -1,0 +1,11 @@
+<div class="header-wrapper">
+	<div class="header-title">{{vm.item.title}}</div>
+	<div class="header-stats">
+		<span ng-repeat="stat in vm.item.stats">
+			<span class="stat-text" ng-hide="$index === 0">|</span>
+			<a ui-sref="{{ stat.sref }}" ui-sref-active="active">
+				<span class="stat-text" ng-class="{'first': $index === 0}"><strong>{{ stat.number }}</strong> {{ stat.stat }}</span>
+			</a>
+		</span>
+	</div>
+</div>

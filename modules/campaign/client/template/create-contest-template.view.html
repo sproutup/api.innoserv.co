@@ -1,0 +1,57 @@
+<h1 class="dashboard-section-title"><a ui-sref="company.navbar.template.list"><i class="fa fa-angle-left"></i></a>Create New Contest Template</h1>
+<div class="create-product-wrapper" ng-init="vm.init('contest')">
+  <div class="row">
+    <form name="campaignForm" class="form-horizontal" ng-submit="vm.create(campaignForm.$valid)" novalidate>
+      <fieldset class="col-sm-12 form-input-group">
+        <div>
+          <p class="input-group-title">Basic Information</p>
+          <input type="text" class="form-control form-input" placeholder="Pick a name for your contest campaign" ng-model="vm.item.name">
+          <input type="text" class="form-control form-input" placeholder="Tagline" ng-model="vm.item.tagline" name="tagline">
+          <input type="text" class="form-control form-input" placeholder="Hashtag" ng-model="vm.item.hashtag" name="hashtag">
+        </div>
+        <div>
+          <p class="input-group-title">Description</p>
+          <textarea class="form-control form-input-textarea" placeholder="Tell users more about this product. What are the cool features? What's the story behind this product?" ng-model="vm.item.description"></textarea>
+        </div>
+        <div>
+          <p class="input-group-title">Instructions</p>
+          <textarea ng-model="vm.item.instructions" class="form-control form-input-textarea" placeholder="Let us know any instructions you have for users entering the contest."></textarea>
+        </div>
+        <div class="campaign-question-wrapper">
+          <p>Which social platforms would you like us to optimize your campaign for?</p>
+          <up-multi-switch options="vm.socialOptions"></up-switch>
+        </div>
+        <div class="campaign-question-wrapper">
+          <p>What's the maximum number of contributors for this contest?</p>
+          <div class="form-inline">
+            <input ng-model="vm.item.contest.maxNbrOfContributors" type="text" class="form-control form-validate form-input small">
+            <label class="campaign-question-input-label right">People</label>
+          </div>
+        </div>
+        <div class="campaign-question-wrapper">
+          <p>How many people would you like to reach?</p>
+          <div class="form-inline">
+            <input ng-model="vm.item.target" type="text" class="form-control form-validate form-input small">
+            <label class="campaign-question-input-label right">People</label>
+          </div>
+        </div>
+        <div class="campaign-question-wrapper">
+          <p>When will the campaign start?</p>
+          <div class="form-inline">
+            <input ng-model="vm.item.start" type="text" class="form-control form-validate form-input small" placeholder="MM/DD/YYYY" style="width: 130px;">
+          </div>
+        </div>
+        <div class="campaign-question-wrapper">
+          <p>End?</p>
+          <div class="form-inline">
+            <input ng-model="vm.item.end" type="text" class="form-control form-validate form-input small" placeholder="MM/DD/YYYY" style="width: 130px;">
+          </div>
+        </div>
+        <div>
+          <input class="btn btn-lg sproutup-btn-md-main" type="submit">
+          <a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>

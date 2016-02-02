@@ -1,0 +1,26 @@
+<table class="content-table">
+	<thead>
+		<tr>
+			<th></th>
+			<th class="col-md-6" ng-if="vm.contenttype">{{ vm.contenttype }}</th>
+			<th class="col-md-6" ng-if="!vm.contenttype">Posts with the most impressions</th>
+			<th class="col-md-2">Impressions</th>
+			<th class="col-md-2 hours-watched">Clicks</th>
+			<th class="col-md-2">Purchases</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="stat in vm.content">
+			<td>
+				<img ng-if="stat.type === 'YouTube'" class="content-table-icon youtube" src="modules/core/client/img/youtube.png">
+				<img ng-if="stat.type === 'Twitter'" class="content-table-icon" src="modules/core/client/img/twitter.png">
+				<img ng-if="stat.type === 'Blog'" class="content-table-icon blog" src="modules/core/client/img/blog.png">
+				<img ng-if="stat.type === 'Instagram'" class="content-table-icon blog" src="modules/core/client/img/instagram.png">
+			</td>
+			<td class="col-md-6">{{ stat.name }}</td>
+			<td class="col-md-2">{{ stat.impressions }}</td>
+			<td class="col-md-2 hours-watched">{{ stat.clicks }}</td>
+			<td class="col-md-2">{{stat.purchases}}</td>
+		</tr>
+	</tbody>
+</table>

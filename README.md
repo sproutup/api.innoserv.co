@@ -1,2 +1,2 @@
-# api.sproutup.co
-web service api
+# creator.sproutup.co
+creator.sproutup.co

@@ -1,0 +1,216 @@
+<div class="row theme-docs-page">
+  <div class="col-sm-9" role="main">
+    <div class="theme-docs-section">
+      <h1 id="typography" class="theme-docs-header"><a name="typography">Typography</a></h1>
+      <h1 class="sproutup-heading thin">Default h1. Heading. font-weight: 100</h1>
+      <h1 class="sproutup-heading light">Default h1. Heading. font-weight: 300</h1>
+      <h1 class="sproutup-heading regular">Default h1. Heading. font-weight: 400</h1>
+      <h1 class="sproutup-heading strong">Default h1. Heading. font-weight: 700</h1>
+      <h2 class="sproutup-heading light">Default h2. Heading. font-weight: 300</h2>
+      <h3 class="sproutup-heading regular">Default h3. Heading. font-weight: 400</h3>
+      <p class="sproutup-paragraph regular">A paragraph with font weight 400, font size 12pt and line height 1.5. The quick brown fox jumps over the lazy dog.</p>
+      <p class="sproutup-paragraph strong">A paragraph with font weight 700, font size 12pt and line height 1.5. The quick brown fox jumps over the lazy dog.</p>
+      <p class="sproutup-paragraph strong">SproutUp default font family is <span>lato</span>, defined in <span>font-family: "lato", Helvetica, Arial, sans-serif;<span></p>
+    </div>
+    <div class="theme-docs-section">
+      <h1 id="tables" class="theme-docs-header"><a name="tables">Table</a></h1>
+      <p class="sproutup-paragraph regular">Default table class is <code>.sproutup-table</code>.</p>
+      <div class="sproutup-table table-responsive">
+      	<table class="table table-hover">
+      		<thead>
+      			<tr>
+              <th>
+      				<th>Name</th>
+      				<th>Email</th>
+      				<th>Phone Number</th>
+      			</tr>
+      		</thead>
+      		<tbody>
+      			<tr>
+      				<td><a href="#"><i class="fa fa-pencil"></i></a></td>
+      				<td>Peter</td>
+      				<td>peter@sproutup.col</td>
+      				<td>123-456-7890</td>
+      			</tr>
+      			<tr>
+              <td><a href="#"><i class="fa fa-pencil"></i></a></td>
+      				<td>Peter</td>
+      				<td>peter@sproutup.col</td>
+      				<td>123-456-7890</td>
+      			</tr>
+      			<tr>
+              <td><a href="#"><i class="fa fa-pencil"></i></a></td>
+      				<td>Peter</td>
+      				<td>peter@sproutup.col</td>
+      				<td>123-456-7890</td>
+      			</tr>
+      		</tbody>
+      	</table>
+      </div>
+    </div>
+    <div class="theme-docs-section">
+      <h1 id="Forms" class="theme-docs-header"><a name="forms">Forms</a></h1>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Text field without label</h2>
+      <p class="sproutup-paragraph regular">Use <code>.form-control</code> and <code>.form-input</code>. Both are using customized Boostrap CSS.</p>
+      <p class="sproutup-paragraph regular">Include <code>.form-validate</code> to turn on form validation.</p>
+      <input class="form-control form-validate form-input" placeholder="First Name">
+      <input class="form-control form-validate form-input" placeholder="Last Name">
+      <input class="form-control form-validate form-input" placeholder="Email">
+      <input class="form-control form-validate form-input ng-valid ng-touched" value="tao@sproutup.co">
+      <p class="sproutup-paragraph regular">Add class <code>.small</code> for small input.</p>
+      <input class="form-control form-validate form-input small">
+      <p class="sproutup-paragraph regular">Add class <code>.medium</code> for medium input.</p>
+      <input class="form-control form-validate form-input medium">
+      <p class="sproutup-paragraph regular">Input group with <code>.input-group</code> and <code>.input-group-addon</code></p>
+      <form class="form-inline">
+        <div class="input-group">
+          <div class="input-group-addon">From</div>
+          <input type="text" class="form-control form-validate form-input" placeholder="MM/DD/YYYY">
+        </div>
+      </form>
+      <p class="sproutup-paragraph regular">Use <code>up-switch</code> for a yes/no switch.</p>
+      <up-switch optionfalse="Nah" optiontrue="Yep" selected="selected"></up-switch> {{ selected }}
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Text field with label</h2>
+      <p class="sproutup-paragraph regular">Use <code>.form-group</code> and label tag.</p>
+      <div class="form-group">
+        <label>First Name</label>
+        <input class="form-control form-validate form-input" placeholder="">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input class="form-control form-validate form-input" placeholder="">
+      </div>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Text field with error message</h2>
+      <input class="form-control form-validate form-input ng-invalid ng-touched" value="tao@sproutup">
+      <div class="form--error-message"><i class="fa fa-minus-circle"></i>Please use a valid email address.</div>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Text area</h2>
+      <p class="sproutup-paragraph regular">Use <code>.form-control</code> and <code>.form-input-textarea</code>.</p>
+      <textarea class="form-control form-input-textarea"></textarea>
+      <p class="sproutup-paragraph regular">Add <code>.no-resize</code> for non-resizable text area.</p>
+      <textarea class="form-control form-input-textarea no-resize"></textarea>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Form with validation</h2>
+      <form name="form" class="css-form" novalidate>
+        Name: <input class="form-control form-validate form-input" type="text" ng-model="user.name" name="uName" required="" />
+        <div ng-show="form.$submitted || form.uName.$touched">
+          <div class="form--error-message" ng-show="form.uName.$error.required"><i class="fa fa-minus-circle"></i>Tell us your name.</div>
+        </div>
+        <br />
+        E-mail: <input class="form-control form-validate form-input" type="email" ng-model="user.email" name="uEmail" required="" />
+        <div ng-show="form.$submitted || form.uEmail.$touched">
+          <span class="form--error-message" ng-show="form.uEmail.$error.required"><i class="fa fa-minus-circle"></i>Tell us your email.</span>
+          <span class="form--error-message" ng-show="form.uEmail.$error.email"><i class="fa fa-minus-circle"></i>This is not a valid email.</span>
+        </div>
+        <div ng-if="vm.valid">The form is valid.</div>
+        <br />
+        <input type="submit" ng-click="vm.updateForm(form.$valid)" value="Save" />
+      </form>
+    </div>
+    <div class="theme-docs-section">
+      <h1 id="Buttons" class="theme-docs-header"><a name="buttons">Buttons</a></h1>
+
+      <p class="sproutup-paragraph regular">Use <code>.sproutup-btn-lg-main</code> for large buttons with default blue color.</p>
+      <p class="sproutup-paragraph regular">Add <code>.orange</code> or other available color name for large buttons with different colors.</p>
+      <p>
+        <button class="btn btn-lg sproutup-btn-lg-main">Large Button</button>
+        <button class="btn btn-lg sproutup-btn-lg-main orange">Large Button</button>
+        <button class="btn btn-lg sproutup-btn-lg-main red">Large Button</button>
+        <button class="btn btn-lg sproutup-btn-lg-main grey">Large Button</button>
+      </p>
+      <p class="sproutup-paragraph regular">Use <code>.sproutup-btn-md-main</code> for medium buttons with default blue color.</p>
+      <p>
+        <button class="btn btn-lg sproutup-btn-md-main">Medium Button</button>
+        <button class="btn btn-lg sproutup-btn-md-main orange">Medium Button</button>
+      </p>
+      <p class="sproutup-paragraph regular">Use <code>.sproutup-btn-sm</code> for small buttons with default blue color.</p>
+      <p>
+        <button class="btn btn-lg sproutup-btn-sm">Small Button</button>
+        <button class="btn btn-lg sproutup-btn-sm aqua">Small Button</button>
+      </p>
+    </div>
+    <div class="theme-docs-section">
+      <h1 id="Colors" class="theme-docs-header"><a name="colors">Colors</a></h1>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Main colors</h2>
+      <p class="sproutup-paragraph regular">Don't use hexcode in LESS. All color codes are defined in <span>global.less</span>. For example, <code>@sproutup-blue</code> and <code>@sproutup-orange</code>.</p>
+      <div class="row theme-docs-palette-grid">
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette blue">@sproutup-blue<span>#2996CC</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette orange">@sproutup-orange<span>#ED7A14</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette green">@sproutup-green<span>#50A317</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette green-muted">@sproutup-green-muted<span>#B7D9A2</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette salmon">@sproutup-salmon<span>#FF654B</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette muted-blue">@sproutup-blue-muted<span>#9DAFBD</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette red">@sproutup-red<span>#FF2800</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette gold">@sproutup-gold<span>#EDC859</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette darkgold">@sproutup-darkgold<span>#CD950C</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette cyan">@sproutup-cyan<span>#AEE0ED</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette purple">@sproutup-purple<span>#7525AC</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette lightpurple">@sproutup-lightpurple<span>#97A1DB</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette discount">@sproutup-discount<span>#7BC2C3</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette darkblue">@sproutup-blue-dark<span>#1C6798</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette grey">@sproutup-grey<span>#BFBFBF</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette grey-hover">@sproutup-grey-hover<span>#AEAEAE</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette stronger-grey">@sproutup-stronger-grey<span>#9D9D9D</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette darkgrey">@sproutup-dark-grey<span>#4A4A4A</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette footer">@sproutup-footer<span>#3B4546</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette error">@sproutup-error-message<span>#ED660E</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette lightgrey">@sproutup-lightgrey<span>#F0F0F0</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette lightergrey">@sproutup-lightergrey<span>#F3F3F3</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette verylightgrey">@sproutup-verylightgrey<span>#F6F6F6</span></p></div>
+        <div class="col-sm-4 theme-docs-palette-wrapper"><p class="theme-docs-palette superlightgrey">@sproutup-superlightgrey<span>#FCFCFC</span></p></div>
+      </div>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Text colors</h2>
+      <h3 class="main-text">@main-text: #414141;</h3>
+      <h3 class="main-text-lighter">@main-text-lighter: #777777;</h3>
+      <h3 class="main-text-verylight">@main-text-verylight: #929292;</h3>
+      <h3 class="main-text-light">@main-text-light: #5a5a5a;</h3>
+      <h3 class="secondary-text">@secondary-text: #a5a5a5;</h3>
+      <h3 class="placeholder">@input-placeholder-text: #afafaf;</h3>
+    </div>
+    <div class="theme-docs-section">
+      <h1 id="File Uploading" class="theme-docs-header"><a name="file-uploading">File Uploading</a></h1>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>Before Uploading</h2>
+      <div class="upload-file-widget" style="background-image: url('modules/core/client/img/default-avatar.png');">
+        <a class="btn btn-lg upload-file-button">Change Photo</a>
+      </div>
+      <div class="create-campaign-banner" style="background-image: url('modules/core/client/img/default-campaign-banner.jpg');">
+        <h1><a href="#">Campaign Title</a><span><a href="#">Inspirations</a></span></h1>
+        <h2><a href="#">Short description</a><span><a href="#">Inspirations</a></span></h2>
+        <h3><a href="#"><i class="fa fa-camera"></i>An awesome banner does a lot</a></h3>
+      </div>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>During Uploading</h2>
+      <div class="upload-file-widget" style="background-image: url('https://pbs.twimg.com/profile_images/688994263468736512/m6ye3MZv.jpg');">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width: 28%;"></div>
+        </div>
+      </div>
+      <div class="create-campaign-banner" style="background-image: url('https://d30xksqof6w2my.cloudfront.net/8ff70668-25c3-422b-a6b2-691dade4a811_0_admin.jpg?w=1600');">
+        <h1><a href="#">Campaign Title</a><span><a href="#">Inspirations</a></span></h1>
+        <h2><a href="#">Short description</a><span><a href="#">Inspirations</a></span></h2>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width: 28%;"></div>
+        </div>
+      </div>
+      <h2 class="theme-docs-subheader"><i class="fa fa-tag"></i>After Uploading</h2>
+      <div class="upload-file-widget" style="background-image: url('https://pbs.twimg.com/profile_images/688994263468736512/m6ye3MZv.jpg');">
+        <a class="btn btn-lg upload-file-button">Change Photo</a>
+      </div>
+      <div class="create-campaign-banner" style="background-image: url('https://d30xksqof6w2my.cloudfront.net/8ff70668-25c3-422b-a6b2-691dade4a811_0_admin.jpg?w=1600');">
+        <h1><a href="#">Campaign Title</a><span><a href="#">Inspirations</a></span></h1>
+        <h2><a href="#">Short description</a><span><a href="#">Inspirations</a></span></h2>
+        <h3><a href="#"><i class="fa fa-camera"></i>Change banner photo</a></h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-3" role="complementary">
+    <div class="theme-docs-sidebar affix hidden-print hidden-xs">
+      <ul class="nav theme-docs-sidenav">
+        <li><a href="#typography">Typography</a></li>
+        <li><a href="#tables">Tables</a></li>
+        <li><a href="#forms">Forms</a></li>
+        <li><a href="#buttons">Buttons</a></li>
+        <li><a href="#colors">Colors</a></li>
+        <li><a href="#file-uploading">File Uploading</a></li>
+      </ul>
+    </div>
+  </div>
+</div>

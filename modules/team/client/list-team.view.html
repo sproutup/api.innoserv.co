@@ -1,0 +1,45 @@
+<section ng-init="vm.find()">
+  <div class="dashboard-body-wrapper team-member">
+    <h4 class="sproutup-heading regular">Your are the <strong>Admin</strong> of this team. You can edit the access of other team members, invite new members or remove current members.</h4>
+    <div class="team-member-table-wrapper">
+      <p class="product-table-header">Current members<!--a ui-sref="company.navbar.settings.team.create"><i class="fa fa-user-plus"></i>Invite New Members</a--></p>
+      <div class="product-table table-responsive">
+        <table class="table table-hover">
+          <tbody>
+            <tr ng-repeat="item in vm.team" >
+              <td class="team-member-name">{{item.displayName}}</td>
+              <td class="team-member-email">{{item.email}}</td>
+              <td class="team-member-role">{{item.roles}}</td>
+              <!--td class="team-member-edit"><a ui-sref='company.navbar.settings.team.edit({userId: item.id})'><i class="fa fa-pencil"></i></a></td-->
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      <p class="product-table-header" ng-show='vm.invited'>Invited members</p>
+      <div class="product-table table-responsive">
+        <table class="table table-hover">
+          <tbody>
+            <tr ng-repeat="item in vm.invited" >
+              <td class="team-member-name">{{item.displayName}}</td>
+              <td class="team-member-email">{{item.email}}</td>
+              <td class="team-member-role">{{item.roles}}</td>
+              <td class="team-member-edit"><a ui-sref='company.navbar.settings.team.edit({userId: item.id})'>Resend invite</a></td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      <p class="product-table-header" ng-show='vm.previous'>Previous members</p>
+      <div class="product-table table-responsive">
+        <table class="table table-hover">
+          <tbody>
+            <tr ng-repeat="item in vm.previous" >
+              <td class="team-member-name">{{item.displayName}}</td>
+              <td class="team-member-email">{{item.email}}</td>
+              <td class="team-member-role">{{item.roles}}</td>
+              <td class="team-member-edit"><a ui-sref='company.navbar.settings.team.edit({userId: item.id})'>Invite again</a></td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+  </div>
+</section>

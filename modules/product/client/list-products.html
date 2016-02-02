@@ -1,0 +1,31 @@
+<h1 class="dashboard-section-title" ng-init="vm.find()"><i class="fa fa-cubes"></i>Products</h1>
+<div class="row">
+  <div class="col-sm-12">
+    <a ui-sref="company.navbar.product.create" class="btn btn-lg sproutup-btn-md-main orange"><i class="fa fa-plus-circle"></i>Add New Product</a>
+  </div>
+</div>
+<div class="product-table table-responsive"> 
+  <table class="table table-hover"> 
+    <thead> 
+      <tr>
+        <th></th>
+        <th>Name</th> 
+        <th>Category</th> 
+        <th>Tagline</th> 
+        <th>Campaign</th> 
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="product in vm.products">
+        <td class="product-table-edit"><a ui-sref="company.navbar.product.edit({ productId: product.id })"><i class="fa fa-pencil"></i></a></td>
+        <td>
+            <a ui-sref="company.navbar.product.view({ productId: product.id })">{{ product.name }}</a>
+        </td> 
+        <td>Category</td> 
+        <td>{{ product.tagline }}</td>
+        <td><a ui-sref="company.navbar.campaign.create" ng-click="vm.startCampaign(product)"><i class="fa fa-plus-circle"></i>START CAMPAIGN</a></td>
+<!--                <td><span class="label label-campaign product-trial">Product Trial</span></td> -->
+      </tr>
+    </tbody> 
+  </table> 
+</div>

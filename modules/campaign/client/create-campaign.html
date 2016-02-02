@@ -1,0 +1,33 @@
+<h1 class="dashboard-section-title"><a ui-sref="company.navbar.campaign.list"><i class="fa fa-angle-left"></i></a>Create New Campaign</h1>
+<div class="create-product-wrapper">
+	<div class="row">
+        <form name="campaignForm" class="form-horizontal" ng-submit="vm.create(campaignForm.$valid)" novalidate>
+            <fieldset>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Basic Information</p>
+                    <input type="text" class="form-control form-input" placeholder="Pick a name for your campaign" ng-model="vm.name">
+                    <input type="text" class="form-control form-input" placeholder="Type of campaign" ng-model="vm.type" required>
+                    <div ng-messages="companyForm.name.$error" role="alert" ng-if="vm.invalid">
+                        <p class="help-block text-danger" ng-message="required">Campaign type is required.</p>
+                    </div>
+                    <label for="mySelect">Select a product </label>
+                    <select name="mySelect" id="mySelect"
+                      ng-options="product.name for product in vm.products track by product.id"
+                      ng-model="vm.product">
+                    </select>
+        <!--             <input type="text" class="form-control form-input" placeholder="Select a category">
+                    <input type="url" class="form-control form-input" placeholder="URL of this product">
+                    <input type="url" class="form-control form-input" placeholder="URL of an awesome product video"> -->
+                </div>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Description</p>
+                    <textarea class="form-control form-input-textarea" placeholder="Tell users more about this product. What are the cool features? What's the story behind this product?" ng-model="vm.description"></textarea>
+                </div>
+                <div class="col-sm-12 form-input-group">
+                	<input class="btn btn-lg sproutup-btn-md-main" type="submit">
+                	<a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>

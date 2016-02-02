@@ -1,0 +1,57 @@
+<div ng-controller="AuthenticationController">
+
+  <div class="auth-header">
+    <div class="text-center">
+      <img class="auth-header-logo" src="modules/core/client/img/logo-square-orange.png">
+    </div>
+    <hr>
+  </div>
+
+  <div class="row">
+    <div class="signup-login-header">
+        <h1>Thanks for getting started with SproutUp</h1>
+        <h2>Your registered email is <span>tony@gmail.com</span>. Please fill out your company information below to continue.</h2>
+    </div>
+    <div class="signup-login-area">
+      <form name="userForm" ng-submit="signup(userForm.$valid)" class="signin" novalidate autocomplete="off">
+        <fieldset>
+          <div class="signup-login-form" show-errors>
+
+            <!-- Email -->
+<!--             <input type="email" id="email" name="email" class="form-control form-validate signup-login-input" ng-model="credentials.email" placeholder="Company email like joe@company.com" lowercase disabled required>
+            <div ng-show="userForm.email.$submitted || userForm.email.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.email.$error.required"><i class="fa fa-minus-circle"></i>Can't sign up without an email</div>
+              <div class="signup-login-form--error-message" ng-show="userForm.email.$error.email"><i class="fa fa-minus-circle"></i>Err, you sure the email is valid?</div>
+            </div> -->
+
+            <!-- Company Name -->
+            <input type="text" id="companyName" name="companyName" class="form-control form-validate signup-login-input" placeholder="Which company do you work for?" required>
+            <div ng-show="userForm.companyName.$submitted || userForm.companyName.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.companyName.$error.required"><i class="fa fa-minus-circle"></i>We thought a company name is essential for business software.</div>
+            </div>
+
+            <!-- Company URL -->
+            <input type="text" id="companyUrl" name="companyUrl" class="form-control form-validate signup-login-input" placeholder="Official website of your company" required>
+            <div ng-show="userForm.companyUrl.$submitted || userForm.companyUrl.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.companyUrl.$error.required"><i class="fa fa-minus-circle"></i>A company with no website? Silly.</div>
+            </div>
+
+            <!-- TODO: show this message when users enter an existing company -->
+            <div class="signup-login-message">
+              <h2>The company you just entered <span class="signup-company-name">Apple Inc.</span> has already existed. In order to join the team, you must use an email that matches the domain <span>@apple.com</span>.</h2>
+            </div>
+
+            <button ng-disabled="userForm.$invalid" class="btn btn-lg signup-login-btn" type="submit" ui-sref="authentication.general-signup-2">Continue</button>
+
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- footer -->
+      <div class="signup-login-form-footer">
+        <p>Already signed up? <a ui-sref="authentication.signin">Log in</a> here.</p>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="ambassador" ng-repeat="user in vm.ambassadors">
+    <a ui-sref="user.profile.buzz({ nickname: user.nickname })">
+        <img class="trial-user-avatar" ng-src="{{ user.avatarUrl }}" />
+    </a>
+    <div class="ambassador-wrapper">
+        <span class="trial-user-name">{{ user.name }}</span>
+        <div class="user-socials">
+            <span ng-if="user.urlTwitter">
+                <a ng-href="{{user.urlTwitter}}" target="blank">
+                    <img src="modules/core/client/img/Twitter.png" />
+                    <span>{{user.twitterCount}}</span>
+                </a>
+            </span>
+            <span ng-if="user.urlYoutube">
+                <a ng-href="{{user.urlYoutube}}" target="blank">
+                    <img class="youtube" src="modules/core/client/img/youtube.png" />
+                    <span>{{user.youtubeCount}}</span>
+                </a>
+            </span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+<h1 class="dashboard-section-title" ng-init="vm.find()"><i class="fa fa-tags"></i>Campaigns
+  <div class="dashboard-menu-top">
+    <a class="dashboard-menu-top-item" ng-repeat="item in vm.menu.items | orderBy: 'position'" ui-sref="{{item.state}}" ng-if="item.shouldRender(company.authentication.user);" ng-switch="item.type" ng-class="{ active: company.state.includes(item.state), dropdown: item.type === 'dropdown' }" class="{{item.class}} nav-item-wrapper nav-item-main" dropdown="item.type === 'dropdown'">
+      {{item.title}}
+    </a>
+  </div>
+</h1>
+
+<div class="row">
+  <div class="col-sm-12">
+    <a ui-sref="company.navbar.template.select" class="btn btn-lg sproutup-btn-md-main orange"><i class="fa fa-plus-circle"></i>Create New Campaign</a>
+  </div>
+</div>
+
+<div class="campaign-list-wrapper draft">
+  <h4><i class="fa fa-dot-circle-o"></i>Draft Campaigns</h4>
+  <div class="product-table table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th>Campaign</th>
+          <th>Requests</th>
+          <th>Reach</th>
+          <th>Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="campaign in vm.campaigns | filter: {status: 0}">
+          <td class="product-table-edit"><a ui-sref="company.navbar.campaign.trial.edit({ campaignId: campaign.id })"><i class="fa fa-pencil"></i></a></td>
+          <td><span ng-class="campaign.type" class="label label-campaign">{{campaign.type}}</span></td>
+          <td>{{campaign.name}}</td>
+          <td class="campaign-kpi"></td>
+          <td class="campaign-kpi"></td>
+          <td class="campaign-kpi"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="campaign-list-wrapper active">
+  <h4><i class="fa fa-spinner fa-spin"></i>Active Campaigns</h4>
+  <div class="product-table table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th>Campaign</th>
+          <th>Requests</th>
+          <th>Reach</th>
+          <th>Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="campaign in vm.campaigns | filter: {status: 1}: vm.returnMatch">
+          <td class="product-table-edit"><a ui-sref="company.navbar.campaign.trial.configure({ campaignId: campaign.id })"><i class="fa fa-pencil"></i></a></td>
+          <td><span ng-class="campaign.type" class="label label-campaign">{{campaign.type}}</span></td>
+          <td>{{campaign.name}}</td>
+          <td class="campaign-kpi"></td>
+          <td class="campaign-kpi"></td>
+          <td class="campaign-kpi"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="campaign-list-wrapper past">
+    <h4><i class="fa fa-circle"></i>Past Campaigns</h4>
+    <div class="product-table table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>Campaign</th>
+            <th>Requests</th>
+            <th>Reach</th>
+            <th>Content</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="campaign in vm.campaigns | filter: {status: -1}: vm.returnMatch">
+            <td class="product-table-edit"><a ui-sref="company.navbar.campaign.trial.configure({ campaignId: campaign.id })"><i class="fa fa-pencil"></i></a></td>
+            <td><span ng-class="campaign.type" class="label label-campaign">{{campaign.type}}</span></td>
+            <td>{{campaign.name}}</td>
+            <td class="campaign-kpi"></td>
+            <td class="campaign-kpi"></td>
+            <td class="campaign-kpi"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

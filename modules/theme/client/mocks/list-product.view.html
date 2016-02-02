@@ -1,0 +1,108 @@
+<div class="creator-menu">
+  <div class="navbar-header">
+    <button class="navbar-toggle" type="button">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+  </div>
+  <nav role="navigation">
+    <div class="nav-head">
+      <div class="nav-item-wrapper creator-company">
+        <a href="#">SproutUp Co</a>
+      </div>
+      <div class="nav-item-wrapper creator-user">
+        <a href="#">
+          <img src="modules/core/client/img/default-avatar.png"> Tao
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-item-wrapper nav-item-main">
+        <a href="#">Campaigns</a>
+      </div>
+      <div class="nav-item-wrapper nav-item-main active">
+        <a href="#">Products</a>
+      </div>
+      <div class="nav-item-wrapper nav-item-main">
+        <a href="#">Company Info</a>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-item-wrapper nav-item-main">
+        <a href="#">Log out</a>
+      </div>
+    </div>
+
+  </nav>
+</div>
+
+<div class="dashboard-container">
+	<h1 class="dashboard-section-title"><i class="fa fa-cubes"></i>Products</h1>
+
+  <!-- empty state -->
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="empty-state-wrapper">
+        <img class="img-center" src="modules/core/client/img/icon-product.png">
+        <h2>Your Products</h2>
+        <p>Launching a new product? Engage your customers? Running a campaign today.</p>
+        <button href="#" class="btn btn-lg sproutup-btn-md-main orange">Add New Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- non-empty state -->
+	<div class="row">
+		<div class="col-sm-12">
+			<button href="#" class="btn btn-lg sproutup-btn-md-main orange"><i class="fa fa-plus-circle"></i>Add New Product</button>
+		</div>
+	</div>
+
+	<div class="product-table table-responsive">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Category</th>
+					<th>Tagline</th>
+					<th>Campaign</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr data-href="#">
+					<td class="product-table-edit"><a href="#"><i class="fa fa-pencil"></i></a></td>
+					<td>Bebop Drone</td>
+					<td>Drone</td>
+					<td>Best drone ever</td>
+					<td><span class="label label-campaign product-trial">Product Trial</span></td>
+				</tr>
+				<tr data-href="#">
+					<td class="product-table-edit"><a href="#"><i class="fa fa-pencil"></i></a></td>
+					<td>Bebop Drone 2.0</td>
+					<td>Drone</td>
+					<td>Even better than Bebeop</td>
+					<td><span class="label label-campaign product-trial">Product Trial</span></td>
+				</tr>
+				<tr data-href="#">
+					<td class="product-table-edit"><a href="#"><i class="fa fa-pencil"></i></a></td>
+					<td>Zik 3.0</td>
+					<td>Headphone</td>
+					<td>Ridiculously high sound quality</td>
+					<td><span class="label label-campaign video-contest">Video Contest</span></td>
+				</tr>
+				<tr data-href="#">
+					<td class="product-table-edit"><a href="#"><i class="fa fa-pencil"></i></a></td>
+					<td>New Zik 4.0</td>
+					<td>Headphone</td>
+					<td>Ridiculously high sound quality</td>
+					<td><a href="#"><i class="fa fa-plus-circle"></i>START CAMPAIGN</a></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

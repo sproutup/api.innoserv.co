@@ -1,0 +1,25 @@
+<h1 class="dashboard-section-title" ng-init="vm.findOne()"><a ui-sref="company.navbar.template.list"><i class="fa fa-angle-left"></i></a>Edit Campaign Template</h1>
+<div class="create-product-wrapper">
+	<div class="row">
+        <form name="campaignForm" class="form-horizontal" ng-submit="vm.update(campaignForm.$valid)" novalidate>
+            <fieldset>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Basic Information</p>
+                    <input type="text" class="form-control form-input" placeholder="Pick a name for your campaign" ng-model="vm.campaign.name">
+                    <input type="text" class="form-control form-input" placeholder="Type of campaign" ng-model="vm.campaign.type" required>
+                    <div ng-messages="companyForm.name.$error" role="alert" ng-if="vm.invalid">
+                        <p class="help-block text-danger" ng-message="required">Campaign type is required.</p>
+                    </div>
+               </div>
+                <div class="col-sm-12 form-input-group">
+                	<p class="input-group-title">Description</p>
+                    <textarea class="form-control form-input-textarea" placeholder="Tell users more about this product. What are the cool features? What's the story behind this product?" ng-model="vm.campaign.description"></textarea>
+                </div>
+                <div class="col-sm-12 form-input-group">
+                	<input class="btn btn-lg sproutup-btn-md-main" type="submit">
+                	<a class="btn btn-lg sproutup-btn-md-main cancel" href="#" ng-click="vm.cancel()">Cancel</a>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>

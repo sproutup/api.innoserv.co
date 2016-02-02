@@ -1,0 +1,57 @@
+<div ng-controller="AuthenticationController">
+
+  <div class="auth-header">
+    <div class="text-center">
+      <img class="auth-header-logo" src="modules/core/client/img/logo-square-orange.png">
+    </div>
+    <hr>
+  </div>
+
+  <div class="row">
+    <div class="signup-login-header">
+        <h1>Thanks for getting started with SproutUp</h1>
+        <h2>Your registered email is <span>tony@gmail.com</span>, and your company is <span class="signup-company-name">Apple Inc.</span> Please fill out the information below to finish signing up.</h2>
+    </div>
+    <div class="signup-login-area">
+      <form name="userForm" ng-submit="signup(userForm.$valid)" class="signin" novalidate autocomplete="off">
+        <fieldset>
+          <div class="signup-login-form" show-errors>
+
+            <!-- First Name -->
+            <input type="text" id="firstName" name="firstName" class="form-control form-validate signup-login-input" ng-model="credentials.firstName" placeholder="First Name" required>
+            <div ng-show="userForm.firstName.$submitted || userForm.firstName.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.firstName.$error.required"><i class="fa fa-minus-circle"></i>Please tell us your first name.</div>
+            </div>
+            
+            <!-- Last Name -->
+            <input type="text" id="lastName" name="lastName" class="form-control form-validate signup-login-input" ng-model="credentials.lastName" placeholder="Last Name" required>
+            <div ng-show="userForm.lastName.$submitted || userForm.lastName.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.lastName.$error.required"><i class="fa fa-minus-circle"></i>Please tell us your last name.</div>
+            </div>
+
+            <!-- Password -->
+            <input type="password" id="password" name="password" class="form-control form-validate signup-login-input" ng-model="credentials.password" placeholder="Create a password" required ng-minlength="6">
+            <div ng-show="userForm.password.$submitted || userForm.password.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.password.$error.required"><i class="fa fa-minus-circle"></i>6+ characters would be safer.</div>
+              <div class="signup-login-form--error-message" ng-show="userForm.password.$error.minlength"><i class="fa fa-minus-circle"></i>6+ characters would be safer.</div>
+            </div>
+
+            <div class="signup-agreement">
+              <p>By signing up, I agree to SproutUp's <a ui-sref="#" target="_blank">Terms of Service</a> and <a ui-sref="#" target="_blank">Privacy Policy</a>.</p>
+            </div>
+
+            <!-- sign up button -->
+            <button ng-disabled="userForm.$invalid" class="btn btn-lg signup-login-btn" type="submit" ng-click="vm.signup()">Sign up</button>
+
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- footer -->
+      <div class="signup-login-form-footer">
+        <p>Already signed up? <a ui-sref="authentication.signin">Log in</a> here.</p>
+      </div>
+
+    </div>
+  </div>
+</div>

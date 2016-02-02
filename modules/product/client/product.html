@@ -1,0 +1,6 @@
+<div ng-init="vm.findOne()">
+	<div>{{ vm.product.name }}</div>
+	<div>{{ vm.product.tagline }}</div>
+	<a ng-href="{{ vm.product.url }}">{{ vm.product.url }}</a>
+	<a ui-sref="company.navbar.product.edit({ productId: vm.product.id})">edit</a>
+</div>

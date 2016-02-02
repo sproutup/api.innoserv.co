@@ -1,0 +1,64 @@
+<!-- <up-dashboard-header item="vm.item"></up-dashboard-header>
+<div ui-view></div> -->
+<div class="content-container" ng-repeat="content in vm.content">
+	<!-- Youtube Video -->
+	<div ng-if="content.type === 'youtube'">
+		<iframe class="youtube-video" ng-src="{{ content.url }}" frameborder="0" allowfullscreen></iframe>
+		<div class="youtube-user">
+			<img class="trial-user-avatar" ng-src="{{ content.user.profileImageURL }}" />
+			<span class="youtube-username">{{ content.user.name }}</span>
+		</div>
+		<table>
+			<tr class="row">
+				<td class="col-sm-6 stat-box">
+					<span class="stat-name">Views</span>
+					<span class="stat-number">{{ content.views }}</span>
+					<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+				</td>
+				<td class="col-sm-6 stat-box">
+					<span class="stat-name">Minutes Watched</span>
+					<span class="stat-number">{{ content.minutesWatched }}</span>
+					<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+				</td>	
+			</tr>
+			<tr class="row">
+				<td class="col-sm-6 stat-box">
+					<span class="stat-name">Likes</span>
+					<span class="stat-number">{{ content.likes }}</span>
+					<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+				</td>
+				<td class="col-sm-6 stat-box">
+					<span class="stat-name">Comments</span>
+					<span class="stat-number">{{ content.comments }}</span>
+					<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+				</td>
+			</tr>
+		</table>
+	</div>
+	<!-- Blog post -->
+	<div ng-if="content.type === 'blog'">
+		<a class="unstyled-link" ng-href="{{ content.url }}">
+			<img class="content-image" ng-src="{{ content.image }}"/>
+			<div class="content-title">{{ content.title }}</div>
+			<div>{{ content.description }}</div>
+		</a>
+		<div class="youtube-user">
+			<img class="trial-user-avatar" ng-src="{{ content.user.profileImageURL }}" />
+			<span class="youtube-username">{{ content.user.name }}</span>
+		</div>
+		<table>
+			<tr class="row">
+			<td class="col-sm-6 stat-box">
+				<span class="stat-name">Unique Visitors</span>
+				<span class="stat-number">{{ content.uniqueVisitors }}</span>
+				<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+			</td>
+			<td class="col-sm-6 stat-box">
+				<span class="stat-name">Refferal Clicks</span>
+				<span class="stat-number">{{ content.refferalClicks }}</span>
+				<canvas id="line" class="chart chart-line" chart-data="content.clicks.data" chart-labels="content.clicks.labels" chart-legend="false" chart-series="content.clicks.series" chart-options="vm.chartOptions">
+			</td>	
+		</tr>
+		</table>
+	</div>
+</div>

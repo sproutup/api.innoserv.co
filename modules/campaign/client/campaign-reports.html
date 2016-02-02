@@ -1,0 +1,7 @@
+<h1 class="dashboard-section-title" ng-init="vm.findOne()">
+    <a ui-sref="company.navbar.campaign.list"><i class="fa fa-angle-left"></i></a>{{ vm.campaign.name }}
+    <div class="dashboard-menu-top">
+        <a class="dashboard-menu-top-item active" ui-sref="company.navbar.campaign.reports-mock ({ campaignId: vm.campaign.id })">Reports</a>
+        <a class="dashboard-menu-top-item" ui-sref="company.navbar.campaign.edit({ campaignId: vm.campaign.id })">Configure</a>
+    </div>
+</h1>

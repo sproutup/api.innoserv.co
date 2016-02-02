@@ -1,0 +1,40 @@
+<div class="product-trial-stage-user">
+    <div>
+        <a ui-sref="user.profile.buzz({ nickname: trial.user.nickname })">
+            <img class="trial-user-avatar" ng-src="{{ trial.user.avatarUrl }}" />
+        </a>
+        <div class="trial-user-info-wrapper">
+            <span class="trial-user-name">{{ trial.user.name }}</span>
+            <div class="user-socials">
+                <span ng-if="trial.user.urlTwitter">
+                    <a ng-href="{{trial.user.urlTwitter}}" target="blank">
+                        <img src="modules/core/client/img/Twitter.png" />
+                        <span>12,982</span>
+                    </a>
+                </span>
+                <span ng-if="trial.user.urlYoutube">
+                    <a ng-href="{{trial.user.urlYoutube}}" target="blank">
+                        <img class="youtube" src="modules/core/client/img/youtube.png" />
+                        <span>42,982</span>
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <div class="active-trial-status" ng-if="trial.status === 3 && trial.recievedEvent" ng-class="{ 'my-trials': vm.state === 'user.mytrials.current' }">
+
+            <progressbar class="days-left-bar" ng-class="{ 'trial-overdue': trial.overdue }" value="trial.percentageLeft"></progressbar>
+            <span ng-if="!trial.overdue && trial.daysLeft !== 1">{{ trial.daysLeft }} days left</span>
+            <span ng-if="!trial.overdue && trial.daysLeft === 1">1 day left</span>
+            <span ng-if="trial.overdue && trial.daysLeft !== 1" ng-class="{ 'trial-overdue': trial.overdue }">{{ trial.daysLeft }} days overdue</span>
+            <span ng-if="trial.overdue && trial.daysLeft === 1" ng-class="{ 'trial-overdue': trial.overdue }">1 day overdue</span>
+        </div>
+
+        <div class="active-trial-status" ng-if="trial.status === 1">
+            <progressbar class="days-left-bar"></progressbar>
+            <span>Approved</span>
+        </div>
+    </div>
+
+    <up-content-table ng-if="trial.content.length > 0" content="trial.content" contenttype="Content created from product trial"></up-content-table>
+</div>

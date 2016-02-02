@@ -1,0 +1,104 @@
+<div ng-controller="AuthenticationController" ng-init="verifyToken()">
+
+  <div class="auth-header">
+    <div class="text-center">
+      <img class="auth-header-logo" src="modules/core/client/img/logo-square-orange.png">
+    </div>
+    <hr>
+  </div>
+
+  <div class="row" ng-if="!companyInit">
+    <div class="signup-login-header">
+        <h1>Thanks for getting started with SproutUp</h1>
+        <h2>Your registered email is <span>{{ credentials.email }}</span>. Please fill out your company information below to continue.</h2>
+    </div>
+    <div class="signup-login-area">
+      <form name="userForm" ng-submit="initCompany()" class="signin" novalidate autocomplete="off">
+        <fieldset>
+          <div class="signup-login-form" show-errors>
+
+            <!-- Email -->
+<!--             <input type="email" id="email" name="email" class="form-control form-validate signup-login-input" ng-model="credentials.email" placeholder="Company email like joe@company.com" lowercase disabled required>
+            <div ng-show="userForm.email.$submitted || userForm.email.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.email.$error.required"><i class="fa fa-minus-circle"></i>Can't sign up without an email</div>
+              <div class="signup-login-form--error-message" ng-show="userForm.email.$error.email"><i class="fa fa-minus-circle"></i>Err, you sure the email is valid?</div>
+            </div> -->
+
+            <!-- Company Name -->
+            <input ng-model="company.name" type="text" id="companyName" name="companyName" class="form-control form-validate signup-login-input" placeholder="Which company do you work for?" required>
+            <div ng-show="userForm.companyName.$submitted || userForm.companyName.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.companyName.$error.required"><i class="fa fa-minus-circle"></i>You need a name for your company.</div>
+            </div>
+
+            <!-- Company URL -->
+            <input ng-model="company.url" type="text" id="companyUrl" name="companyUrl" class="form-control form-validate signup-login-input" placeholder="Official website of your company" required>
+            <div ng-show="userForm.companyUrl.$submitted || userForm.companyUrl.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.companyUrl.$error.required"><i class="fa fa-minus-circle"></i>What's your company's website?</div>
+            </div>
+
+            <!-- TODO: show this message when users enter an existing company -->
+            <div class="signup-login-message" ng-if="companyExists">
+              <h2>The company you just entered <span class="signup-company-name">Apple Inc.</span> has already existed. In order to join the team, you must use an email that matches the domain <span>@apple.com</span>.</h2>
+            </div>
+
+            <button ng-disabled="userForm.$invalid" class="btn btn-lg signup-login-btn" type="submit">Continue</button>
+
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- footer -->
+      <div class="signup-login-form-footer">
+        <p>Already signed up? <a ui-sref="authentication.signin">Log in</a> here.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" ng-if="companyInit">
+    <div class="signup-login-header">
+        <h1>Thanks for getting started with SproutUp</h1>
+        <h2>Your registered email is <span>{{ credentials.email }}</span>, and your company is <span class="signup-company-name">{{ company.name }}</span> Please fill out the information below to finish signing up.</h2>
+    </div>
+    <div class="signup-login-area">
+      <form name="userForm" ng-submit="signup(userForm.$valid)" class="signin" novalidate autocomplete="off">
+        <fieldset>
+          <div class="signup-login-form" show-errors>
+
+            <!-- First Name -->
+            <input type="text" id="firstName" name="firstName" class="form-control form-validate signup-login-input" ng-model="credentials.firstName" placeholder="First Name" required>
+            <div ng-show="userForm.firstName.$submitted || userForm.firstName.$touched">
+              <div class="signup-login-form--error-message" ng-show="userForm.firstName.$error.required"><i class="fa fa-minus-circle"></i>Please tell us your first name.</div>
+            </div>
+            
+            <!-- Last Name -->
+            <input type="text" id="lastName" name="lastName" class="form-control form-validate signup-login-input" ng-model="credentials.lastName" placeholder="Last Name" required>
+            <div ng-show="userForm.lastName.$submitted || userForm.lastName.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.lastName.$error.required"><i class="fa fa-minus-circle"></i>Please tell us your last name.</div>
+            </div>
+
+            <!-- Password -->
+            <input type="password" id="password" name="password" class="form-control form-validate signup-login-input" ng-model="credentials.password" placeholder="Create a password" required ng-minlength="6">
+            <div ng-show="userForm.password.$submitted || userForm.password.$touched" role="alert">
+              <div class="signup-login-form--error-message" ng-show="userForm.password.$error.required"><i class="fa fa-minus-circle"></i>6+ characters would be safer.</div>
+              <div class="signup-login-form--error-message" ng-show="userForm.password.$error.minlength"><i class="fa fa-minus-circle"></i>6+ characters would be safer.</div>
+            </div>
+
+            <div class="signup-agreement">
+              <p>By signing up, I agree to SproutUp's <a ui-sref="#" target="_blank">Terms of Service</a> and <a ui-sref="#" target="_blank">Privacy Policy</a>.</p>
+            </div>
+
+            <!-- sign up button -->
+            <button ng-disabled="userForm.$invalid" class="btn btn-lg signup-login-btn" type="submit">Sign up</button>
+
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- footer -->
+      <div class="signup-login-form-footer">
+        <p>Already signed up? <a ui-sref="authentication.signin">Log in</a> here.</p>
+      </div>
+
+    </div>
+  </div>
+</div>

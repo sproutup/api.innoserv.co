@@ -1,0 +1,92 @@
+<div class="line-chart">
+	<canvas id="line" class="chart chart-line" chart-data="vm.purchases.data" chart-labels="vm.purchases.labels" chart-legend="false" chart-series="vm.purchases.series">
+	</canvas>
+</div>
+
+<div class="engagement-analytics-list">
+    <div>Demographics</div>
+    <ul>
+    	<li ng-class="{'active': vm.purchases.demographics === 1}" ng-click="vm.purchases.demographics = 1">Interests</li>
+        <li ng-class="{'active': vm.purchases.demographics === 2}" ng-click="vm.purchases.demographics = 2">Countries</li>
+      	<li ng-class="{'active': vm.purchases.demographics === 3}" ng-click="vm.purchases.demographics = 3">Cities</li>
+    </ul>
+</div>
+
+<table class="demographic-table" ng-if="vm.purchases.demographics === 1">
+    <tbody>
+		<tr class="row">
+			<th class="col-md-4">Interest</th>
+		<th class="col-md-8">Percentage</th>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Electronics</td>
+			<td class="col-md-8">80%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Technology</td>
+			<td class="col-md-8">64%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Music</td>
+			<td class="col-md-8">58%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Kim Kardashian</td>
+			<td class="col-md-8">52%</td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="demographic-table" ng-if="vm.purchases.demographics === 2">
+    <tbody>
+		<tr class="row">
+			<th class="col-md-4">Country</th>
+		<th class="col-md-8">Percentage</th>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">United States</td>
+			<td class="col-md-8">61%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">England</td>
+			<td class="col-md-8">10%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Canada</td>
+			<td class="col-md-8">8%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Germany</td>
+			<td class="col-md-8">5%</td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="demographic-table" ng-if="vm.purchases.demographics === 3">
+    <tbody>
+		<tr class="row">
+			<th class="col-md-4">City</th>
+		<th class="col-md-8">Percentage</th>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Los Angeles</td>
+			<td class="col-md-8">12%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">New York</td>
+			<td class="col-md-8">7%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">Washington D.C.</td>
+			<td class="col-md-8">5%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">San Francisco</td>
+			<td class="col-md-8">5%</td>
+		</tr>
+		<tr class="row">
+			<td class="col-md-4">London</td>
+			<td class="col-md-8">4%</td>
+		</tr>
+	</tbody>
+</table>
