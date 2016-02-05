@@ -19,7 +19,10 @@ exports.read = function (req, res) {
         message: 'Contributor not found'
       });
     }
-    res.json(item);
+    Campaign.get(item.campaignId).then(function(campaign){
+      item.campaign = campaign;
+      res.json(item);
+    });
   })
   .catch(function(err){
     return res.json(err);
@@ -112,7 +115,10 @@ exports.listByCampaign = function (req, res) {
  * List by user
  */
 exports.listByUser = function (req, res) {
+  var contributions = null;
+  var campaigns = null;
   Contributor.query({userId: req.params.userId}).exec().then(function(items){
+    contributions = items;
     if(items.length>0){
       var query = _.map(items, function(val){ return {id: val.campaignId}; });
       return Campaign.batchGet(query);
@@ -122,7 +128,11 @@ exports.listByUser = function (req, res) {
     }
   })
   .then(function(items){
-    res.json(items);
+    campaigns = items;
+    _.forEach(contributions, function(val){
+      val.campaign = _.find(campaigns, 'id', val.campaignId);
+    });
+    res.json(contributions);
   })
   .catch(function(err){
     console.log(err);
