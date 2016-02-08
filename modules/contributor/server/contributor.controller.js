@@ -5,6 +5,9 @@
  */
 var dynamoose = require('dynamoose');
 var Contributor = dynamoose.model('Contributor');
+var knex = require('config/lib/bookshelf').knex;
+/* global -Promise */
+var Promise = require('bluebird');
 var Campaign = dynamoose.model('Campaign');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
@@ -13,15 +16,31 @@ var _ = require('lodash');
  * Show
  */
 exports.read = function (req, res) {
-  Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId}).then(function(item){
-    if(_.isUndefined(item)){
-      return res.status(400).send({
-        message: 'Contributor not found'
-      });
-    }
-    Campaign.get(item.campaignId).then(function(campaign){
-      item.campaign = campaign;
-      res.json(item);
+  var _item;
+  Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
+    .then(function(item){
+      if(_.isUndefined(item)){
+        return res.status(400).send({
+          message: 'Contributor not found'
+        });
+      }
+      _item = item;
+  })
+  .then(function(){
+    return knex
+      .select('id','name','email', 'description')
+      .from('users')
+      .where('id', _item.userId);
+  })
+  .then(function(user){
+    console.log('user', user);
+    _item.user = user;
+    return;
+  })
+  .then(function(){
+    Campaign.get(_item.campaignId).then(function(campaign){
+      _item.campaign = campaign;
+      res.json(_item);
     });
   })
   .catch(function(err){
@@ -101,8 +120,28 @@ exports.list = function (req, res) {
  * List by campaign
  */
 exports.listByCampaign = function (req, res) {
-  Contributor.query({campaignId: req.model.id}).exec().then(function(items){
-    res.json(items);
+  Contributor.query({campaignId: req.model.id})
+    .exec().then(function(items){
+      return Promise.map(items, function(val){
+        return knex
+          .select('id','name','nickname','email','description')
+          .from('users')
+          .where('id', val.userId).then(function(user){
+            val.user = user;
+            return val;
+          });
+      })
+      .catch(function(err){
+        console.log('err: ', err);
+        throw err;
+      });
+    })
+  .then(function(items){
+    res.json({
+      status: 'ok',
+      campaign: req.model,
+      items: items
+    });
   })
   .catch(function(err){
     return res.status(400).send({
