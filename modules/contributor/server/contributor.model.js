@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -53,7 +54,34 @@ var ContributorSchema = new Schema({
   },
   bid: {
     type: Number
-  }
+  },
+  log: [
+    {
+      created: Date,
+      state: Number
+    }
+  ]
 });
 
-dynamoose.model('Contributor', ContributorSchema);
+var Contributor = dynamoose.model('Contributor', ContributorSchema);
+
+/**
+ * Hook a pre save method
+ */
+Contributor.pre('save', function(next) {
+  if (this.state) {
+    if(_.isUndefined(this.log)){
+      this.log = [{state: this.state, created: Date.now()}];
+    }
+    else{
+      var latest = _.max(this.log, function(o) { return o.created; });
+      if(latest.state !== this.state){
+        this.log.push({state: this.state, created: Date.now()});
+      }
+    }
+  }
+
+  next();
+});
+
+
