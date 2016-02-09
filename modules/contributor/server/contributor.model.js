@@ -50,8 +50,10 @@ var ContributorSchema = new Schema({
   },
   comment: {
     type: String
+  },
+  bid: {
+    type: Number
   }
 });
 
 dynamoose.model('Contributor', ContributorSchema);
-
