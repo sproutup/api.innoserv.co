@@ -69,13 +69,22 @@ exports.create = function (req, res) {
  * Update
  */
 exports.update = function (req, res) {
-  var item = req.model;
-
-  //For security purposes only merge these parameters
-  item.status = req.body.status;
-
-  item.save().then(function(data){
-    res.json(item);
+  Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
+    .then(function(item){
+      if(_.isUndefined(item)){
+        return res.status(400).send({
+          message: 'Contributor not found'
+        });
+      }
+      return item;
+  })
+  .then(function(item){
+    //For security purposes only merge these parameters
+    _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid']));
+    return item.save();
+  })
+  .then(function(data){
+    res.json(data);
   })
   .catch(function (err) {
     return res.status(400).send({

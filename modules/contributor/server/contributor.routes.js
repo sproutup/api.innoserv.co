@@ -19,6 +19,7 @@ module.exports = function (app) {
   // single routes
   app.route('/api/campaign/:campaignId/user/:userId').all(policy.isAllowed)
     .get(ctrl.read)
+    .put(ctrl.update)
     .delete(ctrl.delete);
 
   // collection routes
@@ -29,5 +30,6 @@ module.exports = function (app) {
   // single routes
   app.route('/api/user/:userId/campaign/:campaignId').all(policy.isAllowed)
     .get(ctrl.read)
+    .put(ctrl.update)
     .delete(ctrl.delete);
 };
