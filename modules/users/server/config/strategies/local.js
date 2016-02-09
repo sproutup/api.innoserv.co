@@ -5,7 +5,8 @@
  */
 var passport = require('passport'),
   LocalStrategy = require('passport-local').Strategy,
-  User = require('dynamoose').model('User');
+  User = require('dynamoose').model('User'),
+  _File = require('dynamoose').model('File');
 
 module.exports = function () {
   // Use local strategy
@@ -27,7 +28,17 @@ module.exports = function () {
           });
         }
 
-        return done(null, user);
+        if(user.avatar.fileId){
+          _File.get(user.avatar.fileId).then(function(file){
+            if(file){
+              user.avatar.file = file;
+            }
+            return done(null, user);
+          })
+          .catch(function(err){
+            return done(null, user);
+          });
+        }
       });
     }
   ));

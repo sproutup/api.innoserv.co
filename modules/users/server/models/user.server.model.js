@@ -93,12 +93,8 @@ var UserSchema = new Schema({
     type: String
   },
   avatar: {
-    ref: {
+    fileId: {
       type: String
-    },
-    type: {
-      type: String,
-      default: 'file'
     }
   },
   profileImageURL: {
