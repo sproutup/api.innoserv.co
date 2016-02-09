@@ -69,6 +69,7 @@ exports.create = function (req, res) {
  * Update
  */
 exports.update = function (req, res) {
+  var _item;
   Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
     .then(function(item){
       if(_.isUndefined(item)){
@@ -79,12 +80,13 @@ exports.update = function (req, res) {
       return item;
   })
   .then(function(item){
+    _item = item;
     //For security purposes only merge these parameters
     _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid']));
     return item.save();
   })
   .then(function(data){
-    res.json(data);
+    res.json(_item);
   })
   .catch(function (err) {
     return res.status(400).send({
