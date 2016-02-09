@@ -127,7 +127,9 @@ exports.listByCampaign = function (req, res) {
           .select('id','name','nickname','email','description')
           .from('users')
           .where('id', val.userId).then(function(user){
-            val.user = user;
+            if(user.length>0){
+              val.user = user[0];
+            }
             return val;
           });
       })
