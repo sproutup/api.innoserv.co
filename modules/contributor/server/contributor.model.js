@@ -60,7 +60,10 @@ var ContributorSchema = new Schema({
       created: Date,
       state: Number
     }
-  ]
+  ],
+  trial: { // trial specific information
+    shippingState: Number
+  }
 });
 
 var Contributor = dynamoose.model('Contributor', ContributorSchema);
