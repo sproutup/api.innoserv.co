@@ -59,7 +59,7 @@ var ContentSchema = new Schema({
     },
     {
       global: true,
-      rangeKey: 'user',
+      rangeKey: 'userId',
       name: 'ContentCampaignUserIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
