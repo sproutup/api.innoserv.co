@@ -34,7 +34,9 @@ exports.read = function (req, res) {
   })
   .then(function(user){
     console.log('user', user);
-    _item.user = user;
+    if(user){
+      _item.user = user[0];
+    }
     return;
   })
   .then(function(){
