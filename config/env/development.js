@@ -100,6 +100,6 @@ module.exports = {
     username: process.env.SENDGRID_USERNAME,
     pass: process.env.SENDGRID_PASSWORD
   },
-  livereload: true,
+  livereload: false,
   seedDB: process.env.MONGO_SEED || false
 };
