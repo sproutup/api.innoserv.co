@@ -42,6 +42,10 @@ var CampaignSchema = new Schema({
       throughput: 5 // read and write are both 5
     }
   },
+  groupId: {
+    type: String,
+    default: function(){ return intformat(flakeIdGen.next(), 'dec'); }
+  },
   created: {
     type: Date,
     default: Date.now
