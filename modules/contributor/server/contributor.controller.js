@@ -84,7 +84,8 @@ exports.update = function (req, res) {
   .then(function(item){
     _item = item;
     //For security purposes only merge these parameters
-    _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid']));
+    // _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid', 'trial.shippingState']));
+    _.extend(item, req.body);
     return item.save();
   })
   .then(function(data){
