@@ -21,14 +21,13 @@ exports.read = function (req, res) {
 exports.create = function (req, res) {
   var item = new Content(req.body);
 
-  item.save(function (err) {
-    if (err) {
-      return res.status(400).send({
+  item.save().then(function(val){
+    res.json(item);
+  })
+  .catch(function(err){
+    res.status(400).send({
         message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.json(item);
-    }
+    });
   });
 };
 
@@ -39,7 +38,7 @@ exports.update = function (req, res) {
   var item = req.model;
 
   //For security purposes only merge these parameters
-  item.body = req.body.body;
+  _.extend(item, _.pick(req.body, ['title']));
 
   item.save().then(function(data){
     res.json(item);
