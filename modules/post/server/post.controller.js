@@ -4,6 +4,10 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+/* global -Promise */
+var Promise = require('bluebird');
+var moment = require('moment');
+var redis = require('config/lib/redis');
 var Post = dynamoose.model('Post');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
@@ -27,6 +31,13 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
+      //redis.set('Post:' + item.id, JSON.stringify(item));
+      redis.hmset('Post:' + item.id, item);
+      redis.zadd('post:timeline:all', moment(item.created).unix(), item.id);
+      redis.zadd('post:timeline:user:'+item.userId, moment(item.created).unix(), item.id);
+      if(item.group){
+        redis.zadd('post:timeline:group:'+item.group, moment(item.created).unix(), item.id);
+      }
       res.json(item);
     }
   });
@@ -80,6 +91,39 @@ exports.list = function (req, res) {
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
+  });
+};
+
+/**
+ * List
+ */
+exports.timeline = function (req, res) {
+  var key = 'post:timeline:all';
+
+  redis.exists(key).then(function(val){
+    if(val===0){
+      console.log('key not found: ', key);
+      return Post.scan().exec().then(function(items){
+        return Promise.map(items, function(item){
+          redis.zadd(key, moment(item.created).unix(), item.id);
+        });
+      });
+    }
+    else{
+      return val;
+    }
+  })
+  .then(function(val){
+    return redis.zrevrange(key, 0, 9).map(function(value){
+      return Post.get(value);
+    });
+  })
+  .then(function(val){
+    res.json(val);
+  })
+  .catch(function(err){
+    console.log('err', err);
+    res.json({err: err});
   });
 };
 

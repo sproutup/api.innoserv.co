@@ -38,6 +38,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/post/:postId',
       permissions: ['*']
+    }, {
+      resources: '/api/post/timeline/all',
+      permissions: ['*']
     }]
   }]);
 };

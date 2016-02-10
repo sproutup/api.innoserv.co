@@ -18,9 +18,11 @@ module.exports = function (app) {
     .put(ctrl.update)
     .delete(ctrl.delete);
 
-  // Single routes
-//  app.route('/api/company/:companyId/product').all(policy.isAllowed)
-//    .get(ctrl.listByCompany);
+  app.route('/api/post/timeline/all').all(policy.isAllowed)
+    .get(ctrl.timeline);
+//
+//  app.route('/api/post/timeline/all/:index').all(policy.isAllowed)
+//    .get(ctrl.timelineAllRange);
 
 
   // Finish by binding the middleware
