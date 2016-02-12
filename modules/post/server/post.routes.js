@@ -24,6 +24,8 @@ module.exports = function (app) {
   app.route('/api/post/timeline/all/:index').all(policy.isAllowed)
     .get(ctrl.timeline);
 
+  app.route('/api/post/timeline/group/:groupId/:index').all(policy.isAllowed)
+    .get(ctrl.timelineGroup);
 
   // Finish by binding the middleware
   app.param('postId', ctrl.findByID);

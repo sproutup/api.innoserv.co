@@ -137,6 +137,48 @@ exports.timeline = function (req, res) {
   });
 };
 
+exports.timelineGroup = function (req, res) {
+  var key = 'post:timeline:group';
+  var index = 0;
+
+  if(typeof req.params.index === 'string'){
+    index = parseInt(req.params.index);
+  }
+
+  key = key + ':' + req.params.groupId;
+
+  redis.exists(key).then(function(val){
+    if(val===0){
+      console.log('key not found: ', key);
+      return Post.query('groupId').eq(req.params.groupId).exec().then(function(items){
+        return Promise.map(items, function(item){
+          redis.zadd(key, moment(item.created).unix(), item.id);
+        });
+      });
+    }
+    else{
+      return val;
+    }
+  })
+  .then(function(val){
+    // #magic
+    return redis.zrevrange(key, index, 9).map(function(value){
+      return Post.get(value).then(function(post){
+        return Promise.join(post.populate('Comment'), post.populate('Likes'),function(comment, likes){
+          return comment;
+        });
+      });
+    });
+  })
+  .then(function(val){
+    res.json(val);
+  })
+  .catch(function(err){
+    console.log('err', err);
+    res.json({err: err});
+  });
+};
+
 /**
  * middleware
  */

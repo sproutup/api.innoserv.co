@@ -36,7 +36,7 @@ var PostSchema = new Schema({
     index: {
       global: true,
       rangeKey: 'created',
-      name: 'PostGroupCreatedIndex',
+      name: 'PostGroupIdCreatedIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
     }
