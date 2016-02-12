@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -65,6 +66,17 @@ var FileSchema = new Schema({
     type: Number,
     default: 0
   }
+});
+
+/**
+ * Add cloudfront links
+ */
+FileSchema.method('addCloudfront', function () {
+  var _this = this;
+  console.log('link:', config.aws.cloudfront.files );
+  _this.cloudfront = {
+    url: 'https://' + config.aws.cloudfront.files + '/' + _this.key
+  };
 });
 
 dynamoose.model('File', FileSchema);

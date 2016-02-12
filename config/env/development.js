@@ -31,6 +31,9 @@ module.exports = {
       region: process.env.AWS_S3_REGION || 'PUT YOUR REGION',
       bucket: process.env.AWS_S3_BUCKET || 'PUT YOUR BUCKET',
       imageFolder: process.env.AWS_S3_IMAGE_FOLDER || 'PUT YOUR FOLDER'
+    },
+    cloudfront: {
+      files: process.env.AWS_CLOUDFRONT_FILES || 'PUT YOUR CLOUDFRONT INFO'
     }
   },
   knex: {

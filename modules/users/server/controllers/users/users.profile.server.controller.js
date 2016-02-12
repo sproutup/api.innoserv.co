@@ -57,7 +57,7 @@ exports.changeProfilePicture = function (req, res) {
 
   if (user) {
     user.avatar = {fileId: req.body.fileId};
-    user.save(function (saveError) {
+    User.update({avatar:{fileId: req.body.fileId}},{id: user.id}, function (saveError) {
       if (saveError) {
         return res.status(400).send({
           message: errorHandler.getErrorMessage(saveError)

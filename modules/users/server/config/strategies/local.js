@@ -31,11 +31,13 @@ module.exports = function () {
         if(user.avatar.fileId){
           _File.get(user.avatar.fileId).then(function(file){
             if(file){
+              file.addCloudfront();
               user.avatar.file = file;
             }
             return done(null, user);
           })
           .catch(function(err){
+            console.log('err', err);
             return done(null, user);
           });
         }
