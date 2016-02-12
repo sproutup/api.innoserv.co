@@ -82,6 +82,30 @@ exports.list = function (req, res) {
   });
 };
 
+
+/**
+ * List by campaign
+ */
+exports.listByCampaign = function (req, res) {
+  Content.query('campaignId').eq(req.params.campaignId).exec().then(function(items){
+    return items;
+
+//    return Promise.map(items, function(item){
+      // wont work because we havent migrated the mvp user yet
+//      return item.populate('User');
+//    });
+  })
+  .then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
+
 /**
  * middleware
  */

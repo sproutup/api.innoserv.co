@@ -74,7 +74,34 @@ var ContentSchema = new Schema({
     default: '',
     trim: true,
     required: true
+  },
+  impressions: {
+    type: Number,
+    default: 0
+  },
+  engagements: {
+    type: Number,
+    default: 0
+  },
+  shares: {
+    type: Number,
+    default: 0
   }
 });
 
+/**
+ * Populate method for posts
+ */
+ContentSchema.method('populate', function (_schema, _id) {
+  var _this = this;
+  var _attribute = _schema.toLowerCase() + 'Id';
+  console.log('populate: ', _schema);
+  var model = dynamoose.model(_schema);
+  return model.get(this[_attribute]).then(function(item){
+    _this[_schema.toLowerCase().trim()] = item;
+    return _this;
+  });
+});
+
 dynamoose.model('Content', ContentSchema);
+
