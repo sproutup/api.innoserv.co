@@ -21,6 +21,15 @@ exports.read = function (req, res) {
 exports.create = function (req, res) {
   var item = new CommentModel(req.body);
 
+  if (!_.isString(req.params.refId) && !_.isString(req.params.refType)) {
+    return res.status(400).send({
+      message: 'Missing params'
+    });
+  }
+
+  item.refId = req.params.refId;
+  item.refType = req.params.refType;
+
   item.save(function (err) {
     if (err) {
       return res.status(400).send({

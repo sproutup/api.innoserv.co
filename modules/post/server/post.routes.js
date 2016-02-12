@@ -20,9 +20,9 @@ module.exports = function (app) {
 
   app.route('/api/post/timeline/all').all(policy.isAllowed)
     .get(ctrl.timeline);
-//
-//  app.route('/api/post/timeline/all/:index').all(policy.isAllowed)
-//    .get(ctrl.timelineAllRange);
+
+  app.route('/api/post/timeline/all/:index').all(policy.isAllowed)
+    .get(ctrl.timeline);
 
 
   // Finish by binding the middleware

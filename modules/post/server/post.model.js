@@ -30,7 +30,7 @@ var PostSchema = new Schema({
       throughput: 5 // read and write are both 5
     }
   },
-  group: {
+  groupId: {
     type: String,
     required: false,
     index: {
@@ -53,4 +53,18 @@ var PostSchema = new Schema({
   }
 });
 
+/**
+ * Populate method for posts
+ */
+PostSchema.method('populate', function (_schema, _id) {
+  var _this = this;
+  console.log('populate: ', _schema);
+  var model = dynamoose.model(_schema);
+  return model.query('refId').eq(this.id).exec().then(function(items){
+    _this[_schema.toLowerCase().trim()] = items;
+    return _this;
+  });
+});
+
 dynamoose.model('Post', PostSchema);
+
