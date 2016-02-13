@@ -28,7 +28,7 @@ module.exports = function () {
           });
         }
 
-        if(user.avatar.fileId){
+        if(user.avatar && user.avatar.fileId){
           _File.get(user.avatar.fileId).then(function(file){
             if(file){
               file.addCloudfront();
@@ -40,6 +40,9 @@ module.exports = function () {
             console.log('err', err);
             return done(null, user);
           });
+        }
+        else{
+          return done(null, user);
         }
       });
     }
