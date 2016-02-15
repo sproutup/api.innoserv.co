@@ -36,7 +36,7 @@ var LikesSchema = new Schema({
     index: {
       global: true,
       rangeKey: 'userId',
-      name: 'CommentRefIdCreatedIndex',
+      name: 'LikesRefIdUserIdIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
     }
@@ -46,8 +46,8 @@ var LikesSchema = new Schema({
     required: false,
     index: {
       global: true,
-      rangeKey: 'created',
-      name: 'CommentRefTypeCreatedIndex',
+      rangeKey: 'refId',
+      name: 'LikesRefTypeCreatedIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
     }

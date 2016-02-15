@@ -8,7 +8,8 @@ var _ = require('lodash'),
   path = require('path'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
   dynamoose = require('dynamoose'),
-  User = dynamoose.model('User');
+  User = dynamoose.model('User'),
+  _File = require('dynamoose').model('File');
 
 /**
  * Update user details
@@ -57,19 +58,31 @@ exports.changeProfilePicture = function (req, res) {
 
   if (user) {
     user.avatar = {fileId: req.body.fileId};
-    user.save(function (saveError) {
+    User.update({id: user.id}, {avatar:{fileId: req.body.fileId}},function (saveError) {
       if (saveError) {
+        console.log('err:', saveError);
         return res.status(400).send({
           message: errorHandler.getErrorMessage(saveError)
         });
       } else {
-        req.login(user, function (err) {
-          if (err) {
-            res.status(400).send(err);
-          } else {
-            res.json(user);
+        _File.get(user.avatar.fileId).then(function(file){
+          if(file){
+            file.addCloudfront();
+            user.avatar.file = file;
           }
+          req.login(user, function (err) {
+            if (err) {
+              res.status(400).send(err);
+            } else {
+              res.json(user);
+            }
+          });
+        })
+        .catch(function(err){
+          console.log('err', err);
+          res.status(400).send(err);
         });
+
       }
     });
   } else {

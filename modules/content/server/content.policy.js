@@ -29,6 +29,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/content/:contentId',
       permissions: ['*']
+    }, {
+      resources: '/api/campaign/:campaignId/content',
+      permissions: ['*']
     }]
   }, {
     roles: ['guest'],
@@ -37,6 +40,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['*']
     }, {
       resources: '/api/content/:contentId',
+      permissions: ['*']
+    }, {
+      resources: '/api/campaign/:campaignId/content',
       permissions: ['*']
     }]
   }]);

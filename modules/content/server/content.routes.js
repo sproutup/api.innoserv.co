@@ -19,8 +19,8 @@ module.exports = function (app) {
     .delete(ctrl.delete);
 
   // Single routes
-//  app.route('/api/company/:companyId/product').all(policy.isAllowed)
-//    .get(ctrl.listByCompany);
+  app.route('/api/campaign/:campaignId/content').all(policy.isAllowed)
+    .get(ctrl.listByCampaign);
 
 
   // Finish by binding the middleware

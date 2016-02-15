@@ -38,6 +38,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/comment/:commentId',
       permissions: ['*']
+    }, {
+      resources: '/api/comment/:refType/:refId',
+      permissions: ['*']
     }]
   }]);
 };
