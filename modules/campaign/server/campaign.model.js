@@ -115,4 +115,19 @@ var CampaignSchema = new Schema({
   }
 });
 
+/**
+ * Populate method
+ */
+CampaignSchema.method('populate', function (_schema) {
+  var _this = this;
+  var _attribute = _schema.toLowerCase() + 'Id';
+  console.log('populate: ', _schema);
+  var model = dynamoose.model(_schema);
+  return model.get(this[_attribute]).then(function(item){
+    _this[_schema.toLowerCase().trim()] = item;
+    return _this;
+  });
+});
+
+
 dynamoose.model('Campaign', CampaignSchema);

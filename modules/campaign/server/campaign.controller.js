@@ -25,8 +25,16 @@ exports.dropTable = function (req, res) {
  * Show
  */
 exports.read = function (req, res) {
-  console.log('heres req model', req.model);
-  res.json(req.model);
+  if(!req.model.productId){
+    return res.json(req.model);
+  }
+
+  req.model.populate('Product').then(function(val){
+    res.json(req.model);
+  })
+  .catch(function(err){
+    res.json({err: err});
+  });
 };
 
 /**
