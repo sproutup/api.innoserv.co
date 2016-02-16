@@ -86,6 +86,7 @@ exports.update = function (req, res) {
   item.tagline = req.body.tagline;
   item.type = req.body.type;
   item.status = req.body.status;
+  item.productId = req.body.productId;
 
   item.save().then(function(data){
     res.json(item);

@@ -43,12 +43,16 @@ var ProductSchema = new Schema({
   tagline: {
     type: String,
     default: '',
-    trim: true,
+    trim: true
   },
   description: {
     type: String,
     default: '',
-    trim: true,
+    trim: true
+  },
+  video: {
+    type: String,
+    trim: true
   }
 });
 

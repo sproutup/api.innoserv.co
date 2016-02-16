@@ -43,6 +43,7 @@ exports.update = function (req, res) {
   item.url = req.body.url;
   item.tagline = req.body.tagline;
   item.description = req.body.description;
+  item.video = req.body.video;
 
   item.save().then(function(data){
     res.json(item);
