@@ -5,6 +5,8 @@
  */
 var dynamoose = require('dynamoose');
 var Campaign = dynamoose.model('Campaign');
+/* global -Promise */
+var Promise = require('Bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 
@@ -29,12 +31,13 @@ exports.read = function (req, res) {
     return res.json(req.model);
   }
 
-  req.model.populate('Product').then(function(val){
-    res.json(req.model);
-  })
-  .catch(function(err){
-    res.json({err: err});
-  });
+  Promise.join(req.model.populate('Product'), req.model.populate('Company'))
+    .then(function(){
+      res.json(req.model);
+    })
+    .catch(function(err){
+      res.json({err: err});
+    });
 };
 
 /**
