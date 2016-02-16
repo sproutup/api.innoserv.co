@@ -1,9 +1,9 @@
 environment_name = develop
 platform = docker
-application_name = creator
+application_name = api
 region = us-west-2
 keypair = endurance
-configuration = creator
+configuration = api
 domain = sproutup-co
 repo = sproutupco
 

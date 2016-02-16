@@ -1,15 +1,15 @@
-#FROM sproutupco/ubuntu-node
-FROM sproutupco/alpine-node
+FROM sproutupco/ubuntu-node
+#FROM sproutupco/alpine-node
 
 WORKDIR /home/node
 
 # update
-# RUN apt-get update && apt-get install -y build-essential
-RUN apk update
-RUN npm install -g npm@latest
+RUN apt-get update && apt-get install -y build-essential
+# RUN apk update
+# RUN npm install -g npm@latest
 RUN npm install -g bower
 RUN npm install -g gulp
-RUN npm install -g jshint node-gyp nodemon node-inspector
+RUN npm install -g jshint nodemon
 
 # Install packages
 COPY package.json package.json
