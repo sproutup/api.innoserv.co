@@ -35,7 +35,7 @@ exports.create = function (req, res) {
       redis.hmset('Post:' + item.id, item);
       redis.zadd('post:timeline:all', moment(item.created).unix(), item.id);
       redis.zadd('post:timeline:user:'+item.userId, moment(item.created).unix(), item.id);
-      if(item.group){
+      if(item.groupId){
         redis.zadd('post:timeline:group:'+item.groupId, moment(item.created).unix(), item.id);
       }
       res.json(item);
