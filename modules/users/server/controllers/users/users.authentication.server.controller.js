@@ -9,13 +9,15 @@ var path = require('path'),
   dynamoose = require('dynamoose'),
   passport = require('passport'),
   sendgrid = require('sendgrid')(config.sendgrid.username, config.sendgrid.pass),
-  sendgridService = require(path.resolve('./modules/sendgrid/server/sendgrid.service')),
+  /* global -Promise */
+  Promise = require('bluebird'),
+  sendgridService = Promise.promisifyAll(require(path.resolve('./modules/sendgrid/server/sendgrid.service'))),
   User = dynamoose.model('User'),
   Company = dynamoose.model('Company'),
   Team = dynamoose.model('Team'),
   _ = require('lodash'),
   redis = require('config/lib/redis'),
-  crypto = require('crypto');
+  crypto = Promise.promisifyAll(require('crypto'));
 
 // URLs for which user can't be redirected on signin
 var noReturnUrls = [
@@ -27,55 +29,58 @@ var noReturnUrls = [
  * Verification email sent after signup
  * This will be refactored with new sendgrid function
  */
-var signedUpEmail = function(user, callback, host) {
+var signedUpEmail = function(user, host) {
   var token;
 
   crypto.randomBytes(20, function (err, buffer) {
     token = buffer.toString('hex');
+    redis.set(token, user.id, 'EX', 86400);
 
     var url = 'http://' + host + '/api/users/email/confirmation/' + token;
-    var email = new sendgrid.Email();
-    email.subject = 'Amazing.';
-    email.from = 'mailer@sproutup.co';
-    email.fromname = 'SproutUp';
-    email.html = '<div></div>';
-    email.addTo(user.email);
-    email.addSubstitution(':user', user.displayName);
-    email.addSubstitution(':url', url);
-    redis.set(token, user.id, 'EX', 86400);
-    // TODO -- pass in the email and the template, instead of the email, template and the url 
-    sendgridService.send(email, '7a6240b6-7a2a-4fc2-aed7-d4a6a52cb880', url);
+    var to = user.email;
+    var subject = 'Amazing.';
+    var substitutions = {
+      ':user': [user.displayName],
+      ':url': [url]
+    };
+
+    sendgridService.send(to, subject, substitutions, '7a6240b6-7a2a-4fc2-aed7-d4a6a52cb880');
   });
 };
 
 /**
  * Email Verification
  */
-var verificationEmail = function(user, callback, host) {
+var verificationEmail = Promise.method(function(user, host) {
   var token;
 
-  crypto.randomBytes(20, function (err, buffer) {
+  return crypto.randomBytesAsync(20).then(function(buffer) {
     token = buffer.toString('hex');
 
     var url = 'http://' + host + '/authentication/signup/' + token;
-    var email = new sendgrid.Email();
-    email.subject = 'One Step to Finish Signing Up';
-    email.from = 'mailer@sproutup.co';
-    email.fromname = 'SproutUp';
-    email.html = '<div></div>';
-    email.addTo(user.email);
-    email.addSubstitution(':url', url);
+    var to = user.email;
+    var subject = 'One Step to Finish Signing Up';
+    var substitutions;
+    var template;
+
     if (user.company) {
-      email.addSubstitution(':company_name', user.company.name);
-      redis.hmset(token, {'email': user.email, 'companyId': user.company.id, 'companyName': user.company.name, 'companySlug': user.company.slug });
-      sendgridService.send(email, 'a97ea7cd-fdd9-4c9d-9f32-e6d7793b8fd2', url, callback);
+      substitutions = {
+        ':url': [url],
+        ':company_name': [user.company.name]
+      };
+      redis.hmset(token, { 'email': user.email, 'companyId': user.company.id, 'companyName': user.company.name, 'companySlug': user.company.slug });
+      template = 'a97ea7cd-fdd9-4c9d-9f32-e6d7793b8fd2';
     } else {
+      substitutions = {
+        ':url': [url]
+      };
       redis.hmset(token, { 'email': user.email });
-      sendgridService.send(email, '585fc344-09d7-4bcc-b969-863b70f9b7dc', url, callback);
+      template = '585fc344-09d7-4bcc-b969-863b70f9b7dc';
     }
-    
+
+    return sendgridService.send(to, subject, substitutions, template);
   });
-};
+});
 
 var saveClaimedCompany = function(token, userId) {
   redis.hmget(token, ['companyId']).then(function(result) {
@@ -129,7 +134,7 @@ exports.signup = function (req, res) {
       user.password = undefined;
       user.salt = undefined;
 
-      signedUpEmail(user, null, req.headers.host);
+      signedUpEmail(user, req.headers.host);
 
       // If the user is claiming a company, save a team obj, then remove the token
       if (req.body.token) {
@@ -179,17 +184,17 @@ exports.emailIsAvailable = function (req, res) {
  * Join from home page
  */
 exports.join = function (req, res) {
-  verificationEmail(req.body, function(err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
+  verificationEmail(req.body, req.headers.host)
+    .then(function(result) {
       return res.send({
         message: 'Email sent successfully'
       });
-    }
-  }, req.headers.host);
+    })
+    .catch(function(error) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(error)
+      });
+    });
 };
 
 /**
