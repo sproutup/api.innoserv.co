@@ -3,10 +3,10 @@
 var config = require('../config'),
   exec = require('child_process').exec;
 
-var host = config.db.knex.connection.host;
-var database = config.db.knex.connection.database;
-var user = config.db.knex.connection.user;
-var password = config.db.knex.connection.password;
+var host = config.knex.connection.host;
+var database = config.knex.connection.database;
+var user = config.knex.connection.user;
+var password = config.knex.connection.password;
 
 
 // migrates
@@ -23,4 +23,3 @@ module.exports.migrate = function (cb) {
       cb(null);
   });
 };
-
