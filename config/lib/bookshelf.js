@@ -8,7 +8,7 @@ var config = require('../config'),
   chalk = require('chalk'),
   path = require('path');
 
-var knex = require('knex')(config.db.knex);
+var knex = require('knex')(config.knex);
 global.knex = knex;
 
 var bookshelf = require('bookshelf')(knex);
