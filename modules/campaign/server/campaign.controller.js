@@ -6,7 +6,7 @@
 var dynamoose = require('dynamoose');
 var Campaign = dynamoose.model('Campaign');
 /* global -Promise */
-var Promise = require('Bluebird');
+var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 
