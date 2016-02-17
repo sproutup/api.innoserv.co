@@ -1,9 +1,9 @@
 environment_name = develop
 platform = docker
-application_name = creator
+application_name = api
 region = us-west-2
 keypair = endurance
-configuration = creator
+configuration = api
 domain = sproutup-co
 repo = sproutupco
 
@@ -50,13 +50,4 @@ run:
 
 delete: init
 	docker rm $(application_name)
-
-node:
-	AWS_ACCESS_KEY_ID=AKIAJM5X5NV444LJEUSA \
-	AWS_SECRET_ACCESS_KEY=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 \
-	AWS_SQS_REGION=us-west-2 \
-	AWS_QUEUE_NAME=testSQS \
-	SENDGRID_USERNAME=sproutup \
-	SENDGRID_PASSWORD='1nter$Tellar' \
-	npm start
 

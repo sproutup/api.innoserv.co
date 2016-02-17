@@ -1,0 +1,44 @@
+EnvironmentConfigurationMetadata:
+  Description: API server standard configuration.
+AWSConfigurationTemplateVersion: 1.1.0.0
+EnvironmentTier:
+  Name: WebServer
+  Type: Standard
+SolutionStack: 64bit Amazon Linux 2015.03 v2.0.2 running Docker 1.7.1
+OptionSettings:
+  aws:elasticbeanstalk:command:
+    Timeout: 1800
+    BatchSize: '30'
+    BatchSizeType: Percentage
+  aws:autoscaling:asg:
+    MinSize: 1
+    MaxSize: 2
+  aws:autoscaling:launchconfiguration:
+    IamInstanceProfile: aws-elasticbeanstalk-ec2-role
+    EC2KeyName: endurance
+    InstanceType: t2.micro
+    SecurityGroups: webserver
+  aws:elb:loadbalancer:
+    LoadBalancerHTTPSPort: '443'
+    LoadBalancerHTTPPort: '80'
+    SSLCertificateId: arn:aws:iam::772918356582:server-certificate/sproutup-dev
+  aws:elasticbeanstalk:environment:
+    EnvironmentType: LoadBalanced
+  aws:elasticbeanstalk:application:environment:
+    PORT: 3000
+    NODE_ENV: develop
+    MYSQL_HOST: sproutupdev.ctdo662vilif.us-west-2.rds.amazonaws.com
+    MYSQL_USER: dbadmin
+    MYSQL_PASSWORD: 1nter$Tellar
+    MYSQL_DATABASE: sproutup_master
+    GOOGLE_ID: 200067319298-cpblm10r8s9o29kjgtahjek2eib7eigk.apps.googleusercontent.com
+    GOOGLE_SECRET: nQ4NK9cKoPl8fWXDF9V-PsTU
+    GOOGLE_JWT_CLIENT_EMAIL: local-service-account@api-project-200067319298.sproutup.co.iam.gserviceaccount.com
+    GOOGLE_JWT_PRIVATE_KEY: -----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCGKKuPCKlm5kqB\n/iffp3HfDK54SSXCuukpDzgRxoYxrelVxyORjB/srsozTK8Jw5PTjrHgOqnL+LFh\nmniqcMZiVYB8/EqlfSbYwjmhs7253JTdcklamvkFR9Lfs+H+B0Vh+VDf/MTumwWC\noDRciAppzMikQY+vgCmcisZIYg2Ad1jARnFRgXd44ocGiOvnTR9pNenRJ9Nwx3Ds\nSnP8fHe5hQpf7Hf5nWALZ6jZ+gW49nYDItIbGX13GqG6eyMAp79ZQCrx4i3B+QMd\nVtI3XHZ3XZpaNnukX8SOZEftnG0F3NWoCaShnUSN8a5aQWQyjZdE/uj52x5ZWr4r\n1QuLhlpnAgMBAAECggEAD1nZ/5zjHWYegm9diqbzTa16zUK5cmXGxi76oHYR5t9a\ngrktpbrd8Ewz0NjmcnyRjrSWP+0WfsNvMJbnVcFfweK8uBB6TiNa7ZST2Z/ihsDp\nu8kXAaoX8nW8eGJx6opUcxh/G5IlypOsdrz0IN5kKqUHFFx4H4HPwRzUAXZOyzMw\n1IKvCGDVvEANQsn18HccrBUpfDmhqFmq5mLjK2bKcV/JIZNXoCFRR6J0ydVrAOdk\nNQdmIlmLbPesMSRNIdE+EKFp+Ftx5IloN+9d+pwrMrVuOzLsfyLMQfZAK/ETxXYY\nGz81vlXOVuBibN8U11PPhcp7UKPyG16din9VdnWJKQKBgQDzORUAS/7MOF7HhXFc\n7BYB8eIXdGoqVDTC3YTU3ZvpuzyBWb2XU8b7+nhKSvN3UUodwWC+3wUu3uJgWuPF\n3qQseahXU8UL8yKZ1b7WRRTEjNo+b2j6W7INrvTshnJYk4h9/cgGaE3C0ByKY3IL\nstDgJ0YHnl88O27iBQLTcblEkwKBgQCNNN6AhJw7/mWWPKwRTiJsP+1jgNrRf1Kg\n8mkfgNqwMZ5xbCvDnU4Qds++RXxNqyZ8fzhBQtl+vuUFkfZB/TwTcObV2CsNQfC0\nrbbZBi1qVUZkDf5d4YD687IO0zyGLPdDYCHWBUzAs9+txR88+Eo40cykfD9UzzV2\n3FYp1pVrXQKBgCaPSCsR4UVTMoODPmOy8hJA3M1HIYWwb+Ts5aAxugQmMQN4zLvv\nBj7wiJ2OoGasNondHI9mIBY8M7t+7VlzYKfEadHecADi/PtSjby+mvpGMltvoj7+\nxo2wzReqgPpV+W+wCkQpyRo3kC7IcU41fTPsRgfzLboI2h1vGfGXt/2NAoGANgxf\ngjfACWKlhazxe6o5mM+bULPYjcm7WemPfUR38Gr9p5Js6fIDGGAxwjWcj6oMECkt\n4iTxVQdCaDBnXvjMDvDvGjkkuW1c8ftv+n/X0FSVneSRUWPoV6YBqJUIHJ+HgV2B\ndgcPSs9OtZe3DkJHPppnRypbn120rCtIO7lr9e0CgYAVmFlJe4HQqmjaH4oigPAa\no3LbbnewPyQyjX43OB+3MoUsY5aT4ToAAQVSaR1FFsial65RNga/yLSmRM77QL6n\nGiuzssuJfCrX1OFi14htuVObf8tIg14WLcD5lvGlDwPlCW0ESRkPq6Wa18mGMQYQ\n/xNY4A4QgLkAFm1jbEn6rA==\n-----END PRIVATE KEY-----\n
+    GOOGLE_CALENDAR_ID: thomas@sproutup.co
+    TWITTER_CONSUMER_KEY: SDtfLHPxRElpdKu3nI7KcJwi8
+    TWITTER_CONSUMER_SECRET: wX63yDWo4HRYRWNbd3GIHG0UGnOw7sXU01HHyecYYTa1hMUDI3
+    TWITTER_ACCESS_TOKEN: 2945733392-8xR1BCfIN4Iq9kGISYcDSxWikcgKyuxW2uHWG5S
+    TWITTER_ACCESS_SECRET: 57CHtTKYaTknC4eGwUGU3V8SjIR104X0XSacrecu5tCcr
+    REDIS_PORT: 6379
+    REDIS_HOST: develop.2yq2tv.0001.usw2.cache.amazonaws.com

@@ -4,13 +4,10 @@ var defaultEnvConfig = require('./default');
 
 module.exports = {
   db: {
-    local: true,
+    local: false,
     region: 'us-west-2',
     create: true,
-    prefix: 'Dev_',
-    uri: process.env.MONGOHQ_URL || process.env.MONGOLAB_URI || 'mongodb://' + (process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost') + '/mean-dev',
-    // Enable mongoose debug mode
-    debug: process.env.MONGODB_DEBUG || false
+    prefix: 'Dev_'
   },
   log: {
     // Can specify one of 'combined', 'common', 'dev', 'short', 'tiny'
@@ -39,10 +36,10 @@ module.exports = {
   knex: {
     client: 'mysql',
     connection: {
-      host: '127.0.0.1',
-      user: 'root',
-      password: 'root',
-      database: 'sproutup_db'
+      host: process.env.MYSQL_HOST || '127.0.0.1',
+      user: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'root',
+      database: process.env.MYSQL_DATABASE || 'sproutup_db'
     },
     pool: {
       min: 2,

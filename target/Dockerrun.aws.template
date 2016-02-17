@@ -5,7 +5,7 @@
     "Key": "dockerconfig"
   },
   "Image": {
-    "Name": "sproutupco/creator:#tag#",
+    "Name": "sproutupco/api:#tag#",
     "Update": "true"
   },
   "Ports": [
