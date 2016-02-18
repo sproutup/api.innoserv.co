@@ -68,13 +68,13 @@ var verificationEmail = Promise.method(function(user, host) {
         ':url': [url],
         ':company_name': [user.company.name]
       };
-      redis.hmset(token, { 'email': user.email, 'companyId': user.company.id, 'companyName': user.company.name, 'companySlug': user.company.slug });
+      redis.hmset('token:' + token, { 'email': user.email, 'companyId': user.company.id, 'companyName': user.company.name, 'companySlug': user.company.slug });
       template = 'a97ea7cd-fdd9-4c9d-9f32-e6d7793b8fd2';
     } else {
       substitutions = {
         ':url': [url]
       };
-      redis.hmset(token, { 'email': user.email });
+      redis.hmset('token:' + token, { 'email': user.email });
       template = '585fc344-09d7-4bcc-b969-863b70f9b7dc';
     }
 
@@ -201,7 +201,7 @@ exports.join = function (req, res) {
  * Return an email and company id from a company token 
  */
 exports.verifyToken = function (req, res) {
-  redis.hmget(req.body.token, ['email', 'companyId', 'companyName', 'companySlug']).then(function(result) {
+  redis.hmget('token:' + req.body.token, ['email', 'companyId', 'companyName', 'companySlug']).then(function(result) {
     if (result[0] === null) {
       return res.status(400).send({
         message: 'This token is invalid'
@@ -209,8 +209,10 @@ exports.verifyToken = function (req, res) {
     } else {
       return res.jsonp(result);
     }
+  }).catch(function(err){
+    console.log('err: ', err);
+    throw err;
   });
-
 };
 
 /**
