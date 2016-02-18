@@ -57,7 +57,7 @@ var verificationEmail = Promise.method(function(user, host) {
   return crypto.randomBytesAsync(20).then(function(buffer) {
     token = buffer.toString('hex');
 
-    var url = 'http://' + host + '/authentication/signup/' + token;
+    var url = 'https://' + host + '/authentication/signup/' + token;
     var to = user.email;
     var subject = 'One Step to Finish Signing Up';
     var substitutions;
