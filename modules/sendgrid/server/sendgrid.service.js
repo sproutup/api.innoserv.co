@@ -19,10 +19,10 @@ exports.send = Promise.method(function(to, subject, substitutions, template) {
   var email = new sendgrid.Email();
   email.addTo(to);
   email.subject = subject;
-  email.setSubstitutions(substitutions);
   email.from = 'mailer@sproutup.co';
   email.fromname = 'SproutUp';
   email.html = '<div></div>';
+  email.setSubstitutions(substitutions);
   email.setFilters({
     'templates': {
       'settings': {
@@ -33,7 +33,7 @@ exports.send = Promise.method(function(to, subject, substitutions, template) {
   });
 
   if (config.sendgrid && config.sendgrid.local) {
-    console.log('We didn\'t send an email. Here are the sendgrid substitutions: ', substitutions);
+    console.log('We didn\'t send an email to ' + to + '. Here are the sendgrid substitutions: ', substitutions);
     console.log('Here\'s the template we would\'ve used: ', template);
     return 'OK';
   } else {
@@ -50,7 +50,6 @@ exports.sendToUser = function(userId, subject, substitutions, template) {
       return _this.send(user.email, subject, substitutions, template);
     })
     .catch(function(error) {
-      console.log('error: ', error);
       throw error;
     });
 };
@@ -58,34 +57,10 @@ exports.sendToUser = function(userId, subject, substitutions, template) {
 /**
  * Send to all members of a company
  */
-exports.sendToCompanyUsers = function(emailObj, subject, substitutions, template, companyId) {
+exports.sendToCompanyUsers = function(subject, substitutions, template, companyId) {
   return Team.query({ companyId: companyId }).exec().then(function(items) {
     return Promise.map(items, function(item) {
-      _this.sendToUser(item.userId);
+      _this.sendToUser(item.userId, subject, substitutions, template);
     });
   });
 };
-
-// var email = new sendgrid.Email();
-// email.addTo(to);
-// email.subject = subject;
-// email.setSubstitutions(substitutions);
-// email.from = 'mailer@sproutup.co';
-// email.fromname = 'SproutUp';
-// email.html = '<div></div>';
-// email.setFilters({
-//   'templates': {
-//     'settings': {
-//       'enable': 1,
-//       'template_id': template
-//     }
-//   }
-// });
-
-// if (config.sendgrid && config.sendgrid.local) {
-//   console.log('We didn\'t send an email. Here are the sendgrid substitutions: ', substitutions);
-//   console.log('Here\'s the template we would\'ve used: ', template);
-//   return 'OK';
-// } else {
-//   return sendgrid.sendAsync(email);
-// }

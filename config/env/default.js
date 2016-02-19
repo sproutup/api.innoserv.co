@@ -20,5 +20,6 @@ module.exports = {
   sessionCollection: 'sessions',
   logo: 'modules/core/img/brand/logo.png',
   //favicon: 'modules/core/client/img/brand/favicon-96x96.png',
-  flyway: false
+  flyway: false,
+  domain: process.env.domain || 'http://localhost:3030/'
 };

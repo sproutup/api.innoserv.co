@@ -3,10 +3,18 @@
 /**
  * Module dependencies.
  */
+var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Content = dynamoose.model('Content');
+var Campaign = dynamoose.model('Campaign');
+var Company = dynamoose.model('Company');
+var knex = require('config/lib/bookshelf').knex;
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var path = require('path');
+  /* global -Promise */
+var Promise = require('bluebird');
+var sendgridService = Promise.promisifyAll(require(path.resolve('./modules/sendgrid/server/sendgrid.service')));
 
 /**
  * Show
@@ -15,13 +23,47 @@ exports.read = function (req, res) {
   res.json(req.model);
 };
 
+var sendContentEmail = function(content) {
+  var _campaign,
+      _company;
+
+  return Campaign.get(content.campaignId).then(function(campaign) {
+    _campaign = campaign;
+    return Company.get(campaign.companyId);
+  })
+  .then(function(company) {
+    _company = company;
+    return knex
+      .select('id','name')
+      .from('users')
+      .where('id', content.userId);
+  })
+  .then(function(user) {
+    var companyId = _campaign.companyId;
+    var subject = 'New Content on your SproutUp Campaign!';
+    var url = config.domain + '/com/' + _company.slug + '/campaign/' + _campaign.type + '/' + _campaign.id + '/stats/' + content.id;
+    var substitutions = {
+      ':user_name': [user[0].name],
+      ':content_title': [content.title],
+      ':content_url': [url]
+    };
+    var template = '3ca10b9d-1f15-4bde-bd25-9cc84cb75a11';
+    sendgridService.sendToCompanyUsers(subject, substitutions, template, companyId);
+  })
+  .catch(function(error) {
+    console.log('error: ', error);
+    throw error;
+  });
+};
+
 /**
  * Create
  */
 exports.create = function (req, res) {
   var item = new Content(req.body);
 
-  item.save().then(function(val){
+  item.save().then(function(val) {
+    sendContentEmail(item);
     res.json(item);
   })
   .catch(function(err){
