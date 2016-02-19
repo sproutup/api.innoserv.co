@@ -62,7 +62,7 @@ module.exports = function (app, db) {
   // Create a new Socket.io server
   var io = socketio.listen(server);
 
-  io.adapter(redis({ host: 'localhost', port: 6379 }));
+  io.adapter(redis({ host: config.redis.host , port: config.redis.port }));
 
   // Create a MongoDB storage object
 //  var mongoStore = new MongoStore({
