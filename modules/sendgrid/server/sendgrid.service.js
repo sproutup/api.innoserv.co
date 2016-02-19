@@ -64,8 +64,7 @@ exports.sendToMvpUser = function(userId, subject, substitutions, template) {
     .from('users')
     .where('id', userId)
       .then(function(user){
-        console.log('user', user);
-        return _this.send(user.email, subject, substitutions, template);
+        return _this.send(user[0].email, subject, substitutions, template);
       })
       .catch(function(error) {
         throw error;

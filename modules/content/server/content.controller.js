@@ -14,7 +14,7 @@ var _ = require('lodash');
 var path = require('path');
   /* global -Promise */
 var Promise = require('bluebird');
-var sendgridService = Promise.promisifyAll(require(path.resolve('./modules/sendgrid/server/sendgrid.service')));
+var sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service'));
 
 /**
  * Show
@@ -41,7 +41,7 @@ var sendContentEmail = function(content) {
   .then(function(user) {
     var companyId = _campaign.companyId;
     var subject = 'New Content on your SproutUp Campaign!';
-    var url = config.domain + '/com/' + _company.slug + '/campaign/' + _campaign.type + '/' + _campaign.id + '/stats/' + content.id;
+    var url = config.domains.creator + 'com/' + _company.slug + '/campaign/' + _campaign.type + '/' + _campaign.id + '/stats/' + content.id;
     var substitutions = {
       ':user_name': [user[0].name],
       ':content_title': [content.title],
