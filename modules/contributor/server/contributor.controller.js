@@ -5,12 +5,16 @@
  */
 var dynamoose = require('dynamoose');
 var Contributor = dynamoose.model('Contributor');
+var config = require('config/config');
 var knex = require('config/lib/bookshelf').knex;
 /* global -Promise */
 var Promise = require('bluebird');
+var Company = dynamoose.model('Company');
 var Campaign = dynamoose.model('Campaign');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var sendgridService = require('modules/sendgrid/server/sendgrid.service');
+var sendApprovedEmail = sendApprovedEmail;
 
 /**
  * Show
@@ -18,13 +22,13 @@ var _ = require('lodash');
 exports.read = function (req, res) {
   var _item;
   Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
-    .then(function(item){
-      if(_.isUndefined(item)){
-        return res.status(400).send({
-          message: 'Contributor not found'
-        });
-      }
-      _item = item;
+  .then(function(item){
+    if(_.isUndefined(item)){
+      return res.status(400).send({
+        message: 'Contributor not found'
+      });
+    }
+    _item = item;
   })
   .then(function(){
     return knex
@@ -72,6 +76,7 @@ exports.create = function (req, res) {
  */
 exports.update = function (req, res) {
   var _item;
+  var _previousState;
   Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
     .then(function(item){
       if(_.isUndefined(item)){
@@ -82,11 +87,19 @@ exports.update = function (req, res) {
       return item;
   })
   .then(function(item){
+    _previousState = item.state;
     _item = item;
     //For security purposes only merge these parameters
     // _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid', 'trial.shippingState']));
     _.extend(item, req.body);
     return item.save();
+  })
+  .then(function(data){
+    if ((_previousState === 0) && (_item.state === 1 || _item.state === '1')) {
+      sendApprovedEmail(_item);
+    }
+
+    return data;
   })
   .then(function(data){
     res.json(_item);
@@ -220,5 +233,29 @@ exports.findByID = function (req, res, next, id) {
   })
   .catch(function(err){
     return next(err);
+  });
+};
+
+var sendApprovedEmail = function(data) {
+  var _campaign;
+
+  return Campaign.get(data.campaignId).then(function(campaign) {
+    _campaign = campaign;
+    return Company.get(campaign.companyId);
+  })
+  .then(function(company) {
+    var url = config.domains.mvp + _campaign.type + 's/' + _campaign.id;
+    var substitutions = {
+      ':campaign_name': [_campaign.name],
+      ':campaign_url': [url],
+      ':brand_name': [company.name],
+      ':shipping_address': [data.address],
+      ':phone_number': [data.phone]
+    };
+
+    sendgridService.sendToMvpUser(data.userId, 'You\'re request has been approved!', substitutions, config.sendgrid.templates.approved);
+  })
+  .catch(function(error) {
+    console.log('approved email error: ', error);
   });
 };

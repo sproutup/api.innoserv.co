@@ -25,5 +25,13 @@ module.exports = {
   logo: 'modules/core/img/brand/logo.png',
   //favicon: 'modules/core/client/img/brand/favicon-96x96.png',
   flyway: false,
-  domain: process.env.domain || 'http://localhost:3030/'
+  domains: {
+    creator: process.env.creatorDomain || 'http://localhost:3030/',
+    mvp: process.env.mvpDomain || 'http://localhost:9000/'
+  },
+  sendgrid: {
+    templates: {
+      approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267'
+    }
+  }
 };

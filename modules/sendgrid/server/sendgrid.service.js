@@ -10,6 +10,7 @@ var dynamoose = require('dynamoose');
 var sendgrid = Promise.promisifyAll(require('sendgrid')(config.sendgrid.username, config.sendgrid.pass));
 var Team = dynamoose.model('Team');
 var User = dynamoose.model('User');
+var knex = require('config/lib/bookshelf').knex;
 var _this = this;
 
 /**
@@ -52,6 +53,23 @@ exports.sendToUser = function(userId, subject, substitutions, template) {
     .catch(function(error) {
       throw error;
     });
+};
+
+/**
+ * Send to a mvp user
+ */
+exports.sendToMvpUser = function(userId, subject, substitutions, template) {
+  return knex
+    .select('id', 'email')
+    .from('users')
+    .where('id', userId)
+      .then(function(user){
+        console.log('user', user);
+        return _this.send(user.email, subject, substitutions, template);
+      })
+      .catch(function(error) {
+        throw error;
+      });
 };
 
 /**
