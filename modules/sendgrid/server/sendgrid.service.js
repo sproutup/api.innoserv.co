@@ -36,7 +36,7 @@ exports.send = Promise.method(function(to, subject, substitutions, template) {
   if (config.sendgrid && config.sendgrid.local) {
     console.log('We didn\'t send an email to ' + to + '. Here are the sendgrid substitutions: ', substitutions);
     console.log('Here\'s the template we would\'ve used: ', template);
-    return 'OK';
+    return substitutions;
   } else {
     return sendgrid.sendAsync(email);
   }

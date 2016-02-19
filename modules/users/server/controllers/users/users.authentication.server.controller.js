@@ -187,7 +187,8 @@ exports.join = function (req, res) {
   verificationEmail(req.body, req.headers.host)
     .then(function(result) {
       return res.send({
-        message: 'Email sent successfully'
+        message: 'Email sent successfully',
+        data: result
       });
     })
     .catch(function(error) {
@@ -198,7 +199,7 @@ exports.join = function (req, res) {
 };
 
 /**
- * Return an email and company id from a company token 
+ * Return an email and company id from a company token
  */
 exports.verifyToken = function (req, res) {
   redis.hmget('token:' + req.body.token, ['email', 'companyId', 'companyName', 'companySlug']).then(function(result) {
