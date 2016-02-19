@@ -10,7 +10,9 @@ var config = require('../config'),
   passport = require('passport'),
   socketio = require('socket.io'),
   session = require('express-session'),
+  redis = require('socket.io-redis'),
   RedisStore = require('connect-redis')(session);
+
 
 // Define the Socket.io configuration method
 module.exports = function (app, db) {
@@ -60,6 +62,8 @@ module.exports = function (app, db) {
   // Create a new Socket.io server
   var io = socketio.listen(server);
 
+  io.adapter(redis({ host: 'localhost', port: 6379 }));
+
   // Create a MongoDB storage object
 //  var mongoStore = new MongoStore({
 //    mongooseConnection: db.connection,
@@ -74,26 +78,27 @@ module.exports = function (app, db) {
       var sessionId = socket.request.signedCookies['connect.sid'];
 
       // Use the mongoStorage instance to get the Express session information
-//      mongoStore.get(sessionId, function (err, session) {
-//        // Set the Socket.io session information
-//        socket.request.session = session;
-//
-//        // Use Passport to populate the user details
-//        passport.initialize()(socket.request, {}, function () {
-//          passport.session()(socket.request, {}, function () {
-//            if (socket.request.user) {
-//              next(null, true);
-//            } else {
-//              next(new Error('User is not authenticated'), false);
-//            }
-//          });
-//        });
-//      });
+      RedisStore.get(sessionId, function (err, session) {
+        // Set the Socket.io session information
+        socket.request.session = session;
+
+        // Use Passport to populate the user details
+        passport.initialize()(socket.request, {}, function () {
+          passport.session()(socket.request, {}, function () {
+            if (socket.request.user) {
+              next(null, true);
+            } else {
+              next(new Error('User is not authenticated'), false);
+            }
+          });
+        });
+      });
     });
   });
 
   // Add an event listener to the 'connection' event
   io.on('connection', function (socket) {
+    console.log('socket connected');
     config.files.server.sockets.forEach(function (socketConfiguration) {
       require(path.resolve(socketConfiguration))(io, socket);
     });
