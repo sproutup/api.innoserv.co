@@ -97,6 +97,7 @@ module.exports = {
     }
   },
   sendgrid: {
+    local: true,
     username: process.env.SENDGRID_USERNAME,
     pass: process.env.SENDGRID_PASSWORD
   },
