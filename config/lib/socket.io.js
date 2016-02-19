@@ -72,6 +72,7 @@ module.exports = function (app, db) {
 
   // Intercept Socket.io's handshake request
   io.use(function (socket, next) {
+  console.log('##socket##');
     // Use the 'cookie-parser' module to parse the request cookies
     cookieParser(config.sessionSecret)(socket.request, {}, function (err) {
       // Get the session id from the request cookies
@@ -100,6 +101,7 @@ module.exports = function (app, db) {
   io.on('connection', function (socket) {
     console.log('socket connected');
     config.files.server.sockets.forEach(function (socketConfiguration) {
+      console.log('socket: ', socketConfiguration);
       require(path.resolve(socketConfiguration))(io, socket);
     });
   });
