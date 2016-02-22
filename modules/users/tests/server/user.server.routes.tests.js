@@ -34,12 +34,12 @@ describe('User CRUD tests', function () {
   beforeEach(function (done) {
     // Create user credentials
     credentials = {
-      username: 'username',
+      username: 'user@test.com',
       password: 'password'
     };
 
     credentials_admin = {
-      username: 'admin',
+      username: 'admin@test.com',
       password: 'password'
     };
 
@@ -50,7 +50,7 @@ describe('User CRUD tests', function () {
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
-      email: 'test@test.com',
+      email: 'user@test.com',
       username: credentials.username,
       password: credentials.password,
       provider: 'local'
@@ -83,7 +83,7 @@ describe('User CRUD tests', function () {
   it('should not be able to retrieve a list of users if not admin', function (done) {
     agent.post('/api/auth/signin')
       .send(credentials)
-      .expect(400)
+      .expect(200)
       .end(function (signinErr, signinRes) {
         // Handle signin error
         if (signinErr) {
@@ -105,37 +105,32 @@ describe('User CRUD tests', function () {
   });
 
   it('should be able to retrieve a list of users if admin', function (done) {
-    user.roles = ['user', 'admin'];
+    agent.post('/api/auth/signin')
+      .send(credentials_admin)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+        // Save a new article
+        agent.get('/api/users')
+          .expect(200)
+          .end(function (usersGetErr, usersGetRes) {
+            if (usersGetErr) {
+              return done(usersGetErr);
+            }
+            usersGetRes.body.should.be.instanceof(Array).and.have.lengthOf(2);
 
-    User.update({id: user.id}, {roles: user.roles}, function (val) {
-      console.log('update: ', val);
-      agent.post('/api/auth/signin')
-        .send(credentials_admin)
-        .expect(200)
-        .end(function (signinErr, signinRes) {
-          // Handle signin error
-console.log('##signin');
-          if (signinErr) {
-            return done(signinErr);
-          }
-          // Save a new article
-          agent.get('/api/users')
-            .expect(200)
-            .end(function (usersGetErr, usersGetRes) {
-              if (usersGetErr) {
-                return done(usersGetErr);
-              }
-console.log('## result: ', usersGetRes);
-              usersGetRes.body.should.be.instanceof(Array).and.have.lengthOf(1);
-
-              // Call the assertion callback
-              done();
-            });
-        });
-    });
+            // Call the assertion callback
+            done();
+          });
+      });
   });
 
   afterEach(function (done) {
-    user.delete(done);
+    admin.delete().then(function(){
+      user.delete(done);
+    });
   });
 });

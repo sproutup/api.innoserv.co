@@ -23,11 +23,8 @@ describe('Company CRUD tests', function () {
 
   before(function (done) {
     // Get application
- console.log('#1');
     app = express.init(dynamooselib);
- console.log('#2');
     agent = request.agent(app);
- console.log('#3');
     done();
   });
 
