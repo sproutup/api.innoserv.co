@@ -19,10 +19,15 @@ var app, agent, credentials, user, company, admin;
  * Company routes tests
  */
 describe('Company CRUD tests', function () {
+  this.timeout(5000);
+
   before(function (done) {
     // Get application
-    app = express.init(dynamoose);
+ console.log('#1');
+    app = express.init(dynamooselib);
+ console.log('#2');
     agent = request.agent(app);
+ console.log('#3');
     done();
   });
 
@@ -58,6 +63,10 @@ describe('Company CRUD tests', function () {
     });
   });
 
+  afterEach(function (done) {
+    user.delete(done); 
+  });
+
   it('should not be able to save a company if not logged in', function (done) {
     agent.post('/api/company')
       .send(company)
@@ -66,9 +75,5 @@ describe('Company CRUD tests', function () {
         // Call the assertion callback
         done(companySaveErr);
       });
-  });
-
-  afterEach(function (done) {
-    User.delete().exec(done);
   });
 });

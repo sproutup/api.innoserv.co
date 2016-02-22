@@ -182,7 +182,6 @@ module.exports.initModulesServerPolicies = function (app) {
 module.exports.initModulesServerRoutes = function (app) {
   // Globbing routing files
   config.files.server.routes.forEach(function (routePath) {
-    console.log(routePath);
     require(path.resolve(routePath))(app);
   });
 };
@@ -208,9 +207,9 @@ module.exports.initErrorRoutes = function (app) {
 /**
  * Configure Socket.io
  */
-module.exports.configureSocketIO = function (app, db) {
+module.exports.configureSocketIO = function (app) {
   // Load the Socket.io configuration
-  var server = require('./socket.io')(app, db);
+  var server = require('./socket.io')(app);
 
   // Return server object
   return server;
@@ -254,7 +253,7 @@ module.exports.init = function (db) {
   this.initErrorRoutes(app);
 
   // Configure Socket.io
-  app = this.configureSocketIO(app, db);
+  app = this.configureSocketIO(app);
 
   return app;
 };

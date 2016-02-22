@@ -1,5 +1,8 @@
 'use strict';
 
+/* global -Promise */
+var Promise = require('bluebird');
+
 var should = require('should'),
   request = require('supertest'),
   path = require('path'),
@@ -7,21 +10,23 @@ var should = require('should'),
   dynamooselib = require('config/lib/dynamoose'),
   express = require(path.resolve('./config/lib/express'));
 
-dynamooselib.loadModels();
+//dynamooselib.loadModels();
 var User = dynamoose.model('User');
 
 /**
  * Globals
  */
-var app, agent, credentials, user, admin;
+var app, agent, credentials, credentials_admin, user, admin;
 
 /**
  * User routes tests
  */
 describe('User CRUD tests', function () {
+  this.timeout(5000);
+
   before(function (done) {
     // Get application
-    app = express.init(dynamoose);
+    app = express.init(dynamooselib);
     agent = request.agent(app);
     done();
   });
@@ -32,6 +37,12 @@ describe('User CRUD tests', function () {
       username: 'username',
       password: 'password'
     };
+
+    credentials_admin = {
+      username: 'admin',
+      password: 'password'
+    };
+
 
     // Create a new user
     user = new User({
@@ -45,16 +56,34 @@ describe('User CRUD tests', function () {
       provider: 'local'
     });
 
-    // Save a user to the test db and create new article
-    user.save(function () {
-      done();
+    // Create a new admin user
+    admin = new User({
+      id: '4321',
+      firstName: 'Admin',
+      lastName: 'User',
+      displayName: 'Full Name',
+      email: 'admin@test.com',
+      username: credentials_admin.username,
+      password: credentials_admin.password,
+      provider: 'local',
+      roles: ['user', 'admin']
     });
+
+
+    // Save a user to the test db and create new article
+    Promise.join(
+      user.save(),
+      admin.save(),
+      function () {
+        done();
+      }
+    );
   });
 
   it('should not be able to retrieve a list of users if not admin', function (done) {
     agent.post('/api/auth/signin')
       .send(credentials)
-      .expect(200)
+      .expect(400)
       .end(function (signinErr, signinRes) {
         // Handle signin error
         if (signinErr) {
@@ -62,7 +91,6 @@ describe('User CRUD tests', function () {
           return done(signinErr);
         }
 
-console.log('##signin');
         // Save a new article
         agent.get('/api/users')
           .expect(403)
@@ -79,12 +107,14 @@ console.log('##signin');
   it('should be able to retrieve a list of users if admin', function (done) {
     user.roles = ['user', 'admin'];
 
-    user.save(function () {
+    User.update({id: user.id}, {roles: user.roles}, function (val) {
+      console.log('update: ', val);
       agent.post('/api/auth/signin')
-        .send(credentials)
+        .send(credentials_admin)
         .expect(200)
         .end(function (signinErr, signinRes) {
           // Handle signin error
+console.log('##signin');
           if (signinErr) {
             return done(signinErr);
           }
@@ -106,6 +136,6 @@ console.log('## result: ', usersGetRes);
   });
 
   afterEach(function (done) {
-    User.delete().exec(done);
+    user.delete(done);
   });
 });

@@ -216,9 +216,21 @@ gulp.task('build', function(done) {
   runSequence('env:dev' ,'lint', ['uglify', 'cssmin'], done);
 });
 
+gulp.task('test:server', function (done) {
+  runSequence('env:test', 'lint', 'mocha', done);
+});
+
+// Watch all server files for changes & run server tests (test:server) task on changes
+// optional arguments:
+//    --onlyChanged - optional argument for specifying that only the tests in a changed Server Test file will be run
+// example usage: gulp test:server:watch --onlyChanged
+gulp.task('test:server:watch', function (done) {
+  runSequence('test:server', 'watch', done);
+});
+
 // Run the project tests
 gulp.task('test', function(done) {
-  runSequence('env:test', ['karma', 'mocha'], done);
+  runSequence('env:test', ['mocha'], done);
 });
 
 // Run the project in development mode
