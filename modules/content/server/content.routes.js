@@ -22,6 +22,9 @@ module.exports = function (app) {
   app.route('/api/campaign/:campaignId/content').all(policy.isAllowed)
     .get(ctrl.listByCampaign);
 
+  // Single routes
+  app.route('/api/company/:companyId/content').all(policy.isAllowed)
+    .get(ctrl.listByCompany);
 
   // Finish by binding the middleware
   app.param('contentId', ctrl.findByID);

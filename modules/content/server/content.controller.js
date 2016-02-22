@@ -147,6 +147,25 @@ exports.listByCampaign = function (req, res) {
   });
 };
 
+/**
+ * List by company
+ */
+exports.listByCompany = function (req, res) {
+  Campaign.query('companyId').eq(req.params.companyId).exec().then(function(items){
+    Promise.map(items, function(item){
+      return Content.query('campaignId').eq(item.id).exec();
+    });
+  })
+  .then(function(content){
+    res.json(content);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
 
 /**
  * middleware
