@@ -25,6 +25,8 @@ exports.read = function (req, res) {
 exports.create = function (req, res) {
   var item = new Message(req.body);
 
+  item.userId = req.user.id;
+
   item.save(function (err) {
     if (err) {
       return res.status(400).send({

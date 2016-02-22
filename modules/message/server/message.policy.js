@@ -25,7 +25,7 @@ exports.invokeRolesPolicies = function () {
     roles: ['user'],
     allows: [{
       resources: '/api/message',
-      permissions: ['get', 'message']
+      permissions: ['get', 'post', 'message']
     }, {
       resources: '/api/message/:messageId',
       permissions: ['*']
@@ -49,7 +49,7 @@ exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
   // If an message is being processed and the current user created it then allow any manipulation
-  if (req.product && req.user && req.message.userId === req.user.id) {
+  if (req.message && req.user && req.message.userId === req.user.id) {
     return next();
   }
 

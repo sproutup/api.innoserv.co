@@ -6,13 +6,13 @@ var config = require('../config'),
   fs = require('fs'),
   http = require('http'),
   https = require('https'),
+  redis = require('config/lib/redis'),
   cookieParser = require('cookie-parser'),
   passport = require('passport'),
   socketio = require('socket.io'),
+  ioredis = require('socket.io-redis'),
   session = require('express-session'),
-  redis = require('socket.io-redis'),
   RedisStore = require('connect-redis')(session);
-
 
 // Define the Socket.io configuration method
 module.exports = function (app, db) {
@@ -62,24 +62,21 @@ module.exports = function (app, db) {
   // Create a new Socket.io server
   var io = socketio.listen(server);
 
-  io.adapter(redis({ host: config.redis.host , port: config.redis.port }));
+  io.adapter(ioredis({ host: config.redis.host , port: config.redis.port }));
 
-  // Create a MongoDB storage object
-//  var mongoStore = new MongoStore({
-//    mongooseConnection: db.connection,
-//    collection: config.sessionCollection
-//  });
+  // Create a storage object
+  var redisStore = new RedisStore({client: redis});
 
   // Intercept Socket.io's handshake request
   io.use(function (socket, next) {
-  console.log('##socket##');
+    console.log('socket');
     // Use the 'cookie-parser' module to parse the request cookies
     cookieParser(config.sessionSecret)(socket.request, {}, function (err) {
       // Get the session id from the request cookies
-      var sessionId = socket.request.signedCookies['connect.sid'];
+      var sessionId = socket.request.signedCookies.sessionId;
 
       // Use the mongoStorage instance to get the Express session information
-      RedisStore.get(sessionId, function (err, session) {
+      redisStore.get(sessionId, function (err, session) {
         // Set the Socket.io session information
         socket.request.session = session;
 
