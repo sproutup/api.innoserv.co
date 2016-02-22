@@ -15,9 +15,18 @@ var validator = require('validator');
  * Schema
  */
 var ContributorSchema = new Schema({
+  id: {
+    type: String,
+    default: function(){ return intformat(flakeIdGen.next(), 'dec'); },
+    hashKey: true
+  },
   userId: {
     type: String,
-    hashKey: true
+    index: {
+      global: true,
+      project: true, // ProjectionType: ALL
+      throughput: 5 // read and write are both 5
+    }
   },
   campaignId: {
     type: String,

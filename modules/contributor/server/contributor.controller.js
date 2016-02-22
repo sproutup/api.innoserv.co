@@ -11,6 +11,7 @@ var knex = require('config/lib/bookshelf').knex;
 var Promise = require('bluebird');
 var Company = dynamoose.model('Company');
 var Campaign = dynamoose.model('Campaign');
+var Channel = dynamoose.model('Channel');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var sendgridService = require('modules/sendgrid/server/sendgrid.service');
@@ -21,7 +22,7 @@ var sendApprovedEmail = sendApprovedEmail;
  */
 exports.read = function (req, res) {
   var _item;
-  Contributor.get({userId: req.params.userId, campaignId: req.params.campaignId})
+  Contributor.queryOne({campaignId: req.params.campaignId, userId: req.params.userId}).exec()
   .then(function(item){
     if(_.isUndefined(item)){
       return res.status(400).send({
@@ -37,16 +38,21 @@ exports.read = function (req, res) {
       .where('id', _item.userId);
   })
   .then(function(user){
-    console.log('user', user);
     if(user){
       _item.user = user[0];
     }
     return;
   })
   .then(function(){
-    Campaign.get(_item.campaignId).then(function(campaign){
+    return Channel.queryOne('refId').eq(_item.id).exec().then(function(channel){
+      _item.channel = channel;
+      return;
+    });
+  })
+  .then(function(){
+    return Campaign.get(_item.campaignId).then(function(campaign){
       _item.campaign = campaign;
-      res.json(_item);
+      return res.json(_item);
     });
   })
   .catch(function(err){
@@ -66,7 +72,10 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      res.json(item);
+      Channel.createNewChannel(/*req.user.id*/item.userId, item.id, 'Contributor').then(function(ch){
+        item.channel = ch;
+        res.json(item);
+      });
     }
   });
 };

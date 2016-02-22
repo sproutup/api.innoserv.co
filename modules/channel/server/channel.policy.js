@@ -25,7 +25,7 @@ exports.invokeRolesPolicies = function () {
     roles: ['user'],
     allows: [{
       resources: '/api/channel',
-      permissions: ['get', 'channel']
+      permissions: ['*']
     }, {
       resources: '/api/channel/:channelId',
       permissions: ['*']
@@ -33,9 +33,6 @@ exports.invokeRolesPolicies = function () {
   }, {
     roles: ['guest'],
     allows: [{
-      resources: '/api/channel',
-      permissions: ['*']
-    }, {
       resources: '/api/channel/:channelId',
       permissions: ['*']
     }]

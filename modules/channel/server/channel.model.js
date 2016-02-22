@@ -3,6 +3,10 @@
 /**
  * Module dependencies.
  */
+
+/* global -Promise */
+var Promise = require('bluebird');
+
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -66,28 +70,32 @@ ChannelSchema.method('populate', function (_schema) {
   });
 });
 
-ChannelSchema.statics.createNewChannel = function(userId, refId, refType){
-  console.log('create new channel');
+ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, refType){
   var _this = this;
   var Channel = dynamoose.model('Channel');
-  var channel = new Channel({userId: userId});
-  channel.save().then(function(val){
-    _this.addMember();
-  }).catch(function(err){
-
+  var Member = dynamoose.model('Member');
+  var channel = new Channel({
+    userId: userId,
+    refId: refId,
+    refType: refType
   });
-};
 
-ChannelSchema.method('addMember', function(userId, channelId){
-  console.log('add member');
-  return dynamoose.model('Channel').addMember(userId, channelId);
+  return channel.save().then(function(val){
+    return channel.addMember(userId, val.id);
+  }).then(function(member){
+    channel.members = [member];
+    return channel;
+  });
 });
 
-ChannelSchema.statics.addMember = function(userId, channelId){
-  console.log('add member');
+ChannelSchema.methods.addMember = Promise.method(function(userId){
+  return dynamoose.model('Channel').addMember(userId, this.id);
+});
+
+ChannelSchema.statics.addMember = Promise.method(function(userId, channelId){
   var Member = dynamoose.model('Member');
   var item = new Member({userId: userId, channelId: channelId});
   return item.save();
-};
+});
 
 dynamoose.model('Channel', ChannelSchema);

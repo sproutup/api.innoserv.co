@@ -89,6 +89,22 @@ exports.list = function (req, res) {
   });
 };
 
+
+/**
+ * List
+ */
+exports.listByChannel = function (req, res) {
+  Message.query('channelId').eq(req.params.channelId).exec().then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
+
 /**
  * middleware
  */
