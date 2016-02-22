@@ -25,6 +25,19 @@ module.exports = {
       }
     }
   },
+  knex: {
+    client: 'mysql',
+    connection: {
+      host: process.env.MYSQL_HOST || '127.0.0.1',
+      user: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'root',
+      database: process.env.MYSQL_DATABASE || 'sproutup_db'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    }
+  }, 
   port: process.env.PORT || 3001,
   app: {
     title: defaultEnvConfig.app.title + ' - Test Environment'
@@ -42,7 +55,14 @@ module.exports = {
   google: {
     clientID: process.env.GOOGLE_ID || 'APP_ID',
     clientSecret: process.env.GOOGLE_SECRET || 'APP_SECRET',
-    callbackURL: '/api/auth/google/callback'
+    callbackURL: '/api/auth/google/callback',
+    jwt: {
+      client_email: process.env.GOOGLE_JWT_CLIENT_EMAIL || 'EMAIL',
+      private_key: process.env.GOOGLE_JWT_PRIVATE_KEY || 'KEY'
+    },
+    calendar: {
+      id: process.env.GOOGLE_CALENDAR_ID
+    }
   },
   linkedin: {
     clientID: process.env.LINKEDIN_ID || 'APP_ID',

@@ -21,18 +21,6 @@ module.exports = {
   app: {
     title: defaultEnvConfig.app.title + ' - Development Environment'
   },
-  aws: {
-    accessKeyID: process.env.AWS_ACCESS_KEY_ID || 'ToDo',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'ToDo',
-    s3: {
-      region: process.env.AWS_S3_REGION || 'PUT YOUR REGION',
-      bucket: process.env.AWS_S3_BUCKET || 'PUT YOUR BUCKET',
-      imageFolder: process.env.AWS_S3_IMAGE_FOLDER || 'PUT YOUR FOLDER'
-    },
-    cloudfront: {
-      files: process.env.AWS_CLOUDFRONT_FILES || 'PUT YOUR CLOUDFRONT INFO'
-    }
-  },
   knex: {
     client: 'mysql',
     connection: {
@@ -63,8 +51,8 @@ module.exports = {
     clientSecret: process.env.GOOGLE_SECRET || 'APP_SECRET',
     callbackURL: '/api/auth/google/callback',
     jwt: {
-      client_email: process.env.GOOGLE_JWT_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_JWT_PRIVATE_KEY
+      client_email: process.env.GOOGLE_JWT_CLIENT_EMAIL || 'EMAIL',
+      private_key: process.env.GOOGLE_JWT_PRIVATE_KEY || 'KEY'
     },
     calendar: {
       id: process.env.GOOGLE_CALENDAR_ID

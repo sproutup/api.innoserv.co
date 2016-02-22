@@ -29,13 +29,6 @@ var validateLocalStrategyPassword = function (password) {
  * A Validation function for local strategy email
  */
 var validateLocalStrategyEmail = function (email) {
-  var User = dynamoose.model('User');
-//  User.findEmail(email, function(err, user){
-//    if(user) {
-//      console.log('email exists');
-//      return false;
-//    }
-//  });
   return ((this.provider !== 'local' && !this.updated) || validator.isEmail(email));
 };
 
@@ -198,20 +191,29 @@ var User = dynamoose.model('User', UserSchema);
 /**
  * Hook a pre save method to hash the password
  */
-User.pre('save', function(next) {
+User.pre('save', function validate (next) {
   if (this.password) {
     this.salt = crypto.randomBytes(16).toString('base64');
     this.hash = this.hashPassword(this.password);
     this.password = '';
   }
-
+//  console.log('pre save: ', this.email);
   // new user check email
-//  if (!this.id){
-//    User.get({email: this.email});
-//  }
-
+/*  if (!this.id){
+    User.queryOne('email').eq(this.email).exec(function(err, user){
+      if(err) {
+        next(err);
+      } else if(user) {
+        console.log('found email: ', user.email);
+        this.email = null;
+        next(new Error("username must be unique"));
+      } else {
+        console.log('check email: ', user);
+        next();
+      }
+    });
+  } */
   next();
 });
 
-
-
+exports = UserSchema;

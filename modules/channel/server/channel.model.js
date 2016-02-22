@@ -66,4 +66,28 @@ ChannelSchema.method('populate', function (_schema) {
   });
 });
 
+ChannelSchema.statics.createNewChannel = function(userId, refId, refType){
+  console.log('create new channel');
+  var _this = this;
+  var Channel = dynamoose.model('Channel');
+  var channel = new Channel({userId: userId});
+  channel.save().then(function(val){
+    _this.addMember();
+  }).catch(function(err){
+
+  });
+};
+
+ChannelSchema.method('addMember', function(userId, channelId){
+  console.log('add member');
+  return dynamoose.model('Channel').addMember(userId, channelId);
+});
+
+ChannelSchema.statics.addMember = function(userId, channelId){
+  console.log('add member');
+  var Member = dynamoose.model('Member');
+  var item = new Member({userId: userId, channelId: channelId});
+  return item.save();
+};
+
 dynamoose.model('Channel', ChannelSchema);
