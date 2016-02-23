@@ -1,7 +1,0 @@
-'use strict';
-
-/**
- * Module dependencies.
- */
-
-
