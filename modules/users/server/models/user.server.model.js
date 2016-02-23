@@ -161,7 +161,7 @@ UserSchema.statics.findUniqueUsername = function (username, suffix, callback) {
   var _this = this;
   var possibleUsername = username + (suffix || '');
 
-  _this.findOne({
+  _this.queryOne({
     username: possibleUsername
   }, function (err, user) {
     if (!err) {

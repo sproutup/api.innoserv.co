@@ -13,6 +13,7 @@ var path = require('path'),
   Promise = require('bluebird'),
   sendgridService = Promise.promisifyAll(require(path.resolve('./modules/sendgrid/server/sendgrid.service'))),
   User = dynamoose.model('User'),
+  Provider = dynamoose.model('Provider'),
   Company = dynamoose.model('Company'),
   Team = dynamoose.model('Team'),
   _ = require('lodash'),
@@ -293,30 +294,17 @@ exports.oauthCallback = function (strategy) {
  * Helper function to save or update a OAuth user profile
  */
 exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
+  var user;
+  var _provider = providerUserProfile.provider;
+  var _identifier = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
+
   if (!req.user) {
-    // Define a search query fields
-    var searchMainProviderIdentifierField = 'providerData.' + providerUserProfile.providerIdentifierField;
-    var searchAdditionalProviderIdentifierField = 'additionalProvidersData.' + providerUserProfile.provider + '.' + providerUserProfile.providerIdentifierField;
-
-    // Define main provider search query
-    var mainProviderSearchQuery = {};
-    mainProviderSearchQuery.provider = providerUserProfile.provider;
-    mainProviderSearchQuery[searchMainProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-
-    // Define additional provider search query
-    var additionalProviderSearchQuery = {};
-    additionalProviderSearchQuery[searchAdditionalProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-
-    // Define a search query to find existing user with current provider profile
-    var searchQuery = {
-      $or: [mainProviderSearchQuery, additionalProviderSearchQuery]
-    };
-
-    User.findOne(searchQuery, function (err, user) {
+    Provider.get({id: _identifier, provider: _provider}, function (err, provider) {
       if (err) {
+        console.log('err: ', err);
         return done(err);
       } else {
-        if (!user) {
+        if (!provider) {
           var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
 
           User.findUniqueUsername(possibleUsername, null, function (availableUsername) {
@@ -326,44 +314,71 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
               username: availableUsername,
               displayName: providerUserProfile.displayName,
               email: providerUserProfile.email,
+              provider: _provider,
+              profileImageURL: providerUserProfile.profileImageURL
+            });
+
+            var provider = new Provider({
+              id: _identifier,
+              provider: _provider,
+              email: providerUserProfile.email,
               profileImageURL: providerUserProfile.profileImageURL,
-              provider: providerUserProfile.provider,
-              providerData: providerUserProfile.providerData
+              data: providerUserProfile.providerData
             });
 
             // And save the user
             user.save(function (err) {
-              return done(err, user);
+              provider.userId = user.id;
+              provider.save(function (err){
+                return done(err, user);
+              });
             });
           });
         } else {
-          return done(err, user);
+          User.get(provider.userId).then(function(user){
+            console.log('user: ', user);
+            return done(null, user);
+          })
+          .catch(function(err){
+            return done(err, null);
+          });
         }
       }
     });
   } else {
+    console.log('user logged in already');
     // User is already logged in, join the provider data to the existing user
-    var user = req.user;
+    user = req.user;
 
-    // Check if user exists, is not signed in using this provider, and doesn't have that provider data already configured
-    if (user.provider !== providerUserProfile.provider && (!user.additionalProvidersData || !user.additionalProvidersData[providerUserProfile.provider])) {
-      // Add the provider data to the additional provider data field
-      if (!user.additionalProvidersData) {
-        user.additionalProvidersData = {};
+    Provider.get({id: _identifier, provider: _provider}, function (err, provider) {
+      if (err) {
+        console.log('err: ', err);
+        return done(err);
+      } else {
+        // provider not found -> add to user
+        console.log('provider not found -> add to user');
+        if (!provider) {
+          provider = new Provider({
+            id: _identifier,
+            provider: _provider,
+            userId: user.id,
+            email: providerUserProfile.email,
+            profileImageURL: providerUserProfile.profileImageURL,
+            data: providerUserProfile.providerData
+          });
+
+          // And save the provider
+          provider.save(function (err){
+            return done(err, user);
+          });
+        }
+        // provider found -> don't add the provider again
+        else{
+          console.log('provider found -> dont add the provider again');
+          return done(new Error('User is already connected using this provider'), user);
+        }
       }
-
-      user.additionalProvidersData[providerUserProfile.provider] = providerUserProfile.providerData;
-
-      // Then tell mongoose that we've updated the additionalProvidersData field
-      user.markModified('additionalProvidersData');
-
-      // And save the user
-      user.save(function (err) {
-        return done(err, user, '/settings/accounts');
-      });
-    } else {
-      return done(new Error('User is already connected using this provider'), user);
-    }
+    });
   }
 };
 
