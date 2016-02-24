@@ -20,6 +20,12 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/content/:contentId',
       permissions: '*'
+    }, {
+      resources: '/api/campaign/:campaignId/content',
+      permissions: ['*']
+    }, {
+      resources: '/api/company/:companyId/content',
+      permissions: ['*']
     }]
   }, {
     roles: ['user'],
@@ -32,6 +38,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/campaign/:campaignId/content',
       permissions: ['*']
+    }, {
+      resources: '/api/company/:companyId/content',
+      permissions: ['*']
     }]
   }, {
     roles: ['guest'],
@@ -43,6 +52,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['*']
     }, {
       resources: '/api/campaign/:campaignId/content',
+      permissions: ['*']
+    }, {
+      resources: '/api/company/:companyId/content',
       permissions: ['*']
     }]
   }]);
