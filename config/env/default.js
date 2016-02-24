@@ -52,7 +52,8 @@ module.exports = {
   },
   sendgrid: {
     templates: {
-      approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267'
+      approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267',
+      message: '2530a4ef-a779-4050-b1ff-01a8c5dfe1ff'
     }
   }
 };

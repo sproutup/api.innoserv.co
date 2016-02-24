@@ -3,14 +3,20 @@
 /**
  * Module dependencies.
  */
+var config = require('config/config');
 var dynamoose = require('dynamoose');
 /* global -Promise */
 var Promise = require('bluebird');
 var moment = require('moment');
 var redis = require('config/lib/redis');
 var Message = dynamoose.model('Message');
+var Member = dynamoose.model('Member');
+var Channel = dynamoose.model('Channel');
+var User = dynamoose.model('User');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var sendMessageEmail = sendMessageEmail;
+var sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service'));
 
 /**
  * Show
@@ -27,14 +33,14 @@ exports.create = function (req, res) {
 
   item.userId = req.user.id;
 
-  item.save(function (err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.json(item);
-    }
+  item.save().then(function(data) {
+    sendMessageEmail(data);
+    res.json(data);
+  })
+  .catch(function(err) {
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
   });
 };
 
@@ -127,5 +133,29 @@ exports.findByID = function (req, res, next, id) {
   })
   .catch(function(err){
     return next(err);
+  });
+};
+
+var sendMessageEmail = function(message) {
+  var _members;
+
+  // Get channel members
+  Member.query('channelId').eq(message.channelId).exec().then(function(items){
+    _members = items;
+    return User.get(message.userId);
+  })
+  .then(function(user) {
+    // Remove user who sent the message
+    var members = _members.filter(function(item) {
+      return item.userId !== message.userId;
+    });
+    var subject = 'New message from ' + user.displayName;
+    var substitutions = {
+      ':sender_name': [user.displayName]
+    };
+
+    for (var i = 0; i < members.length; i++) {
+      sendgridService.sendToUser(members[i].userId, subject, substitutions, config.sendgrid.templates.message);
+    }
   });
 };
