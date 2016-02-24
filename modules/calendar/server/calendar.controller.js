@@ -7,6 +7,7 @@ var Calendar = require('./calendar.service');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var config = require('config/config');
+var redis = require('config/lib/redis');
 
 /**
  * Create an event
@@ -30,17 +31,24 @@ exports.createEvent = function (req, res) {
  * List of events
  */
 exports.listEvents = function (req, res) {
-  Calendar.listEvents(config.google.calendar.id)
-    .then(function(result) {
-      res.json(result);
-    })
-    .catch(function(err) {
-      if (err) {
-        return res.status(400).send({
-          message: errorHandler.getErrorMessage(err)
+  redis.get('calendarID:' + config.google.calendar.id).then(function(events) {
+    if (events) {
+      res.json(JSON.parse(events));
+    } else {
+      Calendar.listEvents(config.google.calendar.id)
+        .then(function(result) {
+          redis.setex('calendarID:' + config.google.calendar.id, 500, JSON.stringify(result));
+          res.json(result);
+        })
+        .catch(function(err) {
+          if (err) {
+            return res.status(400).send({
+              message: errorHandler.getErrorMessage(err)
+            });
+          }
         });
-      }
-    });
+    }
+  });
 };
 
 /**
