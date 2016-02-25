@@ -92,17 +92,19 @@ ChannelSchema.methods.addMember = Promise.method(function(userId){
   return dynamoose.model('Channel').addMember(userId, this.id);
 });
 
-ChannelSchema.statics.addMember = Promise.method(function(userId, channelId){
+ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
   var Member = dynamoose.model('Member');
-  var item = new Member({userId: userId, channelId: channelId});
+  var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
   return item.save();
 });
 
 ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
   var Team = dynamoose.model('Team');
+  var isCreator = true;
+
   return Team.query('companyId').eq(companyId).exec().then(function(team) {
     for (var i = 0; i < team.length; i ++) {
-      ChannelSchema.statics.addMember(team[i].userId, channelId);
+      ChannelSchema.statics.addMember(team[i].userId, channelId, isCreator);
     }
   });
 });

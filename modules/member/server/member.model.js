@@ -41,6 +41,7 @@ var MemberSchema = new Schema({
       throughput: 5 // read and write are both 5
     }
   },
+  isCreator: Boolean,
   created: {
     type: Date,
     default: Date.now
