@@ -3,14 +3,14 @@
 /**
  * Module dependencies.
  */
+ /* global -Promise */
+var Promise = require('bluebird');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
-
-
 
 /**
  * Schema
@@ -118,9 +118,12 @@ var CampaignSchema = new Schema({
 /**
  * Populate method
  */
-CampaignSchema.method('populate', function (_schema) {
+CampaignSchema.methods.populate = Promise.method(function (_schema) {
   var _this = this;
+
   var _attribute = _schema.toLowerCase() + 'Id';
+  if (!this[_attribute]) return null;
+  
   console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
   return model.get(this[_attribute]).then(function(item){
