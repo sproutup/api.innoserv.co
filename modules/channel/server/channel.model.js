@@ -98,4 +98,13 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId){
   return item.save();
 });
 
+ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
+  var Team = dynamoose.model('Team');
+  return Team.query('companyId').eq(companyId).exec().then(function(team) {
+    for (var i = 0; i < team.length; i ++) {
+      ChannelSchema.statics.addMember(team[i].userId, channelId);
+    }
+  });
+});
+
 dynamoose.model('Channel', ChannelSchema);

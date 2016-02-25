@@ -65,15 +65,23 @@ exports.read = function (req, res) {
  */
 exports.create = function (req, res) {
   var item = new Contributor(req.body);
+  var _channel;
 
-  item.save(function (err) {
+  item.save(function(err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
       });
     } else {
       Channel.createNewChannel(/*req.user.id*/item.userId, item.id, 'Contributor').then(function(ch){
-        item.channel = ch;
+        // Get company ID so we can call addCompanyUsers
+        _channel = ch;
+        return Campaign.get(item.campaignId);
+      }).then(function(campaign) {
+        // Add company members to the message channel
+        return Channel.addCompanyMembers(campaign.companyId, _channel.id);
+      }).then(function() {
+        item.channel = _channel;
         res.json(item);
       });
     }
