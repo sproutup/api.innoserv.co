@@ -397,20 +397,9 @@ exports.removeOAuthProvider = function (req, res, next) {
     return res.status(400).send();
   }
 
-  // Delete the additional provider
-  if (user.additionalProvidersData[provider]) {
-    delete user.additionalProvidersData[provider];
-
-    // Then tell mongoose that we've updated the additionalProvidersData field
-    user.markModified('additionalProvidersData');
-  }
-
-  user.save(function (err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
+  Provider.queryOne('userId').eq(user.id).where('provider').eq(provider).exec().then(function (item) {
+    console.log('item: ', item);
+    item.delete().then(function(){
       req.login(user, function (err) {
         if (err) {
           return res.status(400).send(err);
@@ -418,6 +407,11 @@ exports.removeOAuthProvider = function (req, res, next) {
           return res.json(user);
         }
       });
-    }
+    });
+  }).catch(function(err){
+    console.log('err: ', err);
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
   });
 };

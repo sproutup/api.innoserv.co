@@ -50,6 +50,12 @@ module.exports = {
       files: process.env.AWS_CLOUDFRONT_FILES || 'PUT YOUR CLOUDFRONT INFO'
     }
   },
+  instagram: {
+    clientID: process.env.INSTAGRAM_ID || 'APP_ID',
+    clientSecret: process.env.INSTAGRAM_SECRET || 'APP_SECRET',
+    callbackURL: '/api/auth/instagram/callback',
+    scope: ['basic'] // 'comments relationships likes'
+  },
   sendgrid: {
     templates: {
       approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267',
