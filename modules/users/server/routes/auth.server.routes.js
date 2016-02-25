@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var passport = require('passport');
+var config = require('config/config');
 
 module.exports = function (app) {
   // User Routes
@@ -30,6 +31,12 @@ module.exports = function (app) {
     scope: ['email']
   }));
   app.route('/api/auth/facebook/callback').get(users.oauthCallback('facebook'));
+
+  // Setting the facebook oauth routes
+  app.route('/api/auth/instagram').get(users.oauthCall('instagram', {
+    scope: config.instagram.scope
+  }));
+  app.route('/api/auth/instagram/callback').get(users.oauthCallback('instagram'));
 
   // Setting the twitter oauth routes
   app.route('/api/auth/twitter').get(users.oauthCall('twitter'));
