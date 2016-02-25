@@ -27,10 +27,6 @@ exports.dropTable = function (req, res) {
  * Show
  */
 exports.read = function (req, res) {
-  if(!req.model.productId){
-    return res.json(req.model);
-  }
-
   Promise.join(req.model.populate('Product'), req.model.populate('Company'))
     .then(function(){
       res.json(req.model);
