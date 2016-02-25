@@ -151,10 +151,16 @@ var sendMessageEmail = function(message) {
     });
     var subject = 'New message from ' + user.displayName;
     var substitutions = {
-      ':sender_name': [user.displayName]
+      ':sender_name': [user.displayName],
+      ':message_body': [message.body]
     };
 
     for (var i = 0; i < members.length; i++) {
+      if (members[i].isCreator) {
+        substitutions[':url'] = [config.domains.creator + 'messages/' + message.channelId];
+      } else {
+        substitutions[':url'] = [config.domains.mvp + 'messages/' + message.channelId];
+      }
       sendgridService.sendToUser(members[i].userId, subject, substitutions, config.sendgrid.templates.message);
     }
   });
