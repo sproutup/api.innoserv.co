@@ -151,7 +151,7 @@ var sendMessageEmail = function(message) {
     });
     var subject = 'New message from ' + user.displayName;
     var substitutions = {
-      ':sender_name': [user.displayName],
+      ':sender': [user.displayName],
       ':message_body': [message.body]
     };
 
