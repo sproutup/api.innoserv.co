@@ -122,9 +122,13 @@ exports.timeline = function (req, res) {
     // #magic
     return redis.zrevrange(key, index, 9).map(function(value){
       return Post.get(value).then(function(post){
-        return Promise.join(post.populate('Comment'), post.populate('Likes'),function(comment, likes){
-          return comment;
-        });
+        return Promise.join(
+          post.populate('User'),
+          post.populateRef('Comment'),
+          post.populateRef('Likes'),
+          function(user, comment, likes){
+            return comment;
+          });
       });
     });
   })

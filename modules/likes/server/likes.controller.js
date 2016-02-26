@@ -20,6 +20,8 @@ exports.read = function (req, res) {
  */
 exports.create = function (req, res) {
   var item = new Likes(req.body);
+  
+  item.userId = req.user.id;
 
   item.save(function (err) {
     if (err) {
