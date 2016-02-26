@@ -94,7 +94,7 @@ exports.create = function (req, res) {
 exports.update = function (req, res) {
   var _item;
   var _previousState;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.id).exec()
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
     .then(function(item){
       if(_.isUndefined(item)){
         return res.status(400).send({
