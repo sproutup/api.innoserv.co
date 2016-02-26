@@ -39,11 +39,15 @@ var ChannelSchema = new Schema({
     required: false,
     index: {
       global: true,
-      rangeKey: 'created',
+      rangeKey: 'userId',
       name: 'ChannelRefIdUserIdIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
     }
+  },
+  refType: {
+    type: String,
+    required: false
   },
   created: {
     type: Date,
