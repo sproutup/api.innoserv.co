@@ -87,6 +87,36 @@ exports.list = function (req, res) {
   });
 };
 
+/**
+ * listByUser
+ */
+exports.listByUser = function (req, res) {
+  Channel
+    .query('userId').eq(req.user.id)
+    .exec().then(function(item){
+    res.json(item);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
+exports.findByRefId = function (req, res) {
+  Channel
+    .queryOne('refId').eq(req.params.refId)
+    .where('userId').eq(req.user.id)
+    .exec().then(function(item){
+    res.json(item);
+  })
+  .catch(function(err){
+    console.log('err: ', err);
+    return res.status(400).send({
+      message: err.message
+    });
+  });
+};
 
 /**
  * middleware

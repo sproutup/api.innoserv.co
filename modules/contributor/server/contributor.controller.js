@@ -73,7 +73,7 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      Channel.createNewChannel(/*req.user.id*/item.userId, item.id, 'Contributor').then(function(ch){
+      Channel.createNewChannel(req.user.id, item.campaignId, 'Campaign').then(function(ch){
         // Get company ID so we can call addCompanyUsers
         _channel = ch;
         return Campaign.get(item.campaignId);
@@ -94,7 +94,7 @@ exports.create = function (req, res) {
 exports.update = function (req, res) {
   var _item;
   var _previousState;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
+    Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
     .then(function(item){
       if(_.isUndefined(item)){
         return res.status(400).send({
