@@ -25,7 +25,7 @@ exports.read = function (req, res) {
   Contributor.queryOne({campaignId: req.params.campaignId, userId: req.params.userId}).exec()
   .then(function(item){
     if(_.isUndefined(item)){
-      return res.status(400).send({
+      return res.status(204).send({
         message: 'Contributor not found'
       });
     }
