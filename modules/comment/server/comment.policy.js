@@ -25,9 +25,15 @@ exports.invokeRolesPolicies = function () {
     roles: ['user'],
     allows: [{
       resources: '/api/comment',
-      permissions: ['get', 'comment']
+      permissions: ['post', 'get', 'comment']
     }, {
       resources: '/api/comment/:commentId',
+      permissions: ['*']
+    }, {
+      resources: '/api/comment/:commentId',
+      permissions: ['*']
+    }, {
+      resources: '/api/comment/:refType/:refId',
       permissions: ['*']
     }]
   }, {
