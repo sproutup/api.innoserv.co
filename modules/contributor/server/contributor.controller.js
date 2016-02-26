@@ -133,11 +133,13 @@ exports.update = function (req, res) {
  */
 exports.delete = function (req, res) {
   var item = req.model;
-
-  Contributor.delete({userId: req.params.userId, campaignId: req.params.campaignId}).then(function(result){
-    res.json(item);
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.user.id).exec().then(function (item) {
+    item.delete().then(function(){
+      res.json(item);
+    });
   })
   .catch(function (err) {
+    console.log('err: ', err);
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
