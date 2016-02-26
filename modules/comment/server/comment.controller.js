@@ -27,6 +27,7 @@ exports.create = function (req, res) {
     });
   }
 
+  item.userId = req.user.id;
   item.refId = req.params.refId;
   item.refType = req.params.refType;
 

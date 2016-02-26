@@ -25,7 +25,7 @@ exports.invokeRolesPolicies = function () {
     roles: ['user'],
     allows: [{
       resources: '/api/likes',
-      permissions: ['get', 'likes']
+      permissions: ['post', 'get', 'likes']
     }, {
       resources: '/api/likes/:likesId',
       permissions: ['*']

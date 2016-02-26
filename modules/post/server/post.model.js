@@ -3,6 +3,9 @@
 /**
  * Module dependencies.
  */
+/* global -Promise */
+var Promise = require('bluebird');
+
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -54,9 +57,26 @@ var PostSchema = new Schema({
 });
 
 /**
+ * Populate method
+ */
+PostSchema.methods.populate = Promise.method(function (_schema) {
+  var _this = this;
+
+  var _attribute = _schema.toLowerCase() + 'Id';
+  if (!this[_attribute]) return null;
+
+  console.log('populate: ', _schema);
+  var model = dynamoose.model(_schema);
+  return model.get(this[_attribute]).then(function(item){
+    _this[_schema.toLowerCase().trim()] = item;
+    return _this;
+  });
+});
+
+/**
  * Populate method for posts
  */
-PostSchema.method('populate', function (_schema, _id) {
+PostSchema.method('populateRef', function (_schema, _id) {
   var _this = this;
   console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
