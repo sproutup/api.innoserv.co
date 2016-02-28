@@ -18,6 +18,14 @@ module.exports = function (app) {
     .put(ctrl.update)
     .delete(ctrl.delete);
 
+  app.route('/api/my/channel').all(policy.isAllowed)
+    .get(ctrl.listByUser);
+
+  // Single routes
+  app.route('/api/my/channel/ref/:refId').all(policy.isAllowed)
+    .get(ctrl.findByRefId)
+    .post(ctrl.findByRefId);
+
   // Finish by binding the middleware
   app.param('channelId', ctrl.findByID);
 };

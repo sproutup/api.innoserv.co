@@ -32,16 +32,11 @@ exports.read = function (req, res) {
     _item = item;
   })
   .then(function(){
-    return knex
-      .select('id','name','email', 'description')
-      .from('users')
-      .where('id', _item.userId);
-  })
-  .then(function(user){
-    if(user){
-      _item.user = user[0];
-    }
-    return;
+    return _item.populate('User');
+//    return knex
+//      .select('id','name','email', 'description')
+//      .from('users')
+//      .where('id', _item.userId);
   })
   .then(function(){
     return Channel.queryOne('refId').eq(_item.id).exec().then(function(channel){
@@ -50,10 +45,10 @@ exports.read = function (req, res) {
     });
   })
   .then(function(){
-    return Campaign.get(_item.campaignId).then(function(campaign){
-      _item.campaign = campaign;
-      return res.json(_item);
-    });
+    return _item.populate('Campaign');
+  })
+  .then(function(){
+    return res.json(_item);
   })
   .catch(function(err){
     return res.json(err);
@@ -73,7 +68,7 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      Channel.createNewChannel(/*req.user.id*/item.userId, item.id, 'Contributor').then(function(ch){
+      Channel.createNewChannel(req.user.id, item.campaignId, 'Campaign').then(function(ch){
         // Get company ID so we can call addCompanyUsers
         _channel = ch;
         return Campaign.get(item.campaignId);
@@ -94,7 +89,7 @@ exports.create = function (req, res) {
 exports.update = function (req, res) {
   var _item;
   var _previousState;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
+    Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
     .then(function(item){
       if(_.isUndefined(item)){
         return res.status(400).send({
@@ -169,15 +164,7 @@ exports.listByCampaign = function (req, res) {
   Contributor.query({campaignId: req.model.id})
     .exec().then(function(items){
       return Promise.map(items, function(val){
-        return knex
-          .select('id','name','nickname','email','description')
-          .from('users')
-          .where('id', val.userId).then(function(user){
-            if(user.length>0){
-              val.user = user[0];
-            }
-            return val;
-          });
+        return val.populate('User');
       })
       .catch(function(err){
         console.log('err: ', err);

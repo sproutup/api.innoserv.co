@@ -17,6 +17,7 @@ var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var sendMessageEmail = sendMessageEmail;
 var sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service'));
+var moment = require('moment');
 
 /**
  * Show
@@ -33,9 +34,10 @@ exports.create = function (req, res) {
 
   item.userId = req.user.id;
 
-  item.save().then(function(data) {
-    sendMessageEmail(data);
-    res.json(data);
+  item.save().then(function() {
+    sendMessageEmail(item);
+    item.created = moment(item.created).toISOString();
+    res.json(item);
   })
   .catch(function(err) {
     return res.status(400).send({
@@ -101,6 +103,11 @@ exports.list = function (req, res) {
  */
 exports.listByChannel = function (req, res) {
   Message.query('channelId').eq(req.params.channelId).exec().then(function(items){
+    return Promise.map(items, function(val){
+      return val.populate('User');
+    });
+  })
+  .then(function(items){
     res.json(items);
   })
   .catch(function(err){
