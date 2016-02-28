@@ -104,9 +104,15 @@ exports.listByUser = function (req, res) {
 };
 
 exports.findByRefId = function (req, res) {
+  var _userId = req.user.id;
+  if(req.body.userId){
+    console.log('found user id:', req.body.userId);
+    _userId = req.body.userId;
+  }
+
   Channel
     .queryOne('refId').eq(req.params.refId)
-    .where('userId').eq(req.user.id)
+    .where('userId').eq(_userId)
     .exec().then(function(item){
     res.json(item);
   })
