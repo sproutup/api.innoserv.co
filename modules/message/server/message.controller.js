@@ -105,7 +105,7 @@ exports.listByChannel = function (req, res) {
   Message.query('channelId').eq(req.params.channelId).exec().then(function(items){
     return Promise.map(items, function(val){
       return val.populate('User');
-    })
+    });
   })
   .then(function(items){
     res.json(items);
