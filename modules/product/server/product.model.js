@@ -53,6 +53,10 @@ var ProductSchema = new Schema({
   video: {
     type: String,
     trim: true
+  },
+  url: {
+    type: String,
+    trim: true
   }
 });
 
