@@ -9,6 +9,7 @@ var Promise = require('bluebird');
 var moment = require('moment');
 var redis = require('config/lib/redis');
 var Channel = dynamoose.model('Channel');
+var Campaign = dynamoose.model('Campaign');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 
@@ -33,6 +34,20 @@ exports.create = function (req, res) {
     } else {
       res.json(item);
     }
+  });
+};
+
+exports.createCampaignChannel = function (req, res) {
+  var _channel;
+  Channel.createNewChannel(req.user.id, req.params.campaignId, 'Campaign').then(function(ch){
+    // Get company ID so we can call addCompanyUsers
+    _channel = ch;
+    return Campaign.get(req.params.campaignId);
+  }).then(function(campaign) {
+    // Add company members to the message channel
+    return Channel.addCompanyMembers(campaign.companyId, _channel.id);
+  }).then(function() {
+    res.json(_channel);
   });
 };
 
@@ -114,7 +129,8 @@ exports.findByRefId = function (req, res) {
     .queryOne('refId').eq(req.params.refId)
     .where('userId').eq(_userId)
     .exec().then(function(item){
-    res.json(item);
+      console.log('found channel: ', item);
+      res.json(item);
   })
   .catch(function(err){
     console.log('err: ', err);

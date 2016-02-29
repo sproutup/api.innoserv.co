@@ -12,6 +12,9 @@ module.exports = function (app) {
     .get(ctrl.list)
     .post(ctrl.create);
 
+  app.route('/api/campaign/:campaignId/channel').all(policy.isAllowed)
+    .post(ctrl.createCampaignChannel);
+
   // Single routes
   app.route('/api/channel/:channelId').all(policy.isAllowed)
     .get(ctrl.read)
