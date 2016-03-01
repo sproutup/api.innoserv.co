@@ -60,7 +60,6 @@ exports.read = function (req, res) {
  */
 exports.create = function (req, res) {
   var item = new Contributor(req.body);
-  var _channel;
 
   item.save(function(err) {
     if (err) {
@@ -68,17 +67,7 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      Channel.createNewChannel(req.user.id, item.campaignId, 'Campaign').then(function(ch){
-        // Get company ID so we can call addCompanyUsers
-        _channel = ch;
-        return Campaign.get(item.campaignId);
-      }).then(function(campaign) {
-        // Add company members to the message channel
-        return Channel.addCompanyMembers(campaign.companyId, _channel.id);
-      }).then(function() {
-        item.channel = _channel;
-        res.json(item);
-      });
+      res.json(item);
     }
   });
 };
