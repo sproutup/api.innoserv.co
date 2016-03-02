@@ -43,6 +43,7 @@ exports.update = function (req, res) {
   company.url = req.body.url;
   company.address = req.body.address;
   company.phone = req.body.phone;
+  company.tagline = req.body.tagline;
 
   company.save(function (err) {
     if (err) {

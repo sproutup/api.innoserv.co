@@ -55,6 +55,9 @@ var CompanySchema = new Schema({
   phone: {
     type: String
   },
+  tagline: {
+    type: String
+  },
   url: {
     type: String,
     default: '',
