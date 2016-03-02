@@ -36,6 +36,8 @@ exports.create = function (req, res) {
 
   item.save().then(function() {
     sendMessageEmail(item);
+    return item.populate('User');
+  }).then(function(val){
     item.created = moment(item.created).toISOString();
     res.json(item);
   })

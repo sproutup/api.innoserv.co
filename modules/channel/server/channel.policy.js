@@ -35,6 +35,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/my/channel/ref/:refId',
       permissions: ['*']
+    }, {
+      resources: '/api/campaign/:campaignId/channel',
+      permissions: ['*']
     }]
   }, {
     roles: ['guest'],

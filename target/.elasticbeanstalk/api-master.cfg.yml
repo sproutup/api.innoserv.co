@@ -6,7 +6,7 @@ AWSConfigurationTemplateVersion: 1.1.0.0
 EnvironmentTier:
   Name: WebServer
   Type: Standard
-SolutionStack: 64bit Amazon Linux 2015.03 v2.0.2 running Docker 1.7.1
+SolutionStack: 64bit Amazon Linux 2015.09 v2.0.8 running Docker 1.9.1
 OptionSettings:
   aws:elasticbeanstalk:command:
     Timeout: 1800
@@ -33,7 +33,7 @@ OptionSettings:
     MYSQL_USER: dbadmin
     MYSQL_PASSWORD: 1nter$Tellar
     MYSQL_DATABASE: sproutup_prod
-    GOOGLE_ID: 200067319298-gu6eos6o5cmeaat2tsmlu1s6rk5gjpnd.apps.googleusercontent.com 
+    GOOGLE_ID: 200067319298-gu6eos6o5cmeaat2tsmlu1s6rk5gjpnd.apps.googleusercontent.com
     GOOGLE_SECRET: kN13wxKxV1RuIFsPDnr2Y8H8
     TWITTER_CONSUMER_KEY: UFpVmMJJ7OOUA9SYh73WjCQ05
     TWITTER_CONSUMER_SECRET: U6elJyAYcnFuxk4G261cW1CbqCdSC9hsQt17XiKpu0VnLYRh8o
