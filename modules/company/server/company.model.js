@@ -62,6 +62,11 @@ var CompanySchema = new Schema({
     type: String,
     default: '',
     trim: true
+  },
+  banner: {
+    fileId: {
+      type: String
+    }
   }
 });
 

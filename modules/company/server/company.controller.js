@@ -134,3 +134,18 @@ exports.companyBySlug = function (req, res, next, slug) {
     return next(err);
   });
 };
+
+/**
+ * Update banner picture
+ */
+exports.changeBannerPicture = function (req, res) {
+  Company.update({id: req.body.companyId}, {banner:{fileId: req.body.fileId}}, function (error, company) {
+    if (error) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(error)
+      });
+    } else {
+      res.json(company);
+    }
+  });
+};
