@@ -20,6 +20,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/company/:companyId',
       permissions: '*'
+    }, {
+      resources: '/api/company/picture',
+      permissions: '*'
     }]
   }, {
     roles: ['user'],
@@ -32,6 +35,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/company/slug/:companySlug',
       permissions: ['*']
+    }, {
+      resources: '/api/company/picture',
+      permissions: '*'
     }]
   }, {
     roles: ['guest'],
@@ -44,6 +50,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/company/slug/:companySlug',
       permissions: ['get']
+    }, {
+      resources: '/api/company/picture',
+      permissions: '*'
     }]
   }]);
 };
