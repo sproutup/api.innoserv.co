@@ -78,7 +78,8 @@
     "swig": "^1.4.2",
     "twit": "^2.1.0",
     "unfluff": "1.0.0",
-    "validator": "^3.41.2"
+    "validator": "^3.41.2",
+    "request-promise": "1.0.2"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
