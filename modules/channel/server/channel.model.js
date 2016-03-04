@@ -6,13 +6,14 @@
 
 /* global -Promise */
 var Promise = require('bluebird');
-
+var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+var cache = require('config/lib/cache');
 
 /**
  * Schema
@@ -74,6 +75,24 @@ ChannelSchema.method('populate', function (_schema) {
   });
 });
 
+
+ChannelSchema.statics.getCached = Promise.method(function(id){
+  var Channel = dynamoose.model('Channel');
+  var Member = dynamoose.model('Member');
+  var key = 'channel:' + id;
+
+  return cache.wrap(key, function() {
+    console.log('cache miss: channel');
+    return Channel.get(id).then(function(item){
+      if(_.isUndefined(item)) return item;
+      return Member.query('channelId').eq(id).exec().then(function(members){
+        item.members = members;
+        return item;
+      });
+    });
+  });
+});
+
 ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, refType){
   var _this = this;
   var Channel = dynamoose.model('Channel');
@@ -113,4 +132,7 @@ ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, cha
   });
 });
 
-dynamoose.model('Channel', ChannelSchema);
+var Channel = dynamoose.model('Channel', ChannelSchema);
+
+exports = ChannelSchema;
+
