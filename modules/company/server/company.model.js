@@ -3,6 +3,8 @@
 /**
  * Module dependencies.
  */
+ /* global -Promise */
+var Promise = require('bluebird');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -13,6 +15,7 @@ var _ = require('lodash');
 var slug = require('slug');
 var redis = require('config/lib/redis');
 var domain = require('parse-domain');
+var cache = require('config/lib/cache');
 
 /**
  * Article Schema
@@ -115,6 +118,37 @@ CompanySchema.statics.findBySlug = function (slug) {
     throw err;
   });
 };
+
+CompanySchema.statics.getCached = Promise.method(function(id){
+  var Company = dynamoose.model('Company');
+  var Team = dynamoose.model('Team');
+  var key = 'company:' + id;
+
+  return cache.wrap(key, function() {
+    return Company.get(id).then(function(item){
+      if(_.isUndefined(item)) return item;
+      return Team.query('companyId').eq(id).exec().then(function(team){
+        item.team = team;
+        return item;
+      });
+    });
+  });
+});
+
+CompanySchema.statics.isMember = Promise.method(function(companyId, userId) {
+  var Company = dynamoose.model('Company');
+  return Company.getCached(companyId).then(function(val) {
+    var index = _.findIndex(val.team, function(t) {
+      return t.userId === userId;
+    });
+
+    if (index > -1) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+});
 
 
 var Company = dynamoose.model('Company', CompanySchema);

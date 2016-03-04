@@ -139,13 +139,27 @@ exports.companyBySlug = function (req, res, next, slug) {
  * Update banner picture
  */
 exports.changeBannerPicture = function (req, res) {
-  Company.update({id: req.body.companyId}, {banner:{fileId: req.body.fileId}}, function (error, company) {
-    if (error) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(error)
-      });
+  var changePicture = changePicture;
+
+  Company.isMember(req.body.companyId, req.user.id).then(function(isMember) {
+    if (isMember) {
+      changePicture();
     } else {
-      res.json(company);
+      return res.status(401).send({
+        message: 'You\'re not authorized to change the picture'
+      });
     }
   });
+
+  changePicture = function() {
+    Company.update({id: req.body.companyId}, {banner:{fileId: req.body.fileId}}, function (error, company) {
+      if (error) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(error)
+        });
+      } else {
+        res.json(company);
+      }
+    });
+  };
 };

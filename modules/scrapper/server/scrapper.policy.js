@@ -15,56 +15,32 @@ exports.invokeRolesPolicies = function () {
   acl.allow([{
     roles: ['admin'],
     allows: [{
-      resources: '/api/company',
-      permissions: '*'
-    }, {
-      resources: '/api/company/:companyId',
-      permissions: '*'
-    }, {
-      resources: '/api/company/picture',
-      permissions: '*'
+      resources: '/api/meta',
+      permissions: ['*']
     }]
   }, {
     roles: ['user'],
     allows: [{
-      resources: '/api/company',
+      resources: '/api/meta',
       permissions: ['*']
-    }, {
-      resources: '/api/company/:companyId',
-      permissions: ['get']
-    }, {
-      resources: '/api/company/slug/:companySlug',
-      permissions: ['*']
-    }, {
-      resources: '/api/company/picture',
-      permissions: '*'
     }]
   }, {
     roles: ['guest'],
     allows: [{
-      resources: '/api/company',
-      permissions: ['get']
-    }, {
-      resources: '/api/company/:companyId',
-      permissions: ['get']
-    }, {
-      resources: '/api/company/slug/:companySlug',
-      permissions: ['get']
-    }, {
-      resources: '/api/company/picture',
-      permissions: '*'
+      resources: '/api/meta',
+      permissions: ['*']
     }]
   }]);
 };
 
 /**
- * Check If Articles Policy Allows
+ * Check If Policy Allows
  */
 exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
-  // If an article is being processed and the current user created it then allow any manipulation
-  if (req.article && req.user && req.article.user.id === req.user.id) {
+  // If an post is being processed and the current user created it then allow any manipulation
+  if (req.product && req.user && req.post.user.id === req.user.id) {
     return next();
   }
 

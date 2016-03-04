@@ -13,7 +13,8 @@ module.exports = function (app) {
     .post(companies.create);
 
   // Save banner picture
-  app.route('/api/company/picture').post(companies.changeBannerPicture);
+  app.route('/api/company/picture').all(companyPolicy.isAllowed)
+    .post(companies.changeBannerPicture);
 
   // Single article routes
   app.route('/api/company/:companyId').all(companyPolicy.isAllowed)
