@@ -7,8 +7,9 @@ var dynamoose = require('dynamoose');
 /* global -Promise */
 var Promise = require('bluebird');
 var moment = require('moment');
-var redis = require('config/lib/redis');
+var cache = require('config/lib/cache');
 var Channel = dynamoose.model('Channel');
+var Member = dynamoose.model('Member');
 var Campaign = dynamoose.model('Campaign');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
@@ -149,18 +150,17 @@ exports.findByID = function (req, res, next, id) {
       message: 'Channel is invalid'
     });
   }
-
-  Channel.get(id).then(function(item){
+  Channel.getCached(id).then(function(item){
     if(_.isUndefined(item)){
       return res.status(400).send({
         message: 'Channel not found'
       });
     }
-
     req.model = item;
     next();
   })
   .catch(function(err){
+    console.log('err: ', err);
     return next(err);
   });
 };
