@@ -9,6 +9,7 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
+var redis = require('config/lib/redis');
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
@@ -75,6 +76,17 @@ ChannelSchema.method('populate', function (_schema) {
   });
 });
 
+ChannelSchema.statics.getLatestMessage = Promise.method(function(channelId){
+  var key = 'channel:' + channelId + ':messages';
+  return redis.zrevrange(key, 0, 0).then(function(val){
+    console.log('cval:', JSON.parse(val[0]));
+    if(val instanceof 'array'){
+      return JSON.parse(val[0]);
+    }
+    console.log('cval:', JSON.parse(val[0]));
+    return null;
+  });
+});
 
 ChannelSchema.statics.getCached = Promise.method(function(id){
   var Channel = dynamoose.model('Channel');

@@ -107,10 +107,19 @@ exports.list = function (req, res) {
  * listByUser
  */
 exports.listByUser = function (req, res) {
-  Channel
-    .query('userId').eq(req.user.id)
-    .exec().then(function(item){
-    res.json(item);
+  var channels;
+  Channel.query('userId').eq(req.user.id).exec().then(function(items){
+    console.log('items: ', items);
+    channels = items;
+    return Promise.map(items, function(item){
+      return Channel.getLatestMessage(item.id).then(function(val){
+        console.log('last', val);
+        item.last = val;
+        return val;
+      });
+    });
+  }).then(function(){
+    res.json(channels);
   })
   .catch(function(err){
     return res.status(400).send({

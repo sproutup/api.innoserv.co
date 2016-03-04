@@ -42,6 +42,9 @@ exports.invokeRolesPolicies = function () {
   }, {
     roles: ['guest'],
     allows: [{
+      resources: '/api/channel',
+      permissions: ['*']
+    }, {
       resources: '/api/channel/:channelId',
       permissions: ['*']
     }]

@@ -35,15 +35,22 @@ exports.create = function (req, res) {
   item.userId = req.user.id;
 
   item.save().then(function() {
-    sendMessageEmail(item);
-    return item.populate('User');
-  }).then(function(val){
     item.created = moment(item.created).toISOString();
+    return item.populate('User');
+  }).then(function(){
+    return Promise.join(
+//      item.setCache(),
+      item.updateMembersChannelFeed(),
+      item.addMessageToChannel(),
+      sendMessageEmail(item)
+    );
+  }).then(function(){
     res.json(item);
   })
   .catch(function(err) {
+    console.log('err: ', err);
     return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+      message: err
     });
   });
 };
@@ -104,11 +111,12 @@ exports.list = function (req, res) {
  * List
  */
 exports.listByChannel = function (req, res) {
-  Message.query('channelId').eq(req.params.channelId).exec().then(function(items){
-    return Promise.map(items, function(val){
-      return val.populate('User');
-    });
-  })
+//  Message.query('channelId').eq(req.params.channelId).exec().then(function(items){
+//    return Promise.map(items, function(val){
+//      return val.populate('User');
+//    });
+//  })
+  Message.getChannelMessages(req.params.channelId)
   .then(function(items){
     res.json(items);
   })
