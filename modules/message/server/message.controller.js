@@ -40,8 +40,8 @@ exports.create = function (req, res) {
   }).then(function(){
     return Promise.join(
 //      item.setCache(),
-      item.updateMembersChannelFeed(),
       item.addMessageToChannel(),
+      item.updateMembersChannelFeed(),
       sendMessageEmail(item)
     );
   }).then(function(){
