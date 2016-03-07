@@ -76,17 +76,37 @@ ChannelSchema.method('populate', function (_schema) {
   });
 });
 
-ChannelSchema.statics.getLatestMessage = Promise.method(function(channelId){
-  var key = 'channel:' + channelId + ':messages';
+ChannelSchema.statics.populateLatestMessage = Promise.method(function(channel){
+  var key = 'channel:' + channel.id + ':messages';
   return redis.zrevrange(key, 0, 0).then(function(val){
-    console.log('cval:', JSON.parse(val[0]));
-    if(val instanceof 'array'){
-      return JSON.parse(val[0]);
+    if(val[0]){
+      channel.last = JSON.parse(val[0]);
     }
-    console.log('cval:', JSON.parse(val[0]));
-    return null;
+    console.log('not found');
+    return;
   });
 });
+
+ChannelSchema.statics.queryByUser = Promise.method(function(userId){
+  var key = 'user:' + userId + ':channel:feed';
+  var promises = [];
+
+  return redis.zrevrange(key, 0, -1).then(function(channels){
+    _.forEach(channels, function(channelId){
+      var key = 'user:' + channelId + ':channel:feed';
+      promises.push(Channel.getCached(channelId).then(function(channel){
+          return channel;
+        })
+      );
+    });
+    return Promise.map(channels, function(channelId) {
+      var key = 'user:' + channelId + ':channel:feed';
+      console.log('mapping: ', key);
+      return Channel.getCached(channelId);
+    });
+  });
+});
+
 
 ChannelSchema.statics.getCached = Promise.method(function(id){
   var Channel = dynamoose.model('Channel');
