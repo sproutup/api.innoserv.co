@@ -66,7 +66,10 @@ var PostSchema = new Schema({
     type: String,
     required: false
   },
-  meta: {}
+  meta: {},
+  url: {
+    type: String
+  }
 });
 
 /**
