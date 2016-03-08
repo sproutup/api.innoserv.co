@@ -53,7 +53,8 @@ var PostSchema = new Schema({
     default: '',
     trim: true,
     required: true
-  }
+  },
+  meta: {}
 });
 
 /**
