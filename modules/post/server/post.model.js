@@ -48,11 +48,23 @@ var PostSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  type: {
+    type: Number,
+    default: 0 // 0 = post, 1 = suggestion, 2 = campaign content, 3 = video, 4 = picture
+  },
   body: {
     type: String,
     default: '',
     trim: true,
     required: true
+  },
+  refId: {
+    type: String,
+    required: false
+  },
+  refType: {
+    type: String,
+    required: false
   },
   meta: {}
 });
