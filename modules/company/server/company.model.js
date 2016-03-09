@@ -103,15 +103,18 @@ CompanySchema.statics.findBySlug = function (slug) {
     .then(function(val){
       if(_.isEmpty(val)){
         return _this.queryOne('slug').eq(slug).exec().then(function(company){
-          redis.hmset('company:slug:'+company.slug, company);
-          return company;
+          redis.hmset('company:slug:'+company.slug, company.id);
+          return company.id;
         });
       }
       else{
         console.log('cache hit');
-        var Company = dynamoose.model('Company');
-        return new Company(val);
+        return val;
       }
+  })
+  .then(function(companyId){
+    var Company = dynamoose.model('Company');
+    return Company.getCached(companyId);
   })
   .catch(function(err){
     console.log(err);
@@ -121,16 +124,27 @@ CompanySchema.statics.findBySlug = function (slug) {
 
 CompanySchema.statics.getCached = Promise.method(function(id){
   var Company = dynamoose.model('Company');
+  var File = dynamoose.model('File');
   var Team = dynamoose.model('Team');
   var key = 'company:' + id;
+  var _item;
 
   return cache.wrap(key, function() {
+    console.log('cache miss: company');
     return Company.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
+      _item = item;
       return Team.query('companyId').eq(id).exec().then(function(team){
         item.team = team;
         return item;
       });
+    }).then(function(item){
+      return File.get(item.banner.fileId).then(function(file){
+        item.banner.file = file;
+        return item;
+      });
+    }).then(function(){
+      return _item;
     });
   });
 });

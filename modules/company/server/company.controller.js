@@ -98,7 +98,7 @@ exports.companyByID = function (req, res, next, id) {
     });
   }
 
-  Company.find(id).then(function(company){
+  Company.getCached(id).then(function(company){
     if(_.isUndefined(company)){
       return res.status(400).send({
         message: 'Company not found'
