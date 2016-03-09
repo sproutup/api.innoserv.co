@@ -117,9 +117,16 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
     console.log('cache miss: channel');
     return Channel.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
-      return Member.query('channelId').eq(id).exec().then(function(members){
-        item.members = members;
+      return Member.queryByChannel(id).then(function(members){
+        item.members = _.keyBy(members, 'id');
         return item;
+      }).then(function(item){
+        if(!item.refType) return item;
+        var model = dynamoose.model(item.refType);
+        return model.getCached(item.refId).then(function(model){
+          item.ref = model;
+          return item;
+        });
       });
     });
   });

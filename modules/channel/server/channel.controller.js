@@ -44,9 +44,12 @@ exports.createCampaignChannel = function (req, res) {
     // Get company ID so we can call addCompanyUsers
     _channel = ch;
     return Campaign.get(req.params.campaignId);
-  }).then(function(campaign) {
+   }).then(function(campaign) {
     // Add company members to the message channel
     return Channel.addCompanyMembers(campaign.companyId, _channel.id);
+  }).then(function(campaign) {
+    // Add company members to the message channel
+    return Channel.addMember(req.user.id, _channel.id);
   }).then(function() {
     res.json(_channel);
   });

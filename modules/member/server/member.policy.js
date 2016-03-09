@@ -38,6 +38,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/member/:memberId',
       permissions: ['*']
+    }, {
+      resources: '/api/channel/:channelId/member',
+      permissions: ['*']
     }]
   }]);
 };

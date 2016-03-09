@@ -5,12 +5,14 @@
  */
  /* global -Promise */
 var Promise = require('bluebird');
+var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+var cache = require('config/lib/cache');
 
 /**
  * Schema
@@ -132,5 +134,21 @@ CampaignSchema.methods.populate = Promise.method(function (_schema) {
   });
 });
 
+CampaignSchema.statics.getCached = Promise.method(function(id){
+  var Campaign = dynamoose.model('Campaign');
+  var key = 'campaign:' + id;
+  var _item;
+
+  return cache.wrap(key, function() {
+    console.log('cache miss: campaign');
+    return Campaign.get(id).then(function(item){
+      if(_.isUndefined(item)) return item;
+      _item = item;
+      return Promise.join(_item.populate('Product'), _item.populate('Company')).then(function(){
+        return _item;
+      });
+    });
+  });
+});
 
 dynamoose.model('Campaign', CampaignSchema);

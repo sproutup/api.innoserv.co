@@ -3,12 +3,16 @@
 /**
  * Module dependencies.
  */
+/* global -Promise */
+var Promise = require('bluebird');
+var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+var cache = require('config/lib/cache');
 
 /**
  * Schema
@@ -49,7 +53,7 @@ var MemberSchema = new Schema({
 });
 
 /**
- * Populate method
+ * late method
  */
 MemberSchema.method('populate', function (_schema) {
   var _this = this;
@@ -61,5 +65,30 @@ MemberSchema.method('populate', function (_schema) {
     return _this;
   });
 });
+
+MemberSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
+  var Member = dynamoose.model('Member');
+  var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+  return item.save();
+});
+
+/**
+ * query by company
+ */
+MemberSchema.static('queryByChannel', Promise.method(function(channelId){
+  var Member = dynamoose.model('Member');
+  var key = 'channel:' + channelId + ':members';
+
+  return cache.wrap(key, function() {
+    return Member.query('channelId').eq(channelId).exec().then(function(members){
+      console.log('member: ', members);
+      return Promise.map(members, function(val){
+        return val.populate('User');
+      }).then(function(){
+        return members;
+      });
+    });
+  }, {ttl: 60});
+}));
 
 dynamoose.model('Member', MemberSchema);

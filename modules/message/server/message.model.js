@@ -75,13 +75,17 @@ MessageSchema.statics.getCached = Promise.method(function(id){
 
 MessageSchema.statics.getChannelMessages = Promise.method(function(channelId){
   var Message = dynamoose.model('Message');
+  var Channel = dynamoose.model('Channel');
   var key = 'channel:' + channelId + ':messages';
-console.log('key: ', key);
+  var res = {
+    messages: [],
+    channel: {}
+  };
+
   return redis.exists(key).then(function(val) {
     console.log('cache exists: ', val);
     if(val===1){
       return redis.zrange(key, 0, -1).map(function(val){
-        console.log('from cache ', val);
         return JSON.parse(val);
       });
     }
@@ -94,6 +98,12 @@ console.log('key: ', key);
         });
       });
     }
+  }).then(function(messages){
+    res.messages = messages;
+    return Channel.getCached(channelId);
+  }).then(function(channel){
+    res.channel = channel;
+    return res;
   });
 });
 

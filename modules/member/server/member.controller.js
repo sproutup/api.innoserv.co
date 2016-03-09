@@ -88,6 +88,22 @@ exports.list = function (req, res) {
 };
 
 /**
+ * List by channel
+ */
+exports.findByChannel = function (req, res) {
+  Member.queryByChannel(req.params.channelId).then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    console.log('err: ', err);
+    return res.status(400).send({
+      message: err
+    });
+  });
+};
+
+
+/**
  * middleware
  */
 exports.findByID = function (req, res, next, id) {

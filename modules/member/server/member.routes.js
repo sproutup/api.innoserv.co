@@ -18,6 +18,10 @@ module.exports = function (app) {
     .put(ctrl.update)
     .delete(ctrl.delete);
 
+  // Single routes
+  app.route('/api/channel/:channelId/member').all(policy.isAllowed)
+    .get(ctrl.findByChannel);
+
   // Finish by binding the middleware
   app.param('memberId', ctrl.findByID);
 };
