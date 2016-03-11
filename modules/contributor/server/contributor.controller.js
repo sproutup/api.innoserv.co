@@ -117,7 +117,7 @@ exports.update = function (req, res) {
  */
 exports.delete = function (req, res) {
   var item = req.model;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.user.id).exec().then(function (item) {
+  Contributor.queryOne({campaignId: req.params.campaignId, userId: req.params.userId}).exec().then(function (item) {
     item.delete().then(function(){
       res.json(item);
     });
