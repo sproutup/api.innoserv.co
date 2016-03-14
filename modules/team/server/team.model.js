@@ -35,5 +35,16 @@ var TeamSchema = new Schema({
     default: Date.now
   }
 });
+/*
+TeamSchema.statics.queryByUser = Promise.method(function(userId){
+  var key = 'user:' + userId + ':companies';
+  var promises = [];
 
+  return redis.zrevrange(key, 0, -1).then(function(companies){
+    return Promise.map(companies, function(companyId) {
+      return Company.getCached(companyId);
+    });
+  });
+});
+*/
 dynamoose.model('Team', TeamSchema);

@@ -137,7 +137,8 @@ exports.listByCompany = function (req, res) {
  * List by user
  */
 exports.listByUser = function (req, res) {
-  Team.query({userId: req.model.id}).exec().then(function(items){
+  Team.query({userId: req.user.id}).exec().then(function(items){
+    if(items.length === 0) return [];
     var query = _.map(items, function(val){ return {id: val.companyId}; });
     return Company.batchGet(query);
   })
@@ -146,7 +147,7 @@ exports.listByUser = function (req, res) {
   })
   .catch(function(err){
     return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+      message: err
     });
   });
 };

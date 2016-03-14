@@ -22,7 +22,7 @@ module.exports = function (app) {
     .delete(ctrl.delete);
 
   // collection routes
-  app.route('/api/user/:userId/company').all(policy.isAllowed)
+  app.route('/api/my/company').all(policy.isAllowed)
     .get(ctrl.listByUser)
     .delete(ctrl.deleteByUser);
 
