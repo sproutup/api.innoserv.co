@@ -29,9 +29,8 @@ module.exports = function () {
         }
 
         if(user.avatar && user.avatar.fileId){
-          _File.get(user.avatar.fileId).then(function(file){
+          _File.getCached(user.avatar.fileId).then(function(file){
             if(file){
-              file.addCloudfront();
               user.avatar.file = file;
             }
             return done(null, user);
