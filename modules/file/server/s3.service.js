@@ -31,7 +31,7 @@ S3Service.getSignatureKey = function(key, dateStamp, regionName, serviceName) {
 };
 
 S3Service.getSignature = function(file, user) {
-  var folder = 'users/' + user.id + '/'; // overwrite with your folder
+  var folder = ''; // overwrite with your folder
   var expiration = moment().add(15, 'm').toISOString();
   var date = moment().format('YYYYMMDD');
   var uuid = intformat(flakeIdGen.next(), 'dec');
@@ -59,7 +59,7 @@ S3Service.getSignature = function(file, user) {
   var credentials = {
     url: 'https://' + bucket + '.s3-' + region + '.amazonaws.com',
     fields: {
-      key: 'users/' + user.id + '/' + uuid + '.' + mime.extension(file.type),
+      key: uuid + '.' + mime.extension(file.type),
       AWSAccessKeyId: accessKeyID,
       acl: 'public-read',
       policy: base64Policy,
@@ -76,4 +76,3 @@ S3Service.getSignature = function(file, user) {
 };
 
 module.exports = S3Service;
-

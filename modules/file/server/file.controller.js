@@ -129,7 +129,7 @@ exports.findByID = function (req, res, next, id) {
     });
   }
 
-  FileModel.get(id).then(function(item){
+  FileModel.getCached(id).then(function(item){
     if(_.isUndefined(item)){
       return res.status(400).send({
         message: 'file not found'

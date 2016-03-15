@@ -3,6 +3,10 @@
 /**
  * Module dependencies.
  */
+ /* global -Promise */
+var Promise = require('bluebird');
+var _ = require('lodash');
+var cache = require('config/lib/cache');
 var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
@@ -55,13 +59,6 @@ var FileSchema = new Schema({
     default: '',
     trim: true
   },
-  url: {
-    type: String,
-    default: '',
-//    get: function(value){return value + 'test.jpg';},
-//    set: function(value){return '';},
-    trim: true
-  },
   size: {
     type: Number,
     default: 0
@@ -72,12 +69,22 @@ var FileSchema = new Schema({
  * Add cloudfront links
  */
 FileSchema.method('addCloudfront', function () {
-  var _this = this;
-  console.log('link:', config.aws.cloudfront.files );
-  _this.cloudfront = {
-    url: 'https://' + config.aws.cloudfront.files + '/' + _this.key
-  };
+  this.url = 'https://' + config.aws.cloudfront.files + '/' + this.key;
+  return this;
 });
 
-dynamoose.model('File', FileSchema);
+FileSchema.statics.getCached = Promise.method(function(id){
+  var File = dynamoose.model('File');
+  var key = 'file:' + id;
 
+  return cache.wrap(key, function() {
+    console.log('cache miss: file');
+    return File.get(id).then(function(item){
+      if(_.isUndefined(item)) return item;
+      return item.addCloudfront('companyId');
+    });
+  });
+});
+
+
+dynamoose.model('File', FileSchema);
