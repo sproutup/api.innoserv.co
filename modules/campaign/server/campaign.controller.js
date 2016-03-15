@@ -119,7 +119,7 @@ exports.delete = function (req, res) {
  * List
  */
 exports.list = function (req, res) {
-  Campaign.scan().exec().then(function(campaigns){
+  Campaign.queryActive().then(function(campaigns){
     res.json(campaigns);
   })
   .catch(function(err){

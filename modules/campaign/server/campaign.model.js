@@ -151,4 +151,15 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
+CampaignSchema.statics.queryActive = Promise.method(function(id){
+  var Campaign = dynamoose.model('Campaign');
+  var key = 'campaign:query:active';
+  var _item;
+
+  return cache.wrap(key, function() {
+    console.log('cache miss: active campaign');
+    return Campaign.query('status').eq(1).exec();
+  });
+});
+
 dynamoose.model('Campaign', CampaignSchema);
