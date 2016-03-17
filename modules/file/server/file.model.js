@@ -81,7 +81,11 @@ FileSchema.statics.getCached = Promise.method(function(id){
     console.log('cache miss: file');
     return File.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
-      return item.addCloudfront('companyId');
+      item.addCloudfront('companyId');
+      return item;
+    }).catch(function(err){
+      console.log('err: ', err);
+      return null;
     });
   });
 });

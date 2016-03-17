@@ -5,7 +5,8 @@
  */
 /* global -Promise */
 var Promise = require('bluebird');
-
+var _ = require('lodash');
+var cache = require('config/lib/cache');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -81,11 +82,36 @@ PostSchema.methods.populate = Promise.method(function (_schema) {
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]) return null;
 
-  console.log('populate: ', _schema);
+  console.log('populate: ', _schema, this[_attribute]);
   var model = dynamoose.model(_schema);
-  return model.get(this[_attribute]).then(function(item){
+  return model.getCached(this[_attribute]).then(function(item){
+    if(_.isUndefined(item)) return _this;
     _this[_schema.toLowerCase().trim()] = item;
     return _this;
+  });
+});
+
+/**
+ *
+ **/
+PostSchema.statics.getCached = Promise.method(function(id){
+  var Post = dynamoose.model('Post');
+  var key = 'post:' + id;
+  var _item;
+
+  return cache.wrap(key, function() {
+    console.log('cache miss: ', key);
+    return Post.get(id).then(function(post){
+      if(_.isUndefined(post)) return null;
+      _item = post;
+      return Promise.join(
+        post.populate('User'),
+        post.populateRef('Comment'),
+        post.populateRef('Likes'),
+        function(user, comment, likes){
+          return _item;
+        });
+    });
   });
 });
 
@@ -94,7 +120,7 @@ PostSchema.methods.populate = Promise.method(function (_schema) {
  */
 PostSchema.method('populateRef', function (_schema, _id) {
   var _this = this;
-  console.log('populate: ', _schema);
+  console.log('populateRef: ', _schema);
   var model = dynamoose.model(_schema);
   return model.query('refId').eq(this.id).exec().then(function(items){
     _this[_schema.toLowerCase().trim()] = items;
@@ -103,4 +129,3 @@ PostSchema.method('populateRef', function (_schema, _id) {
 });
 
 dynamoose.model('Post', PostSchema);
-

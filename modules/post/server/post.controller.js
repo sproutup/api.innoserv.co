@@ -32,12 +32,13 @@ exports.create = function (req, res) {
       });
     } else {
       //redis.set('Post:' + item.id, JSON.stringify(item));
-      redis.hmset('Post:' + item.id, item);
       redis.zadd('post:timeline:all', moment(item.created).unix(), item.id);
       redis.zadd('post:timeline:user:'+item.userId, moment(item.created).unix(), item.id);
       if(item.groupId){
         redis.zadd('post:timeline:group:'+item.groupId, moment(item.created).unix(), item.id);
       }
+      // add posting user to result
+      item.user = req.user;
       res.json(item);
     }
   });
@@ -119,17 +120,8 @@ exports.timeline = function (req, res) {
     }
   })
   .then(function(val){
-    // #magic
     return redis.zrevrange(key, index, 9).map(function(value){
-      return Post.get(value).then(function(post){
-        return Promise.join(
-          post.populate('User'),
-          post.populateRef('Comment'),
-          post.populateRef('Likes'),
-          function(user, comment, likes){
-            return comment;
-          });
-      });
+      return Post.getCached(value);
     });
   })
   .then(function(val){
@@ -167,15 +159,7 @@ exports.timelineGroup = function (req, res) {
   .then(function(val){
     // #magic
     return redis.zrevrange(key, index, 9).map(function(value){
-      return Post.get(value).then(function(post){
-        return Promise.join(
-          post.populate('User'),
-          post.populateRef('Comment'),
-          post.populateRef('Likes'),
-          function(user, comment, likes){
-            return comment;
-          });
-      });
+      return Post.getCached(value);
     });
   })
   .then(function(val){
@@ -197,7 +181,7 @@ exports.findByID = function (req, res, next, id) {
     });
   }
 
-  Post.get(id).then(function(item){
+  Post.getCached(id).then(function(item){
     if(_.isUndefined(item)){
       return res.status(400).send({
         message: 'Post not found'
