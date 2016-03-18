@@ -114,6 +114,11 @@ var CampaignSchema = new Schema({
   contest: { // contest specific information
     maxNbrOfContributors: Number // Maximum number of entries to be accepted
     // todo define perks/rewards for the contest
+  },
+  banner: {
+    fileId: {
+      type: String
+    }
   }
 });
 
