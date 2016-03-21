@@ -141,6 +141,7 @@ CampaignSchema.methods.populate = Promise.method(function (_schema) {
 
 CampaignSchema.statics.getCached = Promise.method(function(id){
   var Campaign = dynamoose.model('Campaign');
+  var File = dynamoose.model('File');
   var key = 'campaign:' + id;
   var _item;
 
@@ -149,9 +150,21 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
     return Campaign.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
       _item = item;
-      return Promise.join(_item.populate('Product'), _item.populate('Company')).then(function(){
+      return Promise.join(
+        _item.populate('Product'),
+        _item.populate('Company')
+      ).then(function(){
         return _item;
       });
+    }).then(function(item){
+      if(!item.banner || !item.banner.fileId) return item;
+
+      return File.get(item.banner.fileId).then(function(file){
+        item.banner.file = file;
+        return item;
+      });
+    }).then(function(){
+      return _item;
     });
   });
 });

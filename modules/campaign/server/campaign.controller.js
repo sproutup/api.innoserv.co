@@ -163,7 +163,7 @@ exports.campaignByID = function (req, res, next, id) {
     });
   }
 
-  Campaign.get(id).then(function(item){
+  Campaign.getCached(id).then(function(item){
     console.log(item);
     if(_.isUndefined(item)){
       return res.status(400).send({
