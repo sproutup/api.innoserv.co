@@ -77,23 +77,17 @@ exports.createTemplate = function (req, res) {
  * Update
  */
 exports.update = function (req, res) {
-  var item = req.model;
+  var obj = _.omit(req.body, ['id']);
 
-  //For security purposes only merge these parameters
-  item.name = req.body.name;
-  item.description = req.body.description;
-  item.tagline = req.body.tagline;
-  item.type = req.body.type;
-  item.status = req.body.status;
-  item.productId = req.body.productId;
-
-  item.save().then(function(data){
-    res.json(item);
-  })
-  .catch(function (err) {
-    return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
-    });
+  Campaign.update({ id: req.model.id }, obj, function (error, campaign) {
+    if (error) {
+      console.log('error:', error);
+      return res.status(400).send({
+        message: error
+      });
+    } else {
+      res.json(campaign);
+    }
   });
 };
 

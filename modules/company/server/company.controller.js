@@ -36,23 +36,17 @@ exports.create = function (req, res) {
  * Update
  */
 exports.update = function (req, res) {
-  var company = req.model;
+  var obj = _.omit(req.body, ['id']);
 
-  //For security purposes only merge these parameters
-  company.name = req.body.name;
-  company.url = req.body.url;
-  company.address = req.body.address;
-  company.phone = req.body.phone;
-  company.tagline = req.body.tagline;
-
-  company.save(function (err) {
-    if (err) {
+  Company.update({ id: req.model.id }, obj, function (error, company) {
+    if (error) {
+      console.log('error:', error);
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: error
       });
+    } else {
+      res.json(company);
     }
-
-    res.json(company);
   });
 };
 
