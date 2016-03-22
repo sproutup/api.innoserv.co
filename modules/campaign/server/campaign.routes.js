@@ -33,6 +33,10 @@ module.exports = function (app) {
   app.route('/api/company/:companyId/campaign').all(policy.isAllowed)
     .get(ctrl.listByCompany);
 
+  // Single routes
+  app.route('/api/product/:productId/campaign').all(policy.isAllowed)
+    .get(ctrl.listByProduct);
+
   // admin routes
   app.route('/api/table/campaign').all(policy.isAllowed)
     .delete(ctrl.dropTable);

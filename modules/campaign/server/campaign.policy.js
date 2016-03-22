@@ -26,6 +26,13 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/table/campaign',
       permissions: '*'
+    }, {
+      resources: '/api/company/:companyId/campaign',
+      permissions: ['*']
+    }, {
+      resources: '/api/product/:productId/campaign',
+      permissions: ['*']
+
     }]
   }, {
     roles: ['user'],
@@ -40,6 +47,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['get']
     }, {
       resources: '/api/company/:companyId/campaign',
+      permissions: ['*']
+    }, {
+      resources: '/api/product/:productId/campaign',
       permissions: ['*']
 
     }]
@@ -56,6 +66,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['*']
     }, {
       resources: '/api/company/:companyId/campaign',
+      permissions: ['*']
+    }, {
+      resources: '/api/product/:productId/campaign',
       permissions: ['*']
     }]
   }]);

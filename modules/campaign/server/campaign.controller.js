@@ -138,6 +138,21 @@ exports.listByCompany = function (req, res) {
 };
 
 /**
+ * List by product
+ */
+exports.listByProduct = function (req, res) {
+  Campaign.query('productId').eq(req.model.id).exec().then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    console.log('error: ' + err);
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
+/**
  * List only templates
  */
 exports.listTemplate = function (req, res) {
