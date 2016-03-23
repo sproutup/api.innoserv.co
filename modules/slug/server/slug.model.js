@@ -6,6 +6,7 @@
  /* global -Promise */
 var Promise = require('bluebird');
 var _ = require('lodash');
+var debug = require('debug')('up:slug:model');
 var cache = require('config/lib/cache');
 var config = require('config/config');
 var dynamoose = require('dynamoose');
@@ -62,6 +63,17 @@ SlugSchema.static('available', Promise.method(function(id) {
   });
 }));
 
+SlugSchema.static('createWrapper', Promise.method(function(body) {
+  var Slug = dynamoose.model('Slug');
+  body.orig = body.id;
+  return Slug.create(body).then(function(item) {
+    return item;
+  }).catch(function(err){
+    debug('err: ', err);
+    throw err;
+  });
+}));
+
 /**
  * get cached if possible
  **/
@@ -70,11 +82,11 @@ SlugSchema.statics.getCached = Promise.method(function(id) {
   var key = 'slug:' + id.toLowerCase().trim();
 
   return cache.wrap(key, function() {
-    console.log('cache miss: ', key);
+    debug('cache miss: ', key);
     return Slug.get(id).then(function(item){
       return item;
     }).catch(function(err){
-      console.log('err: ', err);
+      debug('err: ', err);
       return null;
     });
   });

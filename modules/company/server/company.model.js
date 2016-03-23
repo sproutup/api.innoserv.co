@@ -5,13 +5,14 @@
  */
  /* global -Promise */
 var Promise = require('bluebird');
+var _ = require('lodash');
+var debug = require('debug')('up:debug:company:model');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
-var _ = require('lodash');
 var slug = require('slug');
 var redis = require('config/lib/redis');
 var domain = require('parse-domain');
@@ -167,34 +168,51 @@ CompanySchema.statics.isMember = Promise.method(function(companyId, userId) {
 });
 
 
-var Company = dynamoose.model('Company', CompanySchema);
+CompanySchema.static('createWithSlug', Promise.method(function(body) {
+  var Slug = dynamoose.model('Slug');
+  var Company = dynamoose.model('Company');
+  body.id = intformat(flakeIdGen.next(), 'dec');
+
+  if(body.url){
+    var dom = domain(body.url);
+    body.domain = dom.domain + '.' + dom.tld;
+  }
+
+  return Slug.createWrapper({id: body.slug, refId: body.id, refType: 'Company'}).then(function(slug){
+    debug('slug: ', slug);
+    return Company.create(body).then(function(item){
+      debug('item: ', item);
+      return item;
+    });
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+}));
+
+var model = dynamoose.model('Company', CompanySchema);
 
 /**
  * Hook a pre save method to create the slug
  */
-Company.pre('save', function(next) {
-  var oldSlug = this.slug;
-  if (this.name) {
-    this.slug = slug(this.name);
-  }
+//model.pre('save', function(next) {
+//  debug('pre save');
+//  var oldSlug = this.slug;
+//  if (this.name) {
+//    this.slug = slug(this.name);
+//  }
 
-  if(this.url){
-    var dom = domain(this.url);
-    this.domain = dom.domain + '.' + dom.tld;
-  }
+//  if(this.url){
+//    var dom = domain(this.url);
+//    this.domain = dom.domain + '.' + dom.tld;
+//  }
 
-  // delete old slug
-  if(!_.isUndefined(this.id)){
-    redis.del('company:slug:' + oldSlug);
-    redis.del('company:' + this.id);
-  }
-
-  next();
-});
+//  next();
+//});
 
 /**
  * Hook a pre delete method to delete from cache
- */
+ * /
 Company.pre('delete', function(next) {
 
   // delete old slug
@@ -205,4 +223,5 @@ Company.pre('delete', function(next) {
 
   next();
 });
+*/
 

@@ -7,6 +7,8 @@ var dynamoose = require('dynamoose');
 var Company = dynamoose.model('Company');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:company:ctrl');
+var info = require('debug')('up:info:company:ctrl');
 
 /**
  * Show the company
@@ -19,16 +21,17 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  var company = new Company(req.body);
-
-  company.save(function (err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.json(company);
+  Company.createWithSlug(req.body).then(function(item){
+    debug('create', item);
+    res.json(item);
+  }).catch(function(err){
+    debug('err: ', err.code);
+    if(err.code === 'ConditionalCheckFailedException'){
+      err = 'Duplicate entry ' + req.body.slug;
     }
+    return res.status(400).send({
+      message: err
+    });
   });
 };
 

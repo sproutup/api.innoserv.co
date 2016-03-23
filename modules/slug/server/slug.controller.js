@@ -25,19 +25,16 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  var body = req.body;
-  body.orig = body.id;
-  Slug.create(req.body, function (err, item) {
-    if (err) {
-      if(err.code === 'ConditionalCheckFailedException'){
-        err = 'Duplicate entry for slug ' + req.body.id;
-      }
-      return res.status(400).send({
-        message: err
-      });
-    } else {
-      res.json(item);
+
+  Slug.createWrapper(req.body).then(function(item){
+    res.json(item);
+  }).catch(function(err){
+    if(err.code === 'ConditionalCheckFailedException'){
+      err = 'Duplicate entry for slug ' + req.body.id;
     }
+    return res.status(400).send({
+      message: err
+    });
   });
 };
 

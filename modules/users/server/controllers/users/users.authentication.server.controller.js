@@ -162,6 +162,8 @@ exports.emailIsAvailable = function (req, res) {
     if (result) {
       return res.json({result: 0});
     } else {
+      return res.json({result: 1});
+/*
       var domain = email.substring(email.lastIndexOf('@')+1, email.length);
       console.log('domain:', domain);
       Company.queryOne('domain').eq(domain).exec().then(function(company){
@@ -173,7 +175,7 @@ exports.emailIsAvailable = function (req, res) {
       })
       .catch(function(err){
         console.log('err: ', err);
-      });
+      }); */
     }
   })
   .catch(function(err){
