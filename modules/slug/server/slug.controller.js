@@ -39,6 +39,27 @@ exports.create = function (req, res) {
 };
 
 /**
+ * Checks if the slug id is available
+ * @param id
+ */
+exports.check = function (req, res) {
+  Slug.check(req.body.id).then(function(item){
+    var result = {
+      ok: true,
+      error: ''
+    };
+
+    if(item===false){
+      result.ok = false;
+      result.error = 'taken';
+    }
+
+    res.json(result);
+  });
+};
+
+
+/**
  * Update
  */
 exports.update = function (req, res) {

@@ -12,6 +12,9 @@ module.exports = function (app) {
     .get(ctrl.list)
     .post(ctrl.create);
 
+  app.route('/api/slug/check').all(policy.isAllowed)
+    .post(ctrl.check);
+
   // Single routes
   app.route('/api/slug/:slugId').all(policy.isAllowed)
     .get(ctrl.read)

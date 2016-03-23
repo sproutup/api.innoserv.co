@@ -36,6 +36,9 @@ exports.invokeRolesPolicies = function () {
       resources: '/api/slug',
       permissions: ['*']
     }, {
+      resources: '/api/slug/check',
+      permissions: ['*']
+    }, {
       resources: '/api/slug/:slugId',
       permissions: ['*']
     }]

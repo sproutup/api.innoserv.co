@@ -56,9 +56,9 @@ var SlugSchema = new Schema({
 /**
  * Check if slug is available
  */
-SlugSchema.static('available', Promise.method(function(id) {
+SlugSchema.static('check', Promise.method(function(id) {
   var Slug = dynamoose.model('Slug');
-  return Slug.getCached().then(function(item){
+  return Slug.getCached(id).then(function(item){
     return _.isUndefined(item);
   });
 }));
