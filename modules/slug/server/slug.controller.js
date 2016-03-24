@@ -54,7 +54,11 @@ exports.check = function (req, res) {
       result.error = 'taken';
     }
 
-    res.json(result);
+    return res.json(result);
+  }).catch(function(err){
+     return res.status(400).send({
+      message: err
+    });
   });
 };
 

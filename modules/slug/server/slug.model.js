@@ -81,15 +81,18 @@ SlugSchema.statics.getCached = Promise.method(function(id) {
   var Slug = dynamoose.model('Slug');
   var key = 'slug:' + id.toLowerCase().trim();
 
-  return cache.wrap(key, function() {
-    debug('cache miss: ', key);
+//  return cache.wrap(key, function() {
+//    debug('cache miss: ', key);
     return Slug.get(id).then(function(item){
       return item;
     }).catch(function(err){
       debug('err: ', err);
       return null;
     });
-  });
+//  }).then(function(item){
+//    debug('get cahced: ', item);
+//    return item;
+//  });
 });
 
 dynamoose.model('Slug', SlugSchema);
