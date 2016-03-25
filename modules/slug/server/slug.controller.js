@@ -12,12 +12,25 @@ var _ = require('lodash');
  * Show
  */
 exports.read = function (req, res) {
+  var result = {
+    ok: true,
+    error: '',
+    type: '',
+    item: null
+  };
+
   var item = req.model;
   console.log('populate: ', item.refType);
   var model = dynamoose.model(item.refType);
   model.getCached(item.refId).then(function(ref){
-    if(_.isUndefined(ref)) return res.json(item);
-    return res.json(ref);
+    if(_.isUndefined(ref)) {
+      result.ok = false;
+      result.error = 'not found';
+      return res.json(result);
+    }
+    result.type = item.refType;
+    result.item = ref;
+    return res.json(result);
   });
 };
 
@@ -144,7 +157,8 @@ exports.findByID = function (req, res, next, id) {
   Slug.getCached(id).then(function(item){
     if(_.isUndefined(item)){
       return res.status(400).send({
-        message: 'slug not found'
+        ok: false,
+        error: 'slug not found'
       });
     }
 

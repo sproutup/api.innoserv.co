@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+var debug = require('debug')('up:debug:user:auth:ctrl');
 var path = require('path'),
   config = require('config/config'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
@@ -117,7 +118,7 @@ exports.signup = function (req, res) {
   req.body.email = req.body.email.toLowerCase();
 
   // Init Variables
-  var user = new User(req.body);
+  var user = req.body;
   var message = null;
 
   // Add missing user fields
@@ -125,31 +126,30 @@ exports.signup = function (req, res) {
   user.displayName = user.firstName + ' ' + user.lastName;
 
   // Then save the user
-  user.save(function (err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      // Remove sensitive data before login
-      user.password = undefined;
-      user.salt = undefined;
+  User.createWithSlug(user).then(function(newuser) {
+    debug('user created: ', newuser.id);
+    // Remove sensitive data before login
+    newuser.password = undefined;
+    newuser.salt = undefined;
 
-      signedUpEmail(user, req.headers.host);
+    signedUpEmail(newuser, req.headers.host);
 
-      // If the user is claiming a company, save a team obj, then remove the token
-      if (req.body.token) {
-        saveClaimedCompany(req.body.token, user.id);
-      }
-
-      req.login(user, function (err) {
-        if (err) {
-          res.status(400).send(err);
-        } else {
-          res.json(user);
-        }
-      });
+    // If the user is claiming a company, save a team obj, then remove the token
+    if (req.body.token) {
+      saveClaimedCompany(req.body.token, newuser.id);
     }
+
+    req.login(newuser, function (err) {
+      if (err) {
+        res.status(400).send(err);
+      } else {
+        res.json(newuser);
+      }
+    });
+  }).catch(function(err){
+    return res.status(400).send({
+      message: err
+    });
   });
 };
 

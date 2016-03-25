@@ -6,6 +6,7 @@
  /* global -Promise */
 var Promise = require('bluebird');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:user:model');
 var cache = require('config/lib/cache');
 var dynamoose = require('dynamoose'),
   Schema = dynamoose.Schema,
@@ -141,6 +142,18 @@ UserSchema.method('hashPassword', function (password) {
   }
 });
 
+
+/**
+ * Create static method for hashing a password
+ */
+UserSchema.static('hashPassword', function (password, salt) {
+  if (salt && password) {
+    return crypto.pbkdf2Sync(password, new Buffer(salt, 'base64'), 10000, 64).toString('base64');
+  } else {
+    return password;
+  }
+});
+
 /**
  * Create instance method for authenticating user
  */
@@ -218,12 +231,38 @@ UserSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
-var User = dynamoose.model('User', UserSchema);
+UserSchema.static('createWithSlug', Promise.method(function(body) {
+  var Slug = dynamoose.model('Slug');
+  var User = dynamoose.model('User');
+  body.id = intformat(flakeIdGen.next(), 'dec');
+
+  if (body.password) {
+    body.salt = crypto.randomBytes(16).toString('base64');
+    body.hash = User.hashPassword(body.password, body.salt);
+    body.password = '';
+  }
+
+  return Slug.createWrapper({id: body.username, refId: body.id, refType: 'User'}).then(function(slug){
+    debug('slug: ', slug);
+    return User.create(body).then(function(item){
+      debug('user: ', item);
+      return item;
+    });
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+}));
+
+
+
+var UserModel = dynamoose.model('User', UserSchema);
 
 /**
  * Hook a pre save method to hash the password
- */
-User.pre('save', function validate (next) {
+ * /
+UserModel.pre('save', function validate (next) {
+  debug('user pre save');
   if (this.password) {
     this.salt = crypto.randomBytes(16).toString('base64');
     this.hash = this.hashPassword(this.password);
@@ -244,8 +283,9 @@ User.pre('save', function validate (next) {
         next();
       }
     });
-  } */
+  } * /
   next();
 });
+*/
 
 exports = UserSchema;
