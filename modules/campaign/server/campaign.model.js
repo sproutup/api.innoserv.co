@@ -160,7 +160,7 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
     }).then(function(item){
       if(!item.banner || !item.banner.fileId) return item;
 
-      return File.get(item.banner.fileId).then(function(file){
+      return File.getCached(item.banner.fileId).then(function(file){
         item.banner.file = file;
         return item;
       });
