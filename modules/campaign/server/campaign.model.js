@@ -6,6 +6,7 @@
  /* global -Promise */
 var Promise = require('bluebird');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:campaign:model');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
@@ -176,7 +177,15 @@ CampaignSchema.statics.queryActive = Promise.method(function(id){
 
   return cache.wrap(key, function() {
     console.log('cache miss: active campaign');
-    return Campaign.query('status').eq(1).exec();
+    return Campaign.query('status').eq(1).attributes(['id']).exec()
+      .then(function(items){
+        return Promise.map(items, function(item){
+          return Campaign.getCached(item.id);
+        });
+      }).catch(function(err){
+        debug('err', err);
+        throw err;
+      });
   });
 });
 
