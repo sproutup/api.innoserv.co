@@ -20,6 +20,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/suggestion/:suggestionId',
       permissions: '*'
+    }, {
+      resources: '/api/user/:userId/suggestion',
+      permissions: '*'
     }]
   }, {
     roles: ['user'],
@@ -29,6 +32,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/suggestion/:suggestionId',
       permissions: '*'
+    }, {
+      resources: '/api/user/:userId/suggestion',
+      permissions: '*'
     }]
   }, {
     roles: ['guest'],
@@ -37,6 +43,9 @@ exports.invokeRolesPolicies = function () {
       permissions: '*'
     }, {
       resources: '/api/suggestion/:suggestionId',
+      permissions: '*'
+    }, {
+      resources: '/api/user/:userId/suggestion',
       permissions: '*'
     }]
   }]);
