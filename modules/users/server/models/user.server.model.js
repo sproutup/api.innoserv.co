@@ -68,6 +68,16 @@ var UserSchema = new Schema({
     type: String,
     trim: true
   },
+  description: {
+    type: String,
+    trim: true
+  },
+  address: {
+    type: String
+  },
+  phone: {
+    type: String
+  },
   email: {
     type: String,
     trim: true,
