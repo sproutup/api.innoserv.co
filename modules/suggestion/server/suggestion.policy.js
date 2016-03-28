@@ -29,6 +29,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/suggestion/:suggestionId',
       permissions: '*'
+    }, {
+      resources: '/api/user/:userId/suggestion',
+      permissions: '*'
     }]
   }, {
     roles: ['guest'],
@@ -70,4 +73,3 @@ exports.isAllowed = function (req, res, next) {
     }
   });
 };
-

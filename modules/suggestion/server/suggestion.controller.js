@@ -113,7 +113,7 @@ exports.listByUser = function (req, res) {
   })
   .catch(function(err){
     return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+      message: err
     });
   });
 };
@@ -142,4 +142,3 @@ exports.findByID = function (req, res, next, id) {
     return next(err);
   });
 };
-

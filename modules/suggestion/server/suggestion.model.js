@@ -24,6 +24,7 @@ var SuggestionSchema = new Schema({
     required: true,
     index: {
       global: true,
+      name: 'ContentUserMediaIndex',
       rangeKey: 'created',
       project: true, // ProjectionType: ALL
       throughput: 2 // read and write are both 5
@@ -61,4 +62,3 @@ SuggestionSchema.method('populate', function (_schema, _id) {
 });
 
 dynamoose.model('Suggestion', SuggestionSchema);
-
