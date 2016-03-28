@@ -3,12 +3,16 @@
 /**
  * Module dependencies.
  */
+
+/* global -Promise */
+var Promise = require('bluebird');
 var _ = require('lodash'),
   fs = require('fs'),
   path = require('path'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
   dynamoose = require('dynamoose'),
   User = dynamoose.model('User'),
+  Slug = dynamoose.model('Slug'),
   _File = require('dynamoose').model('File');
 
 /**
@@ -19,22 +23,41 @@ exports.update = function (req, res) {
   var user = _.omit(req.body, ['id', 'roles', 'email']);
   user.updated = Date.now();
 
-  User.update({ id: req.user.id }, user, function (error, user) {
-    if (error) {
-      console.log('error:', error);
-      return res.status(400).send({
-        message: error
-      });
-    } else {
-      var updated = _.extend(user, req.user);
-      req.login(updated, function (err) {
-        if (err) {
-          res.status(400).send(err);
-        } else {
-          res.json(user);
-        }
+  Promise.try(function(){
+    if(user.username !== req.user.username){
+      console.log('changing username', user.username);
+      return Slug.change({id: user.username, refId: req.user.id, refType: 'User'}, req.user.username).then(function(val){
+        return;
+      }).catch(function(err){
+        delete user.username;
+        return;
       });
     }
+    else{
+      return;
+    }
+  }).then(function(){
+    console.log('updating user', user);
+    return User.update({ id: req.user.id }, user, function (error, modified) {
+      if (error) {
+        console.log('error:', error);
+        return res.status(400).send({
+          message: error
+        });
+      } else {
+        User.getPopulated(req.user.id).then(function(updated){
+//        var updated = _.extend(user, req.user, {username: user.username});
+          console.log('updated user', updated);
+          req.login(updated, function (err) {
+            if (err) {
+              return res.status(400).send(err);
+            } else {
+              return res.json(updated);
+            }
+          });
+        });
+      }
+    });
   });
 };
 

@@ -213,6 +213,31 @@ UserSchema.statics.findEmail = function (email, callback) {
   });
 };
 
+UserSchema.statics.getPopulated = Promise.method(function(id){
+  var User = dynamoose.model('User');
+  var File = dynamoose.model('File');
+  var key = 'user:' + id;
+  var _item;
+
+  return User.get(id).then(function(item){
+    if(_.isUndefined(item)) return null;
+    _item = item;
+    if(!item.avatar){
+      return null;
+    }
+    else{
+      return File.getCached(item.avatar.fileId);
+    }
+  }).then(function(file){
+    if(file){
+      _item.avatar.file = file;
+    }
+    return _item;
+  }).catch(function(err){
+    return null;
+  });
+});
+
 UserSchema.statics.getCached = Promise.method(function(id){
   var User = dynamoose.model('User');
   var File = dynamoose.model('File');

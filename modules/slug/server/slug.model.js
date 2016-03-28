@@ -63,6 +63,20 @@ SlugSchema.static('check', Promise.method(function(id) {
   });
 }));
 
+SlugSchema.static('change', Promise.method(function(newSlug, oldSlugId) {
+  var Slug = dynamoose.model('Slug');
+  newSlug.orig = newSlug.id;
+  return Slug.create(newSlug).then(function(item) {
+    Slug.delete({id: oldSlugId.toLowerCase().trim()}).then(function(){
+      return item;
+    });
+  }).catch(function(err){
+    debug('err: ', err);
+    throw err;
+  });
+}));
+
+
 SlugSchema.static('createWrapper', Promise.method(function(body) {
   var Slug = dynamoose.model('Slug');
   body.orig = body.id;
