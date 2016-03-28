@@ -171,6 +171,44 @@ exports.timelineGroup = function (req, res) {
   });
 };
 
+exports.timelineUser = function (req, res) {
+  var key = 'post:timeline:user';
+  var index = 0;
+
+  if(typeof req.params.index === 'string'){
+    index = parseInt(req.params.index);
+  }
+
+  key = key + ':' + req.params.userId;
+
+  redis.exists(key).then(function(val){
+    if(val===0){
+      console.log('key not found: ', key);
+      return Post.query('userId').eq(req.params.userId).exec().then(function(items){
+        return Promise.map(items, function(item){
+          redis.zadd(key, moment(item.created).unix(), item.id);
+        });
+      });
+    }
+    else{
+      return val;
+    }
+  })
+  .then(function(val){
+    // #magic
+    return redis.zrevrange(key, index, 9).map(function(value){
+      return Post.getCached(value);
+    });
+  })
+  .then(function(val){
+    res.json(val);
+  })
+  .catch(function(err){
+    console.log('err', err);
+    res.json({err: err});
+  });
+};
+
 /**
  * middleware
  */

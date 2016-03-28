@@ -38,6 +38,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/post/timeline/group/:groupId/:index',
       permissions: ['*']
+    }, {
+      resources: '/api/post/timeline/user/:userId/:index',
+      permissions: ['*']
     }]
   }, {
     roles: ['guest'],
@@ -55,6 +58,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['*']
     }, {
       resources: '/api/post/timeline/group/:groupId/:index',
+      permissions: ['*']
+    }, {
+      resources: '/api/post/timeline/user/:userId/:index',
       permissions: ['*']
     }]
   }]);
