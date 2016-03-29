@@ -88,7 +88,7 @@ ContributorSchema.methods.populate = Promise.method(function (_schema) {
 
   console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
-  return model.get(this[_attribute]).then(function(item){
+  return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
     return _this;
   });
