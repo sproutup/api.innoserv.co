@@ -43,9 +43,6 @@ exports.read = function (req, res) {
     });
   })
   .then(function(){
-    return _item.populate('Campaign');
-  })
-  .then(function(){
     return res.json(_item);
   })
   .catch(function(err){
