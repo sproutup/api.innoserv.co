@@ -4,7 +4,7 @@
  * Module dependencies.
  */
  /* global -Promise */
-var Promise = require('bluebird'); 
+var Promise = require('bluebird');
 var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
@@ -84,15 +84,19 @@ ContributorSchema.methods.populate = Promise.method(function (_schema) {
   var _this = this;
 
   var _attribute = _schema.toLowerCase() + 'Id';
-  if (!this[_attribute]) return null;
+  if (!this[_attribute]){
+    console.log('populate: null value');
+    return null;
+  }
 
   console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
-  return model.get(this[_attribute]).then(function(item){
+  return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
     return _this;
   });
 });
+
 
 var Contributor = dynamoose.model('Contributor', ContributorSchema);
 
