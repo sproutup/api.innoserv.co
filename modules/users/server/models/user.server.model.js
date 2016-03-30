@@ -129,15 +129,9 @@ var UserSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  /* For reset password */
-  resetPasswordToken: {
-    type: String
-  },
-  resetPasswordExpires: {
-    type: Date
-  },
   emailConfirmed: {
-    type: Boolean
+    type: Boolean,
+    default: false
   }
 });
 
