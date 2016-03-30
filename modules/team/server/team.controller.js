@@ -9,6 +9,8 @@ var User = dynamoose.model('User');
 var Company = dynamoose.model('Company');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+ /* global -Promise */
+var Promise = require('bluebird');
 
 /**
  * Show
@@ -119,8 +121,12 @@ exports.list = function (req, res) {
  */
 exports.listByCompany = function (req, res) {
   Team.query({companyId: req.model.id}).exec().then(function(items){
-    var query = _.map(items, function(val){ return {id: val.userId}; });
-    return User.batchGet(query);
+    return Promise.map(items, function(item) {
+      return item.populate('User')
+        .then(function() {
+          return item;
+        });
+    });
   })
   .then(function(items){
     res.json(items);
