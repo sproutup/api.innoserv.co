@@ -29,7 +29,6 @@ var noReturnUrls = [
 
 /**
  * Verification email sent after signup
- * This will be refactored with new sendgrid function
  */
 var signedUpEmail = function(user, host) {
   var token;
@@ -261,6 +260,7 @@ exports.oauthCall = function (strategy, scope) {
       req.session.redirect_to = req.query.redirect_to;
     }
     // Authenticate
+    debug('strategy: ', strategy, scope);
     passport.authenticate(strategy, scope)(req, res, next);
   };
 };
@@ -271,6 +271,7 @@ exports.oauthCall = function (strategy, scope) {
 exports.oauthCallback = function (strategy) {
   return function (req, res, next) {
     // Pop redirect URL from session
+    debug('oauth callback: ', strategy);
     var sessionRedirectURL = req.session.redirect_to;
     delete req.session.redirect_to;
 
@@ -285,7 +286,8 @@ exports.oauthCallback = function (strategy) {
         if (err) {
           return res.redirect('/authentication/signin');
         }
-
+        if (_.isEmpty(redirectURL)) redirectURL = null;
+        debug('oauth redirect: ', redirectURL, sessionRedirectURL);
         return res.redirect(redirectURL || sessionRedirectURL || '/');
       });
     })(req, res, next);
