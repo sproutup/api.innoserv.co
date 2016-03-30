@@ -40,7 +40,10 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      res.json(item);
+      item.populate('User')
+        .then(function() {
+          res.json(item);
+        });
     }
   });
 };
@@ -104,9 +107,8 @@ exports.listByRef = function (req, res) {
     .query('refId').eq(req.params.refId)
     .exec().then(function(items){
       return Promise.map(items, function(item) {
-        return User.getCached(item.userId)
-          .then(function(res) {
-            item.user = res;
+        return item.populate('User')
+          .then(function() {
             return item;
           });
       });
