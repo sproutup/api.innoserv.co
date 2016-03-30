@@ -18,7 +18,7 @@ module.exports = function (app) {
     .delete(ctrl.delete);
 
   app.route('/api/comment/:refType/:refId').all(policy.isAllowed)
-    .get(ctrl.list)
+    .get(ctrl.listByRef)
     .post(ctrl.create);
 
   // Finish by binding the middleware
