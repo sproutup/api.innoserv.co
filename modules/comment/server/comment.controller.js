@@ -5,6 +5,9 @@
  */
 var dynamoose = require('dynamoose');
 var CommentModel = dynamoose.model('Comment');
+var User = dynamoose.model('User');
+/* global -Promise */
+var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 
@@ -91,6 +94,32 @@ exports.list = function (req, res) {
       message: errorHandler.getErrorMessage(err)
     });
   });
+};
+
+/**
+ * List by ref
+ */
+exports.listByRef = function (req, res) {
+  CommentModel
+    .query('refId').eq(req.params.refId)
+    .exec().then(function(items){
+      return Promise.map(items, function(item) {
+        return User.getCached(item.userId)
+          .then(function(res) {
+            item.user = res;
+            return item;
+          });
+      });
+    })
+    .then(function(items) {
+      res.json(items);
+    })
+    .catch(function(err){
+      console.log('err: ', err);
+      return res.status(400).send({
+        message: err.message
+      });
+    });
 };
 
 /**
