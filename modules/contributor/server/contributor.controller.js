@@ -22,7 +22,7 @@ var sendApprovedEmail = sendApprovedEmail;
  */
 exports.read = function (req, res) {
   var _item;
-  Contributor.queryOne({campaignId: req.params.campaignId, userId: req.params.userId}).exec()
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
   .then(function(item){
     if(_.isUndefined(item)){
       return res.status(204).send({
@@ -33,14 +33,12 @@ exports.read = function (req, res) {
   })
   .then(function(){
     return _item.populate('User');
-//    return knex
-//      .select('id','name','email', 'description')
-//      .from('users')
-//      .where('id', _item.userId);
   })
   .then(function(){
     return Channel.queryOne('refId').eq(_item.id).exec().then(function(channel){
       _item.channel = channel;
+      return;
+    }).catch(function(){
       return;
     });
   })
@@ -195,9 +193,9 @@ exports.listByUser = function (req, res) {
     res.json(contributions);
   })
   .catch(function(err){
-    console.log(err);
+    console.log('err: ', err);
     return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+      message: err
     });
   });
 };

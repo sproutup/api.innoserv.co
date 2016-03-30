@@ -67,9 +67,14 @@ SlugSchema.static('change', Promise.method(function(newSlug, oldSlugId) {
   var Slug = dynamoose.model('Slug');
   newSlug.orig = newSlug.id;
   return Slug.create(newSlug).then(function(item) {
-    Slug.delete({id: oldSlugId.toLowerCase().trim()}).then(function(){
+    if(oldSlugId){
+      Slug.delete({id: oldSlugId.toLowerCase().trim()}).then(function(){
+        return item;
+      });
+    }
+    else{
       return item;
-    });
+    }
   }).catch(function(err){
     debug('err: ', err);
     throw err;
