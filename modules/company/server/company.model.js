@@ -136,15 +136,16 @@ CompanySchema.statics.getCached = Promise.method(function(id){
       if(_.isUndefined(item)) return item;
       _item = item;
       return Team.query('companyId').eq(id).exec().then(function(team){
-        item.team = team;
-        return item;
+        _item.team = team;
+        return _item;
       });
-    }).then(function(item){
-      if(!item.banner || !item.banner.fileId) return item;
+    }).then(function(_item){
+      if(_.isUndefined(_item)) return _item;
+      if(!_item.banner || !_item.banner.fileId) return _item;
 
-      return File.get(item.banner.fileId).then(function(file){
-        item.banner.file = file;
-        return item;
+      return File.getCached(_item.banner.fileId).then(function(file){
+        _item.banner.file = file;
+        return _item;
       });
     }).then(function(){
       return _item;
