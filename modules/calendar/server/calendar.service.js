@@ -46,7 +46,6 @@ CalendarService.listEvents = function(calendarId) {
   return calendar.events
     .listAsync({ auth: jwt.client, calendarId: calendarId })
     .then(function(result){
-      console.log('events: ', result);
       return result.items;
   })
   .catch(function(err) {
