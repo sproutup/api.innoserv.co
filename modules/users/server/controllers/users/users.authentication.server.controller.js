@@ -260,7 +260,8 @@ exports.oauthCall = function (strategy, scope) {
       req.session.redirect_to = req.query.redirect_to;
     }
     // Authenticate
-    debug('strategy: ', strategy, scope);
+    console.log('strategy: ', strategy, scope);
+    console.log('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
     passport.authenticate(strategy, scope)(req, res, next);
   };
 };
