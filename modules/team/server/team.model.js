@@ -9,6 +9,8 @@ var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+/* global -Promise */
+var Promise = require('bluebird');
 
 /**
  * Schema
@@ -35,6 +37,24 @@ var TeamSchema = new Schema({
     default: Date.now
   }
 });
+
+/**
+ * Populate method
+ */
+TeamSchema.methods.populate = Promise.method(function (_schema) {
+  var _this = this;
+
+  var _attribute = _schema.toLowerCase() + 'Id';
+  if (!this[_attribute]) return null;
+
+  console.log('populate: ', _schema);
+  var model = dynamoose.model(_schema);
+  return model.getCached(this[_attribute]).then(function(item){
+    _this[_schema.toLowerCase().trim()] = item;
+    return _this;
+  });
+});
+
 /*
 TeamSchema.statics.queryByUser = Promise.method(function(userId){
   var key = 'user:' + userId + ':companies';
