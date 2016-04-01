@@ -53,6 +53,7 @@ module.exports.initMiddleware = function (app) {
   // Showing stack errors
   app.set('showStackError', true);
 
+  app.enable('trust proxy');
   // Enable jsonp
   app.enable('jsonp callback');
 
