@@ -98,10 +98,14 @@ var CampaignSchema = new Schema({
     default: '',
     trim: true
   },
-  start: {
+  updated: {
+    type: Date,
+    default: Date.now
+  },
+  started: {
     type: Date
   },
-  end: {
+  ended: {
     type: Date
   },
   typeOfContent : {
