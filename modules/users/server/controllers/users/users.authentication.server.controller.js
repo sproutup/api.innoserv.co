@@ -264,7 +264,7 @@ exports.oauthCall = function (strategy, scope) {
     console.log('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
     console.log('referer: ', req.headers.referer);
 
-    var tls = (req.headers.referer && 'https' === req.headers.referer.split(/\s*,\s*/)[0]);
+    var tls = (req.headers.referer && req.headers.referer.indexOf('https') == 0);
     var protocol = tls ? 'https' : 'http';
     console.log('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
