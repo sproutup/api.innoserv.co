@@ -9,6 +9,7 @@ var Campaign = dynamoose.model('Campaign');
 var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var config = require('config/config');
 
 /* const variables */
 var _isTemplate = -10;
@@ -29,6 +30,7 @@ exports.dropTable = function (req, res) {
 exports.read = function (req, res) {
   Promise.join(req.model.populate('Product'), req.model.populate('Company'))
     .then(function(){
+      req.model.url = config.domains.mvp + 'campaign/' + req.model.id + '/' + req.model.type;
       res.json(req.model);
     })
     .catch(function(err){
