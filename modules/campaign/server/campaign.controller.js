@@ -80,6 +80,7 @@ exports.createTemplate = function (req, res) {
  */
 exports.update = function (req, res) {
   var obj = _.omit(req.body, ['id']);
+  obj.updated = new Date();
 
   Campaign.update({ id: req.model.id }, obj, function (error, campaign) {
     if (error) {
