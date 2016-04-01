@@ -99,7 +99,8 @@ var CampaignSchema = new Schema({
     trim: true
   },
   updated: {
-    type: Date
+    type: Date,
+    default: Date.now
   },
   started: {
     type: Date
