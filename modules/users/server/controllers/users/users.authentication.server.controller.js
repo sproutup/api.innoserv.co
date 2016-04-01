@@ -262,6 +262,8 @@ exports.oauthCall = function (strategy, scope) {
     // Authenticate
     console.log('strategy: ', strategy, scope);
     console.log('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
+    console.log('referer: ', req.headers['referer']);
+    req.headers['x-forwarded-proto'] = 'https';
     passport.authenticate(strategy, scope)(req, res, next);
   };
 };
