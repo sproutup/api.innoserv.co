@@ -290,6 +290,15 @@ exports.oauthCallback = function (strategy) {
     var sessionRedirectURL = req.session.redirect_to;
     delete req.session.redirect_to;
 
+    var tls = (req.headers.referer && req.headers.referer.indexOf('https') === 0);
+    var protocol = tls ? 'https' : 'http';
+    console.log('proto: ', protocol);
+    req.headers['x-forwarded-proto'] = protocol;
+    var fields = url.parse(req.headers.referer);
+    console.log('dom: ', fields);
+    console.log('host: ', fields.host);
+    req.headers['x-forwarded-host'] = fields.host;
+
     passport.authenticate(strategy, function (err, user, redirectURL) {
       if (err) {
         console.log('err: ', err);
