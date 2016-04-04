@@ -37,7 +37,6 @@ describe('Company CRUD tests', function () {
 
     // Create a new user
     user = {
-      id: '123',
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
@@ -56,13 +55,16 @@ describe('Company CRUD tests', function () {
     });
 
     // Save user to the test db
-    User.createWithSlug(user).then(function() {
+    User.createWithSlug(user).then(function(res) {
+      user = res;
       done();
     });
   });
 
   afterEach(function (done) {
-    user.delete(done);
+    User.purge(user.id).then(function() {
+      done();
+    });
   });
 
   it('should not be able to save a company if not logged in', function (done) {
@@ -88,35 +90,30 @@ describe('Company CRUD tests', function () {
         // Get the userId
         var userId = user.id;
 
-        // Save a new article
-        // agent.post('/api/articles')
-        //   .send(article)
-        //   .expect(200)
-        //   .end(function (articleSaveErr, articleSaveRes) {
-        //     // Handle article save error
-        //     if (articleSaveErr) {
-        //       return done(articleSaveErr);
-        //     }
-        //
-        //     // Get a list of articles
-        //     agent.get('/api/articles')
-        //       .end(function (articlesGetErr, articlesGetRes) {
-        //         // Handle article save error
-        //         if (articlesGetErr) {
-        //           return done(articlesGetErr);
-        //         }
-        //
-        //         // Get articles list
-        //         var articles = articlesGetRes.body;
-        //
-        //         // Set assertions
-        //         (articles[0].user._id).should.equal(userId);
-        //         (articles[0].title).should.match('Article Title');
-        //
-        //         // Call the assertion callback
-        //         done();
-        //       });
-        //   });
+        agent.post('/api/company')
+          .send(company)
+          .expect(200)
+          .end(function (companySaveErr, companySaveRes) {
+            if (companySaveErr) {
+              return done(companySaveErr);
+            }
+
+            // Get a list of companies
+            agent.get('/api/company')
+              .end(function (companiesGetErr, companiesGetRes) {
+                if (companiesGetErr) {
+                  return done(companiesGetErr);
+                }
+
+                var companies = companiesGetRes.body;
+                console.log('companies', companies);
+
+                // Set assertions
+                (companies[0].name).should.match('microsoft');
+
+                done();
+              });
+          });
       });
   });
 });

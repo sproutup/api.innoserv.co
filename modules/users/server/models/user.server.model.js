@@ -283,7 +283,21 @@ UserSchema.static('createWithSlug', Promise.method(function(body) {
   });
 }));
 
+UserSchema.static('purge', Promise.method(function(userId) {
+  var User = dynamoose.model('User');
+  var Slug = dynamoose.model('Slug');
+  var _item;
 
+  return User.get(userId).then(function(item) {
+    _item = item;
+    return Slug.delete(item.username);
+  }).then(function() {
+    return _item.delete();
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+}));
 
 var UserModel = dynamoose.model('User', UserSchema);
 
