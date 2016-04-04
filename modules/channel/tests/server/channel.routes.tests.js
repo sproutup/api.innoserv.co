@@ -6,7 +6,7 @@ var should = require('should'),
   dynamooselib = require('config/lib/dynamoose'),
   express = require('config/lib/express');
 
-dynamooselib.loadModels();
+//dynamooselib.loadModels();
 var User = dynamoose.model('User');
 var Channel = dynamoose.model('Channel');
 
