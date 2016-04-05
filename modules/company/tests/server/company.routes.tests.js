@@ -1,19 +1,19 @@
 'use strict';
 
-var should = require('should'),
+ /* global -Promise */
+var Promise = require('bluebird'),
+  should = require('should'),
   request = require('supertest'),
   dynamoose = require('dynamoose'),
-//  dynamooselib = require('config/lib/dynamoose'),
-  express = require('config/lib/express');
-
-//dynamooselib.loadModels();
-var User = dynamoose.model('User');
-var Company = dynamoose.model('Company');
+  express = require('config/lib/express'),
+  User = dynamoose.model('User'),
+  Company = dynamoose.model('Company');
 
 /**
  * Globals
  */
 var app, agent, credentials, user, company, admin;
+var _company = {};
 
 /**
  * Company routes tests
@@ -48,7 +48,6 @@ describe('Company CRUD tests', function () {
 
     // Create a new company
     company = new Company({
-      id: '123',
       name: 'microsoft',
       url: 'www.mircosoft.com',
       slug: 'microsoft'
@@ -62,9 +61,13 @@ describe('Company CRUD tests', function () {
   });
 
   afterEach(function (done) {
-    User.purge(user.id).then(function() {
-      done();
-    });
+    Promise.join(
+      User.purge(user.id),
+      Company.purge(_company.id),
+      function () {
+        done();
+      }
+    );
   });
 
   it('should not be able to save a company if not logged in', function (done) {
@@ -87,8 +90,7 @@ describe('Company CRUD tests', function () {
           return done(signinErr);
         }
 
-        // Get the userId
-        var userId = user.id;
+        var signedInUser = signinRes.body;
 
         agent.post('/api/company')
           .send(company)
@@ -98,18 +100,27 @@ describe('Company CRUD tests', function () {
               return done(companySaveErr);
             }
 
-            // Get a list of companies
-            agent.get('/api/company')
-              .end(function (companiesGetErr, companiesGetRes) {
-                if (companiesGetErr) {
-                  return done(companiesGetErr);
+            // asign company to the _company variable that we use in afterEach for purging purposes
+            _company = companySaveRes.body;
+
+            // Set assertions
+            (_company.name).should.match('microsoft');
+            (_company.team.length).should.match(1);
+            (_company.team[0].userId).should.match(signedInUser.id);
+
+            // Get company with slug
+            agent.get('/api/slug/' + _company.slug)
+              .end(function (companyGetErr, companyGetRes) {
+                if (companyGetErr) {
+                  return done(companyGetErr);
                 }
 
-                var companies = companiesGetRes.body;
-                console.log('companies', companies);
+                company = companyGetRes.body.item;
 
                 // Set assertions
-                (companies[0].name).should.match('microsoft');
+                (company.name).should.match('microsoft');
+                (company.team[0].userId).should.match(signedInUser.id);
+                (company.team.length).should.match(1);
 
                 done();
               });

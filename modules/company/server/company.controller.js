@@ -5,10 +5,9 @@
  */
 var dynamoose = require('dynamoose');
 var Company = dynamoose.model('Company');
+var Team = dynamoose.model('Team');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
-var debug = require('debug')('up:debug:company:ctrl');
-var info = require('debug')('up:info:company:ctrl');
 
 /**
  * Show the company
@@ -21,18 +20,18 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  Company.createWithSlug(req.body).then(function(item){
-    debug('create', item);
-    res.json(item);
-  }).catch(function(err){
-    debug('err: ', err.code);
-    if(err.code === 'ConditionalCheckFailedException'){
-      err = 'Duplicate entry ' + req.body.slug;
-    }
-    return res.status(400).send({
-      message: err
+  var _item;
+  Company.createWithSlug(req.body)
+    .then(function(item) {
+      _item = item;
+      return Team.addTeamMember(req.user.id, _item.id);
+    }).then(function(member) {
+      _item.team = [];
+      _item.team.push(member);
+      res.json(_item);
+    }).catch(function(error) {
+      return res.status(400).send(error);
     });
-  });
 };
 
 /**
@@ -79,9 +78,9 @@ exports.list = function (req, res) {
     res.json(companies);
   })
   .catch(function(err){
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
   });
 };
 

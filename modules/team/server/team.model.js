@@ -55,6 +55,19 @@ TeamSchema.methods.populate = Promise.method(function (_schema) {
   });
 });
 
+/**
+ * Populate method
+ */
+TeamSchema.statics.addTeamMember = Promise.method(function (userId, companyId) {
+  var Team = dynamoose.model('Team');
+  var member = {
+    userId: userId,
+    companyId: companyId
+  };
+
+  return Team.create(member);
+});
+
 /*
 TeamSchema.statics.queryByUser = Promise.method(function(userId){
   var key = 'user:' + userId + ':companies';

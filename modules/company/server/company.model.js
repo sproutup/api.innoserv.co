@@ -96,7 +96,6 @@ CompanySchema.statics.find = function (id) {
   });
 };
 
-
 CompanySchema.statics.findBySlug = function (slug) {
   var _this = this;
 
@@ -185,6 +184,32 @@ CompanySchema.static('createWithSlug', Promise.method(function(body) {
       debug('item: ', item);
       return item;
     });
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+}));
+
+CompanySchema.static('purge', Promise.method(function(companyId) {
+  if (!companyId) {
+    return;
+  }
+
+  var Company = dynamoose.model('Company');
+  var Slug = dynamoose.model('Slug');
+  var Team = dynamoose.model('Team');
+  var _item;
+
+  return Company.getCached(companyId).then(function(item) {
+    _item = item;
+    // delete slug
+    return Slug.delete(_item.slug);
+  }).then(function() {
+    // delete team members
+    return Team.batchDelete(_item.team);
+  }).then(function() {
+    // delete company
+    return _item.delete();
   }).catch(function(err){
     debug('err', err.stack);
     throw err;
