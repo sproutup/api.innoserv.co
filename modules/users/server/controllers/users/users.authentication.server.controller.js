@@ -271,11 +271,12 @@ exports.oauthCall = function (strategy, scope) {
     var protocol = tls ? 'https' : 'http';
     console.log('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
-    var fields = url.parse(req.headers.referer);
-    console.log('dom: ', fields);
-    console.log('host: ', fields.host);
-    req.headers['x-forwarded-host'] = fields.host;
-
+    if(req.headers.referer){
+      var fields = url.parse(req.headers.referer);
+      console.log('dom: ', fields);
+      console.log('host: ', fields.host);
+      req.headers['x-forwarded-host'] = fields.host;
+    }
     passport.authenticate(strategy, scope)(req, res, next);
   };
 };
@@ -294,10 +295,12 @@ exports.oauthCallback = function (strategy) {
     var protocol = tls ? 'https' : 'http';
     console.log('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
-    var fields = url.parse(req.headers.referer);
-    console.log('dom: ', fields);
-    console.log('host: ', fields.host);
-    req.headers['x-forwarded-host'] = fields.host;
+    if(req.headers.referer){
+      var fields = url.parse(req.headers.referer);
+      console.log('dom: ', fields);
+      console.log('host: ', fields.host);
+      req.headers['x-forwarded-host'] = fields.host;
+    }
 
     passport.authenticate(strategy, function (err, user, redirectURL) {
       if (err) {
