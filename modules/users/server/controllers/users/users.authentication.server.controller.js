@@ -233,7 +233,7 @@ exports.sendEmailVerification = function (req, res) {
       ':url': [url]
     };
 
-    return sendgridService.send(to, subject, substitutions, '7a6240b6-7a2a-4fc2-aed7-d4a6a52cb880');
+    return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.verification);
   }).then(function(result) {
     return res.status(200).send();
   }).catch(function(error) {
