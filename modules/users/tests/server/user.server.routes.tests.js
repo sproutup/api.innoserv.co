@@ -16,7 +16,7 @@ var User = dynamoose.model('User');
 /**
  * Globals
  */
-var app, agent, credentials, credentials_admin, user, admin;
+var app, agent, credentials, credentials_admin, user, admin, _user, _admin;
 
 /**
  * User routes tests
@@ -46,19 +46,17 @@ describe('User CRUD tests', function () {
 
     // Create a new user
     user = new User({
-      id: '123',
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
-      email: 'user@test.com',
-      username: credentials.username,
+      email: credentials.username,
+      username: 'username',
       password: credentials.password,
       provider: 'local'
     });
 
     // Create a new admin user
     admin = new User({
-      id: '4321',
       firstName: 'Admin',
       lastName: 'User',
       displayName: 'Full Name',
@@ -69,15 +67,17 @@ describe('User CRUD tests', function () {
       roles: ['user', 'admin']
     });
 
-
-    // Save a user to the test db and create new article
-    Promise.join(
-      user.save(),
-      admin.save(),
-      function () {
+    // Save user to the test db
+    User.createWithSlug(user).then(function(res) {
+      _user = res;
+    }).then(function() {
+      // Save admin to the test db
+      User.createWithSlug(admin).then(function(res) {
+        _admin = res;
         done();
-      }
-    );
+      });
+    });
+
   });
 
   it('should not be able to retrieve a list of users if not admin', function (done) {
@@ -87,7 +87,6 @@ describe('User CRUD tests', function () {
       .end(function (signinErr, signinRes) {
         // Handle signin error
         if (signinErr) {
-            console.log('err: ', signinErr);
           return done(signinErr);
         }
 
@@ -128,9 +127,36 @@ describe('User CRUD tests', function () {
       });
   });
 
+  it('should be able to send a verification email if logged in', function (done) {
+    agent.post('/api/auth/signin')
+      .send(credentials)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        // Send email verification
+        agent.post('/api/auth/email/verification')
+          .expect(200)
+          .end(function (usersPostErr, usersPostRes) {
+            if (usersPostErr) {
+              return done(usersPostErr);
+            }
+
+            done();
+          });
+      });
+  });
+
   afterEach(function (done) {
-    admin.delete().then(function(){
-      user.delete(done);
-    });
+    Promise.join(
+      User.purge(_user.id),
+      User.purge(_admin.id),
+      function () {
+        done();
+      }
+    );
   });
 });

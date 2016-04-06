@@ -20,6 +20,8 @@ module.exports = function (app) {
   app.route('/api/auth/join').post(users.join);
   // app.route('/api/auth/sendGridTest').get(users.sendGridTest);
   app.route('/api/auth/verifyToken').post(users.verifyToken);
+  app.route('/api/auth/email/verification').post(users.sendEmailVerification);
+  app.route('/api/auth/email/confirmation').post(users.verifyEmailToken);
   app.route('/api/auth/signin').post(users.signin);
   app.route('/api/auth/signout').get(users.signout);
 

@@ -210,6 +210,60 @@ exports.join = function (req, res) {
 };
 
 /**
+ * Send email verification
+ * Called from the www sign up flow & profile settings page
+ */
+exports.sendEmailVerification = function (req, res) {
+  var token;
+  if (!req.user.id) {
+    return res.status(400).send({
+      message: 'Something is wrong with your session.'
+    });
+  }
+
+  crypto.randomBytesAsync(20).then(function(buffer) {
+    token = buffer.toString('hex');
+    redis.set('token:' + token, req.user.id, 'EX', 86400);
+
+    var url = 'http://' + req.headers.host + '/api/auth/email/confirmation/' + token;
+    var to = req.user.email;
+    var subject = 'Confirm Your Email';
+    var substitutions = {
+      ':user': [req.user.displayName],
+      ':url': [url]
+    };
+
+    return sendgridService.send(to, subject, substitutions, '7a6240b6-7a2a-4fc2-aed7-d4a6a52cb880');
+  }).then(function(result) {
+    return res.status(200).send();
+  }).catch(function(error) {
+    return res.status(400).send({
+      message: 'Something went wrong.'
+    });
+  });
+};
+
+/**
+ * Verify user's email token, update user, ?redirect them to their profile page/confirmation page
+ */
+exports.verifyEmailToken = function (req, res) {
+  redis.get('token:' + req.body.token).then(function(result) {
+    if (result === null) {
+      return res.status(400).send({
+        message: 'This token is invalid'
+      });
+    } else {
+      console.log('token res', result);
+      // TODO
+      // Update user and redirect them to their profile page/confirmation page
+    }
+  }).catch(function(err){
+    console.log('err: ', err);
+    throw err;
+  });
+};
+
+/**
  * Return an email and company id from a company token
  */
 exports.verifyToken = function (req, res) {

@@ -100,7 +100,7 @@ describe('Company CRUD tests', function () {
               return done(companySaveErr);
             }
 
-            // asign company to the _company variable that we use in afterEach for purging purposes
+            // Asign company to the _company variable that we use in afterEach for purging purposes
             _company = companySaveRes.body;
 
             // Set assertions
