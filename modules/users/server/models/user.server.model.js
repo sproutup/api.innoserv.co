@@ -207,6 +207,11 @@ UserSchema.statics.findEmail = function (email, callback) {
   });
 };
 
+UserSchema.statics.changeEmail = Promise.method(function (userId, email) {
+  // todo add send email confirmation handling
+  return true;
+});
+
 UserSchema.statics.getPopulated = Promise.method(function(id){
   var User = dynamoose.model('User');
   var File = dynamoose.model('File');
@@ -289,8 +294,14 @@ UserSchema.static('purge', Promise.method(function(userId) {
   var _item;
 
   return User.get(userId).then(function(item) {
+    if(_.isUndefined(item)) return false;
     _item = item;
-    return Slug.delete(item.username);
+    if(item.username){
+      return Slug.delete(item.username);
+    }
+    else{
+      return false;
+    }
   }).then(function() {
     return _item.delete();
   }).catch(function(err){

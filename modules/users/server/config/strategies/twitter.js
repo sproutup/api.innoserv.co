@@ -31,12 +31,14 @@ module.exports = function (config) {
         firstName: firstName,
         lastName: lastName,
         displayName: displayName,
-        username: profile.username,
+        username: providerData.screen_name,
         profileImageURL: profile.photos[0].value.replace('normal', 'bigger'),
         provider: 'twitter',
         providerIdentifierField: 'id_str',
         providerData: providerData
       };
+
+      req.newAuthUser = true;
 
       // Save the user OAuth profile
       users.saveOAuthUserProfile(req, providerUserProfile, done);

@@ -20,7 +20,7 @@ var _ = require('lodash'),
  */
 exports.update = function (req, res) {
   // Init Variables
-  var user = _.omit(req.body, ['id', 'roles', 'email']);
+  var user = _.omit(req.body, ['id', 'roles']);
   user.updated = Date.now();
 
   Promise.try(function(){
@@ -32,6 +32,15 @@ exports.update = function (req, res) {
         delete user.username;
         return;
       });
+    }
+    else{
+      return;
+    }
+  }).then(function(){
+    if(user.email.toLowerCase().trim() !== req.user.email) {
+      console.log('changing email', user.email);
+      user.emailConfirmed = false;
+      return User.changeEmail(req.user.id, user.email);
     }
     else{
       return;

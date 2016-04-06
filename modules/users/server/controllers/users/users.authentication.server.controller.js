@@ -16,6 +16,7 @@ var path = require('path'),
   Promise = require('bluebird'),
   sendgridService = Promise.promisifyAll(require(path.resolve('./modules/sendgrid/server/sendgrid.service'))),
   User = dynamoose.model('User'),
+  Slug = dynamoose.model('Slug'),
   Provider = dynamoose.model('Provider'),
   Company = dynamoose.model('Company'),
   Team = dynamoose.model('Team'),
@@ -159,6 +160,12 @@ exports.signup = function (req, res) {
  */
 exports.emailIsAvailable = function (req, res) {
   var email = req.body.email.toLowerCase();
+
+  // return true if its users own email
+  if(req.user && req.user.email === email){
+    return res.json({result: 1});
+  }
+
   User.queryOne('email').eq(email).exec().then(function(result) {
     if (result) {
       return res.json({result: 0});
@@ -315,6 +322,9 @@ exports.oauthCallback = function (strategy) {
           return res.redirect('/authentication/signin');
         }
         if (_.isEmpty(redirectURL)) redirectURL = null;
+        if(req.newAuthUser){
+          redirectURL = '/welcome';
+        }
         debug('oauth redirect: ', redirectURL, sessionRedirectURL);
         return res.redirect(redirectURL || sessionRedirectURL || '/');
       });
@@ -339,7 +349,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         if (!provider) {
           var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
 
-          User.findUniqueUsername(possibleUsername, null, function (availableUsername) {
+          Slug.findUniqueSlug(possibleUsername, null, function (availableUsername) {
             user = new User({
               firstName: providerUserProfile.firstName,
               lastName: providerUserProfile.lastName,

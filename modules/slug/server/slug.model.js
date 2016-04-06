@@ -63,6 +63,21 @@ SlugSchema.static('check', Promise.method(function(id) {
   });
 }));
 
+/**
+ * Find unique slug
+ */
+SlugSchema.statics.findUniqueSlug = Promise.method(function (slug, suffix) {
+  var Slug = dynamoose.model('Slug');
+  var _this = this;
+  var possibleSlug = slug + (suffix || '');
+
+  return Slug.get(possibleSlug).then(function (res) {
+    return Slug.findUniqueSlug(slug, (suffix || 0) + 1);
+  }).catch(function(err){
+    return possibleSlug;
+  });
+});
+
 SlugSchema.static('change', Promise.method(function(newSlug, oldSlugId) {
   var Slug = dynamoose.model('Slug');
   newSlug.orig = newSlug.id;

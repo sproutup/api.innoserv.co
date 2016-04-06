@@ -35,6 +35,8 @@ module.exports = function (config) {
       };
       console.log('google', req.path);
       console.log('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
+
+      req.newAuthUser = true;
       // Save the user OAuth profile
       users.saveOAuthUserProfile(req, providerUserProfile, done);
     }
