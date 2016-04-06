@@ -16,7 +16,7 @@ var User = dynamoose.model('User');
 /**
  * Globals
  */
-var app, agent, credentials, credentials_admin, user, admin;
+var app, agent, credentials, credentials_admin, user, admin, _user, _admin;
 
 /**
  * User routes tests
@@ -46,11 +46,10 @@ describe('User CRUD tests', function () {
 
     // Create a new user
     user = {
-      id: '123',
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
-      email: 'user@test.com',
+      email: credentials.username,
       username: 'username123',
       password: credentials.password,
       provider: 'local'
@@ -58,7 +57,6 @@ describe('User CRUD tests', function () {
 
     // Create a new admin user
     admin = {
-      id: '4321',
       firstName: 'Admin',
       lastName: 'User',
       displayName: 'Full Name',
@@ -69,8 +67,7 @@ describe('User CRUD tests', function () {
       roles: ['user', 'admin']
     };
 
-
-    // Save a user to the test db and create new article
+    // Save user to the test db
     return Promise.join(
       User.createWithSlug(user),
       User.createWithSlug(admin)
@@ -84,7 +81,6 @@ describe('User CRUD tests', function () {
       .end(function (signinErr, signinRes) {
         // Handle signin error
         if (signinErr) {
-            console.log('err: ', signinErr);
           return done(signinErr);
         }
 
@@ -120,6 +116,29 @@ describe('User CRUD tests', function () {
             usersGetRes.body.should.be.instanceof(Array).and.have.lengthOf(2);
 
             // Call the assertion callback
+            done();
+          });
+      });
+  });
+
+  it('should be able to send a verification email if logged in', function (done) {
+    agent.post('/api/auth/signin')
+      .send(credentials)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        // Send email verification
+        agent.post('/api/auth/email/verification')
+          .expect(200)
+          .end(function (usersPostErr, usersPostRes) {
+            if (usersPostErr) {
+              return done(usersPostErr);
+            }
+
             done();
           });
       });
