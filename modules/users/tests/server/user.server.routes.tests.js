@@ -31,7 +31,7 @@ describe('User CRUD tests', function () {
     done();
   });
 
-  beforeEach(function (done) {
+  beforeEach(function () {
     // Create user credentials
     credentials = {
       username: 'user@test.com',
@@ -45,38 +45,35 @@ describe('User CRUD tests', function () {
 
 
     // Create a new user
-    user = new User({
+    user = {
       id: '123',
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
       email: 'user@test.com',
-      username: credentials.username,
+      username: 'username123',
       password: credentials.password,
       provider: 'local'
-    });
+    };
 
     // Create a new admin user
-    admin = new User({
+    admin = {
       id: '4321',
       firstName: 'Admin',
       lastName: 'User',
       displayName: 'Full Name',
       email: 'admin@test.com',
-      username: credentials_admin.username,
+      username: 'username4321',
       password: credentials_admin.password,
       provider: 'local',
       roles: ['user', 'admin']
-    });
+    };
 
 
     // Save a user to the test db and create new article
-    Promise.join(
-      user.save(),
-      admin.save(),
-      function () {
-        done();
-      }
+    return Promise.join(
+      User.createWithSlug(user),
+      User.createWithSlug(admin)
     );
   });
 
@@ -128,9 +125,11 @@ describe('User CRUD tests', function () {
       });
   });
 
-  afterEach(function (done) {
-    admin.delete().then(function(){
-      user.delete(done);
+  afterEach(function () {
+    return User.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
+        return User.purge(item.id);
+      });
     });
   });
 });

@@ -163,7 +163,6 @@ UserSchema.static('hashPassword', function (password, salt) {
  */
 UserSchema.method('populate', function (path) {
   var _this = this;
-  console.log('populate: ', path);
   return _this;
 });
 
@@ -268,7 +267,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
 UserSchema.static('createWithSlug', Promise.method(function(body) {
   var Slug = dynamoose.model('Slug');
   var User = dynamoose.model('User');
-  body.id = intformat(flakeIdGen.next(), 'dec');
+  body.id = body.id || intformat(flakeIdGen.next(), 'dec');
 
   if (body.password) {
     body.salt = crypto.randomBytes(16).toString('base64');
@@ -283,7 +282,7 @@ UserSchema.static('createWithSlug', Promise.method(function(body) {
       return item;
     });
   }).catch(function(err){
-    debug('err', err.stack);
+    debug('createWithSlug: ', err.stack);
     throw err;
   });
 }));
@@ -303,7 +302,12 @@ UserSchema.static('purge', Promise.method(function(userId) {
       return false;
     }
   }).then(function() {
-    return _item.delete();
+    if(_item){
+      return _item.delete();
+    }
+    else{
+      return false;
+    }
   }).catch(function(err){
     debug('err', err.stack);
     throw err;

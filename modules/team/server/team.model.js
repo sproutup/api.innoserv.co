@@ -47,7 +47,6 @@ TeamSchema.methods.populate = Promise.method(function (_schema) {
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]) return null;
 
-  console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
   return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
