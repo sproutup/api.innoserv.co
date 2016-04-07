@@ -215,6 +215,7 @@ exports.join = function (req, res) {
  */
 exports.sendEmailVerification = function (req, res) {
   var token;
+  var url;
   if (!req.user.id) {
     return res.status(400).send({
       message: 'Something is wrong with your session.'
@@ -225,7 +226,7 @@ exports.sendEmailVerification = function (req, res) {
     token = buffer.toString('hex');
     redis.hmset('token:' + token, { 'userId': req.user.id, 'email': req.user.email });
 
-    var url = 'http://' + req.headers.host + '/email/update/confirmation/' + token;
+    url = 'http://' + req.headers.host + '/i/update-email/' + token;
     var to = req.user.email;
     var subject = 'Confirm Your Email';
     var substitutions = {
@@ -235,7 +236,13 @@ exports.sendEmailVerification = function (req, res) {
 
     return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.verification);
   }).then(function(result) {
-    return res.status(200).send();
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+      return res.status(200).send({
+        url: url
+      });
+    } else {
+      return res.status(200).send();
+    }
   }).catch(function(error) {
     return res.status(400).send({
       message: 'Something went wrong.'
