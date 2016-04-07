@@ -8,7 +8,9 @@ var should = require('should'),
   path = require('path'),
   dynamoose = require('dynamoose'),
   dynamooselib = require('config/lib/dynamoose'),
-  express = require(path.resolve('./config/lib/express'));
+  express = require(path.resolve('./config/lib/express')),
+  redis = require('config/lib/redis'),
+  crypto = Promise.promisifyAll(require('crypto'));
 
 //dynamooselib.loadModels();
 var User = dynamoose.model('User');
@@ -141,6 +143,34 @@ describe('User CRUD tests', function () {
 
             done();
           });
+      });
+  });
+
+  it('should be able to confirm an email address', function (done) {
+    var token;
+
+    agent.post('/api/auth/signin')
+      .send(credentials)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        crypto.randomBytesAsync(20).then(function(buffer) {
+          token = buffer.toString('hex');
+          redis.hmset('token:' + token, { 'userId': signinRes.body.id, 'email': signinRes.body.email });
+
+          agent.get('/api/auth/email/confirmation/' + token)
+            .expect(200)
+            .end(function (usersPostErr, usersPostRes) {
+              if (usersPostErr) {
+                return done(usersPostErr);
+              }
+
+              done();
+            });
+        });
       });
   });
 

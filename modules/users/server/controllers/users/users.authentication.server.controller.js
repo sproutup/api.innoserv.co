@@ -223,9 +223,9 @@ exports.sendEmailVerification = function (req, res) {
 
   crypto.randomBytesAsync(20).then(function(buffer) {
     token = buffer.toString('hex');
-    redis.set('token:' + token, req.user.id, 'EX', 86400);
+    redis.hmset('token:' + token, { 'userId': req.user.id, 'email': req.user.email });
 
-    var url = 'http://' + req.headers.host + '/api/auth/email/confirmation/' + token;
+    var url = 'http://' + req.headers.host + '/email/update/confirmation/' + token;
     var to = req.user.email;
     var subject = 'Confirm Your Email';
     var substitutions = {
@@ -244,21 +244,32 @@ exports.sendEmailVerification = function (req, res) {
 };
 
 /**
- * Verify user's email token, update user, ?redirect them to their profile page/confirmation page
+ * Verify user's email token, update user, redirect them to the home page
  */
 exports.verifyEmailToken = function (req, res) {
-  redis.get('token:' + req.body.token).then(function(result) {
-    if (result === null) {
+  redis.hgetall('token:' + req.params.token).then(function(result) {
+    if (!result.email) {
       return res.status(400).send({
         message: 'This token is invalid'
       });
     } else {
-      console.log('token res', result);
-      // TODO
-      // Update user and redirect them to their profile page/confirmation page
+      return User.update({ id: result.userId }, { email: result.email, emailConfirmed: true });
+    }
+  }).then(function(result){
+    if (req.user.id) {
+      User.getPopulated(req.user.id).then(function(updated){
+        req.login(updated, function (err) {
+          if (err) {
+            return res.status(400).send(err);
+          } else {
+            res.json(updated);
+          }
+        });
+      });
+    } else{
+      res.status(200).send();
     }
   }).catch(function(err){
-    console.log('err: ', err);
     throw err;
   });
 };
