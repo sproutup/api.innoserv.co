@@ -5,6 +5,7 @@
  */
 var passport = require('passport'),
   TwitterStrategy = require('passport-twitter').Strategy,
+  debug = require('debug')('up:debug:twitter:strategy'),
   users = require('../../controllers/users.server.controller');
 
 module.exports = function (config) {
@@ -31,6 +32,7 @@ module.exports = function (config) {
         firstName: firstName,
         lastName: lastName,
         displayName: displayName,
+        description: providerData.description,
         username: providerData.screen_name,
         profileImageURL: profile.photos[0].value.replace('normal', 'bigger'),
         provider: 'twitter',
@@ -38,7 +40,7 @@ module.exports = function (config) {
         providerData: providerData
       };
 
-      req.newAuthUser = true;
+      debug('username: ', providerUserProfile.username);
 
       // Save the user OAuth profile
       users.saveOAuthUserProfile(req, providerUserProfile, done);
