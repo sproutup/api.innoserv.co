@@ -6,6 +6,7 @@
 var config = require('config/config');
 /* global -Promise */
 var Promise = require('bluebird');
+var debug = require('debug')('up:debug:sendgrid:service');
 var dynamoose = require('dynamoose');
 var sendgrid = Promise.promisifyAll(require('sendgrid')(config.sendgrid.username, config.sendgrid.pass));
 var Team = dynamoose.model('Team');
@@ -34,8 +35,8 @@ exports.send = Promise.method(function(to, subject, substitutions, template) {
   });
 
   if (config.sendgrid && config.sendgrid.local) {
-    console.log('We didn\'t send an email to ' + to + '. Here are the sendgrid substitutions: ', substitutions);
-    console.log('Here\'s the template we would\'ve used: ', template);
+    debug('We didn\'t send an email to ' + to + '. Here are the sendgrid substitutions: ', substitutions);
+    debug('Here\'s the template we would\'ve used: ', template);
     return substitutions;
   } else {
     return sendgrid.sendAsync(email);
@@ -81,3 +82,4 @@ exports.sendToCompanyUsers = function(subject, substitutions, template, companyI
     });
   });
 };
+
