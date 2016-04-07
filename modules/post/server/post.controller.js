@@ -105,7 +105,6 @@ exports.timeline = function (req, res) {
   if(typeof req.params.index === 'string'){
     index = parseInt(req.params.index);
   }
-
   redis.exists(key).then(function(val){
     if(val===0){
       console.log('key not found: ', key);
@@ -120,7 +119,7 @@ exports.timeline = function (req, res) {
     }
   })
   .then(function(val){
-    return redis.zrevrange(key, index, 9).map(function(value){
+    return redis.zrevrange(key, index, index+9).map(function(value){
       return Post.getCached(value);
     });
   })
