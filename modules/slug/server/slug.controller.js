@@ -20,7 +20,6 @@ exports.read = function (req, res) {
   };
 
   var item = req.model;
-  console.log('populate: ', item.refType);
   var model = dynamoose.model(item.refType);
   model.getCached(item.refId).then(function(ref){
     if(_.isUndefined(ref)) {

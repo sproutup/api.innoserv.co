@@ -3,12 +3,16 @@
 /**
  * Module dependencies.
  */
-
+var dynamoose = require('dynamoose');
 var dynamooselib = require('config/lib/dynamoose');
 /* global -Promise */
 var Promise = require('bluebird');
-var should = require('should');
-var dynamoose = require('dynamoose');
+var chai = require('chai');
+var should = chai.should;
+var expect = chai.expect;
+var chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+
 var Slug = dynamoose.model('Slug');
 
 /**
@@ -41,25 +45,29 @@ describe('Slug Model Unit Tests:', function () {
   });
 
   describe('Method Save', function () {
-    it('should begin with no slugs', function (done) {
-      Slug.scan({}, function (err, slugs) {
-        slugs.should.have.length(0);
-        done();
-      });
+    it('should begin with no slugs', function () {
+      var scan = Slug.scan().exec();
+      return expect(scan).to.eventually.have.length(0);
     });
 
-    it('should be able to save without problems', function (done) {
-      Slug.createWrapper(slug1).then(function (slug) {
-        slug.delete(function (err) {
-          should.not.exist(err);
-          done();
-        });
-      }).catch(function(err){
-        should.not.exist(err);
-        done();
-      });
+    it('should be able to save without problems', function () {
+      var create = Slug.createWrapper(slug1);
+      return expect(create).to.eventually.have.property('id');
     });
 
+    it('should be able to find unique slug when slug exists', function () {
+      var unique = Slug.findUniqueSlug(slug1.id);
+      expect(unique).to.eventually.include('ibm');
+      return expect(unique).to.eventually.have.length.above(10);
+    });
+
+    it('should be able to find unique slug when slug not exists', function () {
+      var unique = Slug.findUniqueSlug(slug2.id);
+      return expect(unique).to.eventually.equal(slug2.id);
+    });
+
+
+/*
     it('should fail to save an existing slug again', function (done) {
       var _slug;
       Slug.createWrapper(slug1).then(function (_slug1) {
@@ -79,20 +87,13 @@ describe('Slug Model Unit Tests:', function () {
         });
       });
     });
-
+*/
   });
 
-  after(function (done) {
-//    Slug.$__.table.delete(function(err){
-//      delete dynamoose.models.Slug;
-//      done();
-//    });
-    Slug.scan().exec().then(function(items){
-      Promise.all(items, function(item){
-        console.log('delete: ', item.id);
+  after(function () {
+    return Slug.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
         return item.delete();
-      }).then(function(val){
-        done();
       });
     });
   });

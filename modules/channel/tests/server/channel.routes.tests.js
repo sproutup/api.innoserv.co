@@ -6,14 +6,13 @@ var should = require('should'),
   dynamooselib = require('config/lib/dynamoose'),
   express = require('config/lib/express');
 
-//dynamooselib.loadModels();
 var User = dynamoose.model('User');
 var Channel = dynamoose.model('Channel');
 
 /**
  * Globals
  */
-var app, agent, credentials, user, channel, admin;
+var app, agent, credentials, user, userdata, channel, admin;
 
 /**
  * Company routes tests
@@ -27,7 +26,7 @@ describe('Channel CRUD tests', function () {
     agent = request.agent(app);
     done();
   });
-
+/*
   after(function (done) {
     Channel.scan().exec().then(function(items){
       Promise.all(items, function(item){
@@ -37,7 +36,7 @@ describe('Channel CRUD tests', function () {
       });
     });
   });
-
+*/
   beforeEach(function (done) {
     // Create user credentials
     credentials = {
@@ -46,16 +45,16 @@ describe('Channel CRUD tests', function () {
     };
 
     // Create a new user
-    user = new User({
+    userdata = {
       id: '123',
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
       email: 'test@test.com',
-      username: credentials.username,
+      username: 'username',
       password: credentials.password,
       provider: 'local'
-    });
+    };
 
     // Create a new channel
     channel = new Channel({
@@ -66,13 +65,14 @@ describe('Channel CRUD tests', function () {
     });
 
     // Save user to the test db
-    user.save(function () {
+    User.createWithSlug(userdata).then(function(res) {
+      user = res;
       done();
     });
   });
 
-  afterEach(function (done) {
-    user.delete(done);
+  afterEach(function () {
+    return  User.purge(user.id);
   });
 
   it('should not be able to save a channel if not logged in', function (done) {

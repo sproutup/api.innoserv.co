@@ -66,15 +66,19 @@ SlugSchema.static('check', Promise.method(function(id) {
 /**
  * Find unique slug
  */
-SlugSchema.statics.findUniqueSlug = Promise.method(function (slug, suffix) {
+SlugSchema.statics.findUniqueSlug = Promise.method(function (slug) {
   var Slug = dynamoose.model('Slug');
   var _this = this;
-  var possibleSlug = slug + (suffix || '');
 
-  return Slug.get(possibleSlug).then(function (res) {
-    return Slug.findUniqueSlug(slug, (suffix || 0) + 1);
+  return Slug.get(slug).then(function (res) {
+    if(_.isUndefined(res)){
+      return slug;
+    }
+    else{
+      return slug + intformat(flakeIdGen.next(), 'dec');
+    }
   }).catch(function(err){
-    return possibleSlug;
+    return slug;
   });
 });
 
@@ -83,7 +87,7 @@ SlugSchema.static('change', Promise.method(function(newSlug, oldSlugId) {
   newSlug.orig = newSlug.id;
   return Slug.create(newSlug).then(function(item) {
     if(oldSlugId){
-      Slug.delete({id: oldSlugId.toLowerCase().trim()}).then(function(){
+      return Slug.delete({id: oldSlugId.toLowerCase().trim()}).then(function(){
         return item;
       });
     }
@@ -91,7 +95,7 @@ SlugSchema.static('change', Promise.method(function(newSlug, oldSlugId) {
       return item;
     }
   }).catch(function(err){
-    debug('err: ', err);
+    debug('error [change]: ', err);
     throw err;
   });
 }));
@@ -103,7 +107,7 @@ SlugSchema.static('createWrapper', Promise.method(function(body) {
   return Slug.create(body).then(function(item) {
     return item;
   }).catch(function(err){
-    debug('err: ', err);
+    debug('createWrapper error: ', err);
     throw err;
   });
 }));
@@ -120,7 +124,7 @@ SlugSchema.statics.getCached = Promise.method(function(id) {
     return Slug.get(id).then(function(item){
       return item;
     }).catch(function(err){
-      debug('err: ', err);
+      debug('err [getCached]: ', err);
       return null;
     });
 //  }).then(function(item){

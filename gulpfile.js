@@ -7,11 +7,13 @@ var _ = require('lodash'),
   defaultAssets = require('./config/assets/default'),
   testAssets = require('./config/assets/test'),
   gulp = require('gulp'),
+  glob = require('glob'),
   debug = require('gulp-debug'),
   gulpLoadPlugins = require('gulp-load-plugins'),
   runSequence = require('run-sequence'),
   plugins = gulpLoadPlugins(),
-  path = require('path');
+  path = require('path'),
+  argv = require('yargs').argv;
 
 // Set NODE_ENV to 'test'
 gulp.task('env:test', function () {
@@ -40,9 +42,6 @@ gulp.task('nodemon', function () {
 
 // Watch Files For Changes
 gulp.task('watch', function() {
-  // Start livereload
-  plugins.livereload.listen();
-
   // Add watch rules
   gulp.watch(defaultAssets.server.gulpConfig, ['jshint']);
   gulp.watch(defaultAssets.server.views).on('change', plugins.livereload.changed);
@@ -52,6 +51,32 @@ gulp.task('watch', function() {
   gulp.watch(defaultAssets.client.css, ['csslint']).on('change', plugins.livereload.changed);
   gulp.watch(defaultAssets.client.sass, ['sass', 'csslint']).on('change', plugins.livereload.changed);
   gulp.watch(defaultAssets.client.less, ['less', 'csslint']).on('change', plugins.livereload.changed);
+
+  if (process.env.NODE_ENV === 'test') {
+    // Add Server Test file rules
+    gulp.watch([testAssets.tests.server, defaultAssets.server.allJS], ['test:server']).on('change', function (file) {
+      var runOnlyChangedTestFile = !!argv.onlyChanged;
+      // check if we should only run a changed test file
+      if (runOnlyChangedTestFile) {
+        var changedTestFiles = [];
+
+        // iterate through server test glob patterns
+        _.forEach(testAssets.tests.server, function (pattern) {
+          // determine if the changed (watched) file is a server test
+          _.forEach(glob.sync(pattern), function (f) {
+            var filePath = path.resolve(f);
+
+            if (filePath === path.resolve(file.path)) {
+              changedTestFiles.push(f);
+            }
+          });
+        });
+
+        // set task argument for tracking changed test files
+        argv.changedTestFiles = changedTestFiles;
+      }
+    });
+  }
 });
 
 // CSS linting task
@@ -147,8 +172,8 @@ gulp.task('peter', function (done) {
 // Mocha tests task
 gulp.task('mocha', function (done) {
   require('app-module-path').addPath(__dirname);
-  var dynamoose = require('./config/lib/dynamoose');
-  dynamoose.loadModels();
+  var dynamooselib = require('./config/lib/dynamoose');
+  dynamooselib.loadModels();
   var error;
 
   // Run the tests
@@ -156,12 +181,11 @@ gulp.task('mocha', function (done) {
     .pipe(debug({title: 'mocha:'}))
     .pipe(plugins.mocha({ reporter: 'spec',
       globals: {
-        path: require('app-module-path').addPath(__dirname),
-        should: require('should')
+        path: require('app-module-path').addPath(__dirname)
       }}))
     .on('error', gutil.log)
-    .on('end', function() {
-      // When the tests are done, disconnect mongoose and pass the error state back to gulp
+    .on('end', function(){
+      done();
     });
 });
 
@@ -169,18 +193,35 @@ var gutil = require('gulp-util');
 
 gulp.task('mocha2', function() {
   require('app-module-path').addPath(__dirname);
-  var dynamoose = require('./config/lib/dynamoose');
-  dynamoose.loadModels();
-  return gulp.src(['modules/users/tests/server/user.server.model.tests.js'], { read: false })
+  var dynamoose = require('dynamoose');
+  var dynamooselib = require('config/lib/dynamoose');
+  /* global -Promise */
+  var Promise = require('bluebird');
+  var chai = require('chai');
+  var should = chai.should;
+  var expect = chai.expect;
+  var chaiAsPromised = require('chai-as-promised');
+  chai.use(chaiAsPromised);
+
+  dynamooselib.loadModels();
+  return gulp.src(['modules/slug/tests/server/slug.model.tests.js'], { read: false })
     .pipe(debug({title: 'mocha:'}))
-    .pipe(plugins.mocha({ reporter: 'spec',
+    .pipe(plugins.mocha({
+      reporter: 'spec',
       globals: {
         path: require('app-module-path').addPath(__dirname),
-        should: require('should')
+        chai: chai,
+        expect: expect,
+        dynamoose: dynamoose,
+        dynamooselib: dynamooselib
+//        should: require('should')
       }}))
     .on('error', gutil.log);
 });
 
+gulp.task('watch-mocha', function(){
+  gulp.watch(defaultAssets.server.allJS, ['env:test', 'jshint', 'mocha2']);
+});
 
 // Karma test runner task
 gulp.task('karma', function (done) {

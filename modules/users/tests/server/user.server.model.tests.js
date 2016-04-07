@@ -428,17 +428,12 @@ describe('User Model Unit Tests:', function () {
   });
 
   after(function (done) {
-//    User.$__.table.delete(function(err){
-//      delete dynamoose.models.User;
-//      done();
-//    });
     User.scan().exec().then(function(items){
-      Promise.all(items, function(item){
+      Promise.each(items, function(item){
         return item.delete();
       }).then(function(val){
         done();
       });
     });
-//    dynamoose.models.User.delete('testUser');
   });
 });

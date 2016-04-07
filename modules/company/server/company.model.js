@@ -130,7 +130,6 @@ CompanySchema.statics.getCached = Promise.method(function(id){
   var _item;
 
   return cache.wrap(key, function() {
-    console.log('cache miss: company');
     return Company.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
       _item = item;

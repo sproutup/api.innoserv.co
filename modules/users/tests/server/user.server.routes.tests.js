@@ -33,7 +33,7 @@ describe('User CRUD tests', function () {
     done();
   });
 
-  beforeEach(function (done) {
+  beforeEach(function () {
     // Create user credentials
     credentials = {
       username: 'user@test.com',
@@ -47,39 +47,33 @@ describe('User CRUD tests', function () {
 
 
     // Create a new user
-    user = new User({
+    user = {
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
       email: credentials.username,
-      username: 'username',
+      username: 'username123',
       password: credentials.password,
       provider: 'local'
-    });
+    };
 
     // Create a new admin user
-    admin = new User({
+    admin = {
       firstName: 'Admin',
       lastName: 'User',
       displayName: 'Full Name',
       email: 'admin@test.com',
-      username: credentials_admin.username,
+      username: 'username4321',
       password: credentials_admin.password,
       provider: 'local',
       roles: ['user', 'admin']
-    });
+    };
 
     // Save user to the test db
-    User.createWithSlug(user).then(function(res) {
-      _user = res;
-    }).then(function() {
-      // Save admin to the test db
-      User.createWithSlug(admin).then(function(res) {
-        _admin = res;
-        done();
-      });
-    });
-
+    return Promise.join(
+      User.createWithSlug(user),
+      User.createWithSlug(admin)
+    );
   });
 
   it('should not be able to retrieve a list of users if not admin', function (done) {
@@ -180,13 +174,11 @@ describe('User CRUD tests', function () {
       });
   });
 
-  afterEach(function (done) {
-    Promise.join(
-      User.purge(_user.id),
-      User.purge(_admin.id),
-      function () {
-        done();
-      }
-    );
+  afterEach(function () {
+    return User.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
+        return User.purge(item.id);
+      });
+    });
   });
 });
