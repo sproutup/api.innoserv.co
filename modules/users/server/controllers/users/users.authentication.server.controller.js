@@ -334,21 +334,20 @@ exports.oauthCall = function (strategy, scope) {
       req.session.redirect_to = req.query.redirect_to;
     }
     // Authenticate
-    console.log('strategy: ', strategy, scope);
-    console.log('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
-    console.log('x-forwarded-host: ', req.headers['x-forwarded-hoat']);
-    console.log('referer: ', req.headers.referer);
+    debug('strategy: ', strategy, scope);
+    debug('referer: ', req.headers.referer);
 
     var tls = (req.headers.referer && req.headers.referer.indexOf('https') === 0);
     var protocol = tls ? 'https' : 'http';
-    console.log('proto: ', protocol);
+    debug('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
     if(req.headers.referer){
       var fields = url.parse(req.headers.referer);
-      console.log('dom: ', fields);
-      console.log('host: ', fields.host);
+      debug('host: ', fields.host);
       req.headers['x-forwarded-host'] = fields.host;
     }
+    debug('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
+    debug('x-forwarded-host: ', req.headers['x-forwarded-host']);
     passport.authenticate(strategy, scope)(req, res, next);
   };
 };
@@ -359,20 +358,23 @@ exports.oauthCall = function (strategy, scope) {
 exports.oauthCallback = function (strategy) {
   return function (req, res, next) {
     // Pop redirect URL from session
-    debug('oauth callback: ', strategy);
+    debug('strategy: ', strategy);
+    debug('referer: ', req.headers.referer);
+
     var sessionRedirectURL = req.session.redirect_to;
     delete req.session.redirect_to;
 
     var tls = (req.headers.referer && req.headers.referer.indexOf('https') === 0);
     var protocol = tls ? 'https' : 'http';
-    console.log('proto: ', protocol);
+    debug('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
     if(req.headers.referer){
       var fields = url.parse(req.headers.referer);
-      console.log('dom: ', fields);
-      console.log('host: ', fields.host);
+      debug('host: ', fields.host);
       req.headers['x-forwarded-host'] = fields.host;
     }
+    debug('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
+    debug('x-forwarded-host: ', req.headers['x-forwarded-host']);
 
     passport.authenticate(strategy, function (err, user, redirectURL) {
       if (err) {
@@ -390,7 +392,7 @@ exports.oauthCallback = function (strategy) {
         if(req.newAuthUser){
           redirectURL = '/welcome';
         }
-        debug('oauth redirect: ', redirectURL, sessionRedirectURL);
+        debug('redirect: ', redirectURL ||  sessionRedirectURL || '/');
         return res.redirect(redirectURL || sessionRedirectURL || '/');
       });
     })(req, res, next);
@@ -412,10 +414,15 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         return done(err);
       } else {
         if (!provider) {
-          var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
+          debug('provider ', _provider, ' not found -> new user');
+          // this is a new user signup
+          req.newAuthUser = true;
 
-          Slug.findUniqueSlug(possibleUsername, null, function (availableUsername) {
-            user = new User({
+          var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
+          debug('possible username: ', possibleUsername);
+
+          Slug.findUniqueSlug(possibleUsername).then(function (availableUsername) {
+            user = {
               firstName: providerUserProfile.firstName,
               lastName: providerUserProfile.lastName,
               username: availableUsername,
@@ -423,7 +430,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
               email: providerUserProfile.email,
               provider: _provider,
               profileImageURL: providerUserProfile.profileImageURL
-            });
+            };
 
             var provider = new Provider({
               id: _identifier,
@@ -434,16 +441,17 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
             });
 
             // And save the user
-            user.save(function (err) {
-              provider.userId = user.id;
+            return User.createWithSlug(user).then(function (newuser) {
+              provider.userId = newuser.id;
               provider.save(function (err){
-                return done(err, user);
+                return done(err, newuser);
               });
             });
           });
         } else {
-          User.get(provider.userId).then(function(user){
-            console.log('user: ', user);
+          debug('provider ', _provider, ' found -> login user');
+          User.getCached(provider.userId).then(function(user){
+            debug('user: ', user.id, ' name: ', user.displayName);
             return done(null, user);
           })
           .catch(function(err){
@@ -453,8 +461,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
       }
     });
   } else {
-    console.log('user logged in already');
-    // User is already logged in, join the provider data to the existing user
+    debug('User is already logged in, join the provider data to the existing user');
     user = req.user;
 
     Provider.get({id: _identifier, provider: _provider}, function (err, provider) {
@@ -463,8 +470,8 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         return done(err);
       } else {
         // provider not found -> add to user
-        console.log('provider not found -> add to user');
         if (!provider) {
+          debug('add ', _provider, ' provider to user');
           provider = new Provider({
             id: _identifier,
             provider: _provider,
@@ -481,7 +488,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         }
         // provider found -> don't add the provider again
         else{
-          console.log('provider found -> dont add the provider again');
+          debug('provider found -> dont add the provider again');
           return done(new Error('User is already connected using this provider'), user);
         }
       }

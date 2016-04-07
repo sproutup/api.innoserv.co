@@ -34,8 +34,6 @@ module.exports = function (config) {
         providerData: providerData
       };
 
-      req.newAuthUser = true;
-
       // Save the user OAuth profile
       users.saveOAuthUserProfile(req, providerUserProfile, done);
     }
