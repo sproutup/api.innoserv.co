@@ -259,7 +259,6 @@ exports.verifyEmailToken = function (req, res) {
     if (req.user.id) {
       User.getPopulated(req.user.id).then(function(updated){
         req.login(updated, function (err) {
-          console.log('ey', err, updated);
           if (err) {
             return res.status(400).send(err);
           } else {

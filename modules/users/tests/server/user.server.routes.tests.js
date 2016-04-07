@@ -163,13 +163,12 @@ describe('User CRUD tests', function () {
           return done(signinErr);
         }
 
-        console.log('pre confirm', signinRes.body);
         crypto.randomBytesAsync(20).then(function(buffer) {
           token = buffer.toString('hex');
           redis.hmset('token:' + token, { 'userId': signinRes.body.id, 'email': signinRes.body.email });
 
           agent.get('/api/auth/email/confirmation/' + token)
-            .expect(302)
+            .expect(200)
             .end(function (usersPostErr, usersPostRes) {
               if (usersPostErr) {
                 return done(usersPostErr);
