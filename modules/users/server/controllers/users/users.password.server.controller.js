@@ -107,44 +107,40 @@ exports.reset = function (req, res, next) {
   async.waterfall([
     function (done) {
       // Get the token in param and use the value (user.id) to find the user to update 
-      redis.get('token: ' + req.params.token).then(function(result) {
+      redis.get('token:' + req.params.token).then(function(result) {
         if (result) {
           User.get({
             id: result
           }, function (err, user) {
             if (!err && user) {
-              if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-                user.password = passwordDetails.newPassword;
-                user.resetPasswordToken = undefined;
-                user.resetPasswordExpires = undefined;
+              user.changePassword(passwordDetails.newPassword);
 
-                user.save(function (err) {
-                  if (err) {
-                    return res.status(400).send({
-                      message: errorHandler.getErrorMessage(err)
-                    });
-                  } else {
-                    req.login(user, function (err) {
-                      if (err) {
-                        res.status(400).send(err);
-                      } else {
-                        // Return authenticated user
-                        res.json(user);
-                        done(err, user);
-                      }
-                    });
-                  }
-                });
-              } else {
-                return res.status(400).send({
-                  message: 'Passwords do not match'
-                });
-              }
+              user.save(function (err) {
+                if (err) {
+                  return res.status(400).send({
+                    message: errorHandler.getErrorMessage(err)
+                  });
+                } else {
+                  req.login(user, function (err) {
+                    if (err) {
+                      res.status(400).send(err);
+                    } else {
+                      // Return authenticated user
+                      res.json(user);
+                      done(err, user);
+                    }
+                  });
+                }
+              });
             } else {
               return res.status(400).send({
-                message: 'Password reset token is invalid or has expired.'
+                message: 'We couldn\'t find the user'
               });
             }
+          });
+        } else {
+          return res.status(400).send({
+            message: 'Password reset token is invalid or has expired.'
           });
         }
       });
