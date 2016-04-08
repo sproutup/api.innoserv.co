@@ -63,7 +63,7 @@ exports.update = function (req, res) {
         User.getPopulated(req.user.id).then(function(updated){
 //        var updated = _.extend(user, req.user, {username: user.username});
           console.log('updated user', updated);
-          if (_result.url) {
+          if (_result && _result.url) {
             updated.emailUrl = _result.url;
           }
           req.login(updated, function (err) {
