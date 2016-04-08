@@ -6,6 +6,7 @@
 var dynamoose = require('dynamoose');
 var Company = dynamoose.model('Company');
 var Team = dynamoose.model('Team');
+ /* global -File */
 var File = dynamoose.model('File');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
