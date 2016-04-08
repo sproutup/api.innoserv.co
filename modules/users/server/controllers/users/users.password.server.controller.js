@@ -166,7 +166,7 @@ exports.changePassword = function (req, res, next) {
       User.get(req.user.id, function (err, user) {
         if (!err && user) {
           if (user.authenticate(passwordDetails.currentPassword)) {
-            user.password = passwordDetails.newPassword;
+            user.changePassword(passwordDetails.newPassword);
 
             user.save(function (err) {
               if (err) {
