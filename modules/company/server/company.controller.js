@@ -6,6 +6,7 @@
 var dynamoose = require('dynamoose');
 var Company = dynamoose.model('Company');
 var Team = dynamoose.model('Team');
+var File = dynamoose.model('File');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 
@@ -47,7 +48,14 @@ exports.update = function (req, res) {
         message: error
       });
     } else {
-      res.json(company);
+      if (company.banner && company.banner.fileId) {
+        File.getCached(company.banner.fileId).then(function(file){
+          company.banner.file = file;
+          res.json(company);
+        });
+      } else {
+        res.json(company);
+      }
     }
   });
 };
