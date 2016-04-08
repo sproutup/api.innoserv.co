@@ -25,7 +25,8 @@
     "io": true,
     "ApplicationConfiguration": true,
     "CryptoJS": true,
-    "expect": true
+    "expect": true,
+    "Promise": true
   },
   "predef": [ // Extra globals.
     "inject",

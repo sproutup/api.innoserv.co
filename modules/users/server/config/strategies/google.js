@@ -3,6 +3,8 @@
 /**
  * Module dependencies.
  */
+var debug = require('debug')('up:debug:google:strategy');
+var moment = require('moment');
 var passport = require('passport'),
   GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
   users = require('../../controllers/users.server.controller');
@@ -15,11 +17,16 @@ module.exports = function (config) {
       callbackURL: config.google.callbackURL,
       passReqToCallback: true
     },
-    function (req, accessToken, refreshToken, profile, done) {
+    function (req, accessToken, refreshToken, params, profile, done) {
       // Set the provider data and include tokens
       var providerData = profile._json;
       providerData.accessToken = accessToken;
       providerData.refreshToken = refreshToken;
+      if(params.expires_in){
+        providerData.expires_in = params.expires_in;
+        providerData.expires = moment().add(params.expires_in, 's').valueOf();
+        debug('expires: ', providerData.expires);
+      }
 
       // Create the user OAuth profile
       var providerUserProfile = {
