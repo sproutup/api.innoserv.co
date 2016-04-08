@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
-/* global -Promise */
+var debug = require('debug')('up:debug:post:ctrl');
 var Promise = require('bluebird');
 var moment = require('moment');
 var redis = require('config/lib/redis');
@@ -24,7 +24,8 @@ exports.read = function (req, res) {
  */
 exports.create = function (req, res) {
   var item = new Post(req.body);
-
+  debug('create: ', req.body);
+  item.userId = req.user.id;
   item.save(function (err) {
     if (err) {
       return res.status(400).send({

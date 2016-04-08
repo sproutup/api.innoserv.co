@@ -21,9 +21,7 @@ bookshelf.plugin('registry');
 // Load the models
 module.exports.loadModels = function () {
   // Globbing model files
-  console.log('models: ');
   config.files.server.models.forEach(function (modelPath) {
-    console.log(modelPath);
     require(path.resolve(modelPath));//(bookshelf);
   });
 };
@@ -31,7 +29,6 @@ module.exports.loadModels = function () {
 // Initialize Knex
 module.exports.connect = function (cb) {
   var _this = this;
-  console.log('init knex');
   if(config.flyway){
     flyway.migrate(function(err, data){
       if(err) cb(err);
