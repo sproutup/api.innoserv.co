@@ -211,6 +211,14 @@ UserSchema.statics.changeEmail = Promise.method(function (userId, email) {
   return true;
 });
 
+UserSchema.methods.changePassword = function (password) {
+  if (password) {
+    this.salt = crypto.randomBytes(16).toString('base64');
+    this.hash = this.hashPassword(password);
+    this.password = '';
+  }
+};
+
 UserSchema.statics.getPopulated = Promise.method(function(id){
   var User = dynamoose.model('User');
   var File = dynamoose.model('File');
