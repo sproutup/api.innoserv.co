@@ -236,7 +236,7 @@ exports.sendEmailVerification = function (req, res) {
 
     return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.verification);
   }).then(function(result) {
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+    if (config.sendgrid.local) {
       return res.status(200).send({
         url: url
       });
