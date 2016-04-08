@@ -31,7 +31,7 @@ exports.invokeRolesPolicies = function () {
       permissions: ['*']
     }, {
       resources: '/api/company/:companyId',
-      permissions: ['get']
+      permissions: ['*']
     }, {
       resources: '/api/company/slug/:companySlug',
       permissions: ['*']
