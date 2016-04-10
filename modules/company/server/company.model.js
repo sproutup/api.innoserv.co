@@ -71,6 +71,11 @@ var CompanySchema = new Schema({
     fileId: {
       type: String
     }
+  },
+  logo: {
+    fileId: {
+      type: String
+    }
   }
 });
 
@@ -140,11 +145,17 @@ CompanySchema.statics.getCached = Promise.method(function(id){
     }).then(function(_item){
       if(_.isUndefined(_item)) return _item;
       if(!_item.banner || !_item.banner.fileId) return _item;
-
-      return File.getCached(_item.banner.fileId).then(function(file){
+      if(_item.banner.fileId) return File.getCached(_item.banner.fileId).then(function(file){
         _item.banner.file = file;
         return _item;
       });
+
+      if(!_item.logo || !_item.logo.fileId) return _item;
+      if(_item.logo.fileId) return File.getCached(_item.logo.fileId).then(function(file){
+        _item.logo.file = file;
+        return _item;
+      });
+
     }).then(function(){
       return _item;
     });
@@ -249,4 +260,3 @@ Company.pre('delete', function(next) {
   next();
 });
 */
-

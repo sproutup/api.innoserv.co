@@ -16,6 +16,10 @@ module.exports = function (app) {
   app.route('/api/company/picture').all(companyPolicy.isAllowed)
     .post(companies.changeBannerPicture);
 
+  // Save logo
+  app.route('/api/company/logo').all(companyPolicy.isAllowed)
+    .post(companies.changeLogo);
+
   // Single article routes
   app.route('/api/company/:companyId').all(companyPolicy.isAllowed)
     .get(companies.read)

@@ -23,6 +23,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/company/picture',
       permissions: '*'
+    }, {
+      resources: '/api/company/logo',
+      permissions: '*'
     }]
   }, {
     roles: ['user'],
@@ -38,6 +41,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/company/picture',
       permissions: '*'
+    }, {
+      resources: '/api/company/logo',
+      permissions: '*'
     }]
   }, {
     roles: ['guest'],
@@ -49,6 +55,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['get']
     }, {
       resources: '/api/company/picture',
+      permissions: '*'
+    }, {
+      resources: '/api/company/logo',
       permissions: '*'
     }]
   }]);

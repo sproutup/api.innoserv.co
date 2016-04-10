@@ -50,10 +50,21 @@ exports.update = function (req, res) {
       });
     } else {
       if (company.banner && company.banner.fileId) {
-        File.getCached(company.banner.fileId).then(function(file){
-          company.banner.file = file;
+        if (company.logo && company.logo.fileId) {
+          File.getCached(company.logo.fileId).then(function(file){
+            company.logo.file = file;
+          });
+          File.getCached(company.banner.fileId).then(function(file){
+            company.banner.file = file;
+          });
           res.json(company);
-        });
+        }
+        else {
+          File.getCached(company.banner.fileId).then(function(file){
+            company.banner.file = file;
+            res.json(company);
+          });
+        }
       } else {
         res.json(company);
       }
@@ -158,6 +169,35 @@ exports.changeBannerPicture = function (req, res) {
 
   changePicture = function() {
     Company.update({id: req.body.companyId}, {banner:{fileId: req.body.fileId}}, function (error, company) {
+      if (error) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(error)
+        });
+      } else {
+        res.json(company);
+      }
+    });
+  };
+};
+
+/**
+ * Update logo
+ */
+exports.changeLogo = function (req, res) {
+  var changePicture = changePicture;
+
+  Company.isMember(req.body.companyId, req.user.id).then(function(isMember) {
+    if (isMember) {
+      changePicture();
+    } else {
+      return res.status(401).send({
+        message: 'You\'re not authorized to change the picture'
+      });
+    }
+  });
+
+  changePicture = function() {
+    Company.update({id: req.body.companyId}, {logo:{fileId: req.body.fileId}}, function (error, company) {
       if (error) {
         return res.status(400).send({
           message: errorHandler.getErrorMessage(error)
