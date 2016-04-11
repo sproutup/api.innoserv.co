@@ -135,7 +135,7 @@ CampaignSchema.methods.populate = Promise.method(function (_schema) {
 
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]) return null;
-  
+
   console.log('populate: ', _schema);
   var model = dynamoose.model(_schema);
   return model.get(this[_attribute]).then(function(item){
@@ -166,6 +166,14 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
 
       return File.getCached(item.banner.fileId).then(function(file){
         item.banner.file = file;
+        return item;
+      });
+    }).then(function(item){
+      if(!item.company.logo || !item.company.logo.fileId) return item;
+
+      return File.getCached(item.company.logo.fileId).then(function(file){
+        item.company.logo.file = file;
+        console.log('item.company.logo.file.url is: ', item.company.logo.file.url);
         return item;
       });
     }).then(function(){
