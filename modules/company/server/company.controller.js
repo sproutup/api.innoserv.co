@@ -191,7 +191,7 @@ exports.changeLogo = function (req, res) {
       changePicture();
     } else {
       return res.status(401).send({
-        message: 'You\'re not authorized to change the picture'
+        message: 'You\'re not authorized to change the logo'
       });
     }
   });
@@ -208,3 +208,4 @@ exports.changeLogo = function (req, res) {
     });
   };
 };
+

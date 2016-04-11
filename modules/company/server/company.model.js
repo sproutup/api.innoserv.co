@@ -149,13 +149,12 @@ CompanySchema.statics.getCached = Promise.method(function(id){
         _item.banner.file = file;
         return _item;
       });
-
+    }).then(function(_item){
       if(!_item.logo || !_item.logo.fileId) return _item;
       if(_item.logo.fileId) return File.getCached(_item.logo.fileId).then(function(file){
         _item.logo.file = file;
         return _item;
       });
-
     }).then(function(){
       return _item;
     });
