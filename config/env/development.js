@@ -50,6 +50,8 @@ module.exports = {
     clientID: process.env.GOOGLE_ID || 'APP_ID',
     clientSecret: process.env.GOOGLE_SECRET || 'APP_SECRET',
     callbackURL: '/api/auth/google/callback',
+    baseURL: 'https://',
+    accessTokenURL: 'www.googleapis.com/oauth2/v3/token',
     jwt: {
       client_email: process.env.GOOGLE_JWT_CLIENT_EMAIL || 'EMAIL',
       private_key: process.env.GOOGLE_JWT_PRIVATE_KEY || 'KEY'
