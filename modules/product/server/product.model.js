@@ -4,6 +4,8 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var Promise = require('bluebird');
+var cache = require('config/lib/cache');
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
@@ -59,5 +61,16 @@ var ProductSchema = new Schema({
     trim: true
   }
 });
+
+ProductSchema.statics.getCached = Promise.method(function(id){
+  var Product = dynamoose.model('Product');
+  var key = 'product:' + id;
+  var _item;
+
+  return cache.wrap(key, function() {
+    return Product.get(id);
+  });
+});
+
 
 dynamoose.model('Product', ProductSchema);
