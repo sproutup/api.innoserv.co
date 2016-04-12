@@ -7,6 +7,7 @@ var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Content = dynamoose.model('Content');
 var Campaign = dynamoose.model('Campaign');
+var Contributor = dynamoose.model('Contributor');
 var Company = dynamoose.model('Company');
 var knex = require('config/lib/bookshelf').knex;
 var errorHandler = require('modules/core/server/errors.controller');
@@ -68,6 +69,7 @@ exports.create = function (req, res) {
   item.save().then(function(val) {
     debug('After saving content', val.id);
     sendContentEmail(item);
+    Contributor.updateState(val.campaignId, val.userId, 2);
     res.json(item);
   })
   .catch(function(err){

@@ -50,20 +50,13 @@ var ContentSchema = new Schema({
   campaignId: {
     type: String,
     required: false,
-    index: [{
-      global: true,
-      rangeKey: 'media',
-      name: 'ContentCampaignMediaIndex',
-      project: true, // ProjectionType: ALL
-      throughput: 5 // read and write are both 5
-    },
-    {
+    index: {
       global: true,
       rangeKey: 'userId',
       name: 'ContentCampaignUserIndex',
       project: true, // ProjectionType: ALL
       throughput: 5 // read and write are both 5
-    }]
+    }
   },
   created: {
     type: Date,
