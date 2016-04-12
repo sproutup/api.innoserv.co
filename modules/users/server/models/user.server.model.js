@@ -89,6 +89,9 @@ var UserSchema = new Schema({
       name: 'emailGlobalIndex'
     }
   },
+  cashtag: {
+    type: String
+  },
   password: {
     type: String,
     default: '',
