@@ -153,31 +153,20 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
   return cache.wrap(key, function() {
     console.log('cache miss: campaign');
     return Campaign.get(id).then(function(item){
-      if(_.isUndefined(item)) return item;
+      if(_.isUndefined(item)) return null;
       _item = item;
       return Promise.join(
         _item.populate('Product'),
         _item.populate('Company')
-      ).then(function(){
+      );
+    }).then(function(){
+      if(!_item.banner || !_item.banner.fileId) return _item;
+
+      return File.getCached(_item.banner.fileId).then(function(file){
+        debug('_item: ', _item);
+        _item.banner.file = file;
         return _item;
       });
-    }).then(function(item){
-      if(!item.banner || !item.banner.fileId) return item;
-
-      return File.getCached(item.banner.fileId).then(function(file){
-        item.banner.file = file;
-        return item;
-      });
-    }).then(function(item){
-      if(!item.company.logo || !item.company.logo.fileId) return item;
-
-      return File.getCached(item.company.logo.fileId).then(function(file){
-        item.company.logo.file = file;
-        console.log('item.company.logo.file.url is: ', item.company.logo.file.url);
-        return item;
-      });
-    }).then(function(){
-      return _item;
     });
   });
 });
