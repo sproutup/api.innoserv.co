@@ -4,8 +4,9 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var debug = require('debug')('up:debug:campaign:ctrl');
+var cache = require('config/lib/cache');
 var Campaign = dynamoose.model('Campaign');
-/* global -Promise */
 var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
@@ -89,6 +90,8 @@ exports.update = function (req, res) {
         message: error
       });
     } else {
+      debug('campaign cache del: ', req.model.id);
+      cache.del('campaign:' + req.model.id );
       res.json(campaign);
     }
   });
