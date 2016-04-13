@@ -54,10 +54,13 @@ var ProviderSchema = new Schema({
  * Create instance method for hashing a password
  */
 ProviderSchema.methods.hashPassword = Promise.method(function (password) {
+  var _this = this;
+
   if (password) {
     return bcrypt.hashAsync(password, 10).then(function(hash){
       // Store hash in your password DB.
       debug('password hashed: ', hash);
+      _this.data.hash = hash;
       return hash;
     });
   } else {
@@ -113,6 +116,25 @@ ProviderSchema.statics.createPassword = Promise.method(function(email, password,
   });
 });
 
+ProviderSchema.methods.changePassword = Promise.method(function(password) {
+  var _this = this;
+
+  return Promise.try(function(){
+    // create password provider if needed
+    if(_.isUndefined(password)) {
+      debug('missing param', password);
+      throw new Error('missing required param');
+    }
+    debug('create hash');
+    return _this.hashPassword(password);
+  }).then(function(hash){
+    debug('save password provider for user: ', _this.userId);
+    return _this.save();
+  }).catch(function(err){
+    debug('createPassword: ', err.stack);
+    throw err;
+  });
+});
 
 ProviderSchema.statics.getAccessToken = Promise.method(function(userId, provider){
   var _this = this;

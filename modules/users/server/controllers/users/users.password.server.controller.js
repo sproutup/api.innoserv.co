@@ -11,7 +11,9 @@ var path = require('path'),
   sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service')),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
   dynamoose = require('dynamoose'),
+  debug = require('debug')('up:debug:user:password:controller'),
   User = dynamoose.model('User'),
+  Provider = dynamoose.model('Provider'),
   nodemailer = require('nodemailer'),
   async = require('async'),
   redis = require('config/lib/redis'),
@@ -21,6 +23,8 @@ var path = require('path'),
  * Forgot for reset password (forgot POST)
  */
 exports.forgot = function (req, res, next) {
+  var _provider;
+
   async.waterfall([
     // Generate random token
     function (done) {
@@ -32,20 +36,19 @@ exports.forgot = function (req, res, next) {
     // Lookup user by username
     function (token, done) {
       if (req.body.email) {
-        User.queryOne({
-          email: req.body.email
-        }, function (err, user) {
-          if (!user) {
+        Provider.get({
+          id: req.body.email,
+          provider: 'password'
+        }, function (err, provider) {
+          _provider = provider;
+
+          if (!provider) {
             return res.status(400).send({
               message: 'No account with that email has been found'
             });
-          } else if (user.provider !== 'local') {
-            return res.status(400).send({
-              message: 'It seems like you signed up using your ' + user.provider + ' account'
-            });
           } else {
-            redis.set('token:' + token, user.id, 'EX', 86400);
-            done(err, token, user);
+            redis.set('token:' + token, provider.id, 'EX', 86400);
+            done(err, token);
           }
         });
       } else {
@@ -55,32 +58,34 @@ exports.forgot = function (req, res, next) {
       }
     },
     // If valid email, send reset email using service
-    function (token, user, done) {
-      var to = user.email;
-      var subject = ' ';
-      var url = 'http://' + req.headers.host + '/api/auth/reset/' + token;
-      var substitutions = {
-        ':user': [user.displayName],
-        ':url': [url]
-      };
+    function (token, done) {
+      User.getCached(_provider.userId).then(function(user) {
+        var to = _provider.id;
+        var subject = ' ';
+        var url = 'http://' + req.headers.host + '/api/auth/reset/' + token;
+        var substitutions = {
+          ':user': [user.displayName],
+          ':url': [url]
+        };
 
-      sendgridService.send(to, subject, substitutions, config.sendgrid.templates.forgot.password)
-        .then(function() {
-          return res.status(200).send({
-            message: 'An email has been sent to the provided email with further instructions.',
-            emailSent: user.email
+        sendgridService.send(to, subject, substitutions, config.sendgrid.templates.forgot.password)
+          .then(function() {
+            return res.status(200).send({
+              message: 'An email has been sent to the provided email with further instructions.',
+              emailSent: _provider.id
+            });
+          }).catch(function() {
+            return res.status(400).send({
+              message: 'The email failed to send'
+            });
           });
-        }).catch(function() {
-          return res.status(400).send({
-            message: 'The email failed to send'
-          });
-        });
+      });
     }
-  ], function (err) {
-    if (err) {
-      return next(err);
-    }
-  });
+    ], function (err) {
+      if (err) {
+        return next(err);
+      }
+    });
 };
 
 /**
@@ -109,26 +114,30 @@ exports.reset = function (req, res, next) {
       // Get the token in param and use the value (user.id) to find the user to update 
       redis.get('token:' + req.params.token).then(function(result) {
         if (result) {
-          User.get({
-            id: result
-          }, function (err, user) {
-            if (!err && user) {
-              user.changePassword(passwordDetails.newPassword);
+          Provider.get({
+            id: result,
+            provider: 'password'
+          }, function (err, provider) {
+            if (!err && provider) {
+              provider.changePassword(passwordDetails.newPassword);
 
-              user.save(function (err) {
+              provider.save(function (err) {
                 if (err) {
                   return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                   });
                 } else {
-                  req.login(user, function (err) {
-                    if (err) {
-                      res.status(400).send(err);
-                    } else {
-                      // Return authenticated user
-                      res.json(user);
-                      done(err, user);
-                    }
+                  User.getCached(provider.userId).then(function(user){
+                    debug('user: ', user.id, ' name: ', user.displayName);
+                    req.login(user, function (err) {
+                      if (err) {
+                        res.status(400).send(err);
+                      } else {
+                        // Return authenticated user
+                        res.json(user);
+                        done(err, user);
+                      }
+                    });
                   });
                 }
               });
