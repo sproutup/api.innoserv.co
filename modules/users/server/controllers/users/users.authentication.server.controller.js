@@ -130,9 +130,6 @@ exports.signup = function (req, res) {
   // Then save the user
   User.createWithSlug(user).then(function(newuser) {
     debug('user created: ', newuser.id);
-    // Remove sensitive data before login
-    newuser.password = undefined;
-    newuser.salt = undefined;
 
     signedUpEmail(newuser, req.headers.host);
 
@@ -305,11 +302,11 @@ exports.verifyToken = function (req, res) {
 exports.signin = function (req, res, next) {
   passport.authenticate('local', function (err, user, info) {
     if (err || !user) {
+      debug('err: ', err);
+      debug('err: ', user);
       res.status(400).send(info);
     } else {
-      // Remove sensitive data before login
-      user.password = undefined;
-      user.salt = undefined;
+      debug('user authenticated: ', user.username);
 
       req.login(user, function (err) {
         if (err) {

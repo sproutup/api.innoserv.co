@@ -3,10 +3,14 @@
 /**
  * Module dependencies.
  */
-var passport = require('passport'),
-  LocalStrategy = require('passport-local').Strategy,
-  User = require('dynamoose').model('User'),
-  _File = require('dynamoose').model('File');
+var passport = require('passport');
+var Promise = require('bluebird');
+var LocalStrategy = require('passport-local').Strategy;
+var dynamoose = require('dynamoose');
+var User = dynamoose.model('User');
+var Provider = dynamoose.model('Provider');
+var _File = dynamoose.model('File');
+var debug = require('debug')('up:debug:strategy:local');
 
 module.exports = function () {
   // Use local strategy
@@ -15,35 +19,29 @@ module.exports = function () {
       passwordField: 'password'
     },
     function (username, password, done) {
-      User.queryOne({
-        email: username
-      }, function (err, user) {
-        if (err) {
-          return done(err);
+      debug('password provider');
+      var userId;
+      Promise.try(function(){
+        return Provider.get({
+          id: username.toLowerCase().trim(),
+          provider: 'password'
+        });
+      }).then(function(provider){
+        if(!provider){
+          debug('provider not found', provider);
+          throw { message: 'Invalid username or password' };
         }
-        if (!user ||
-          !user.authenticate(password)) {
-          return done(null, false, {
-            message: 'Invalid username or password'
-          });
+        debug('found password provider');
+        userId = provider.userId;
+        return provider.authenticate(password);
+      }).then(function(isAuthenticated){
+        if(!isAuthenticated){
+          throw { message: 'Invalid username or password' };
         }
-
-        if(user.avatar && user.avatar.fileId){
-          _File.getCached(user.avatar.fileId).then(function(file){
-            if(file){
-              user.avatar.file = file;
-            }
-            return done(null, user);
-          })
-          .catch(function(err){
-            console.log('err', err);
-            return done(null, user);
-          });
-        }
-        else{
-          return done(null, user);
-        }
-      });
+        debug('authenticated user');
+        return User.getCached(userId);
+      }).asCallback(done);
     }
   ));
 };
+

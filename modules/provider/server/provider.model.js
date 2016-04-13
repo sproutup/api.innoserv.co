@@ -7,6 +7,7 @@ var dynamoose = require('dynamoose');
 var config = require('config/config');
 var debug = require('debug')('up:debug:provider:model');
 var Promise = require('bluebird');
+var bcrypt = Promise.promisifyAll(require('bcrypt'));
 var Schema = dynamoose.Schema;
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
@@ -48,6 +49,70 @@ var ProviderSchema = new Schema({
   },
   data: {}
 });
+
+/**
+ * Create instance method for hashing a password
+ */
+ProviderSchema.methods.hashPassword = Promise.method(function (password) {
+  if (password) {
+    return bcrypt.hashAsync(password, 10).then(function(hash){
+      // Store hash in your password DB.
+      debug('password hashed: ', hash);
+      return hash;
+    });
+  } else {
+    return password;
+  }
+});
+
+/**
+ * Create static method for hashing a password
+ */
+ProviderSchema.statics.hashPassword = Promise.method(function (password) {
+  if (_.isUndefined(password)) throw {err: 'missing required param password'};
+
+  return bcrypt.hashAsync(password, 10).then(function(hash){
+    debug('generated hash: ', hash);
+    return hash;
+  });
+});
+
+
+/**
+ * Create instance method for authenticating user
+ */
+ProviderSchema.methods.authenticate = Promise.method(function (password) {
+  return bcrypt.compareAsync(password, this.data.hash);
+});
+
+ProviderSchema.statics.createPassword = Promise.method(function(email, password, userId) {
+  var Provider = dynamoose.model('Provider');
+
+  return Promise.try(function(){
+    // create password provider if needed
+    if(_.isUndefined(email) || _.isUndefined(password) || _.isUndefined(userId)) {
+      debug('missing param', email, password, userId);
+      throw new Error('missing required param');
+    }
+    debug('create hash');
+    return Provider.hashPassword(password);
+  }).then(function(hash){
+    debug('create password provider for user: ', userId);
+    return Provider.create({
+      id: email,
+      password: password,
+      userId: userId,
+      provider: 'password',
+      data: {
+        hash: hash
+      }
+    });
+  }).catch(function(err){
+    debug('createPassword: ', err.stack);
+    throw err;
+  });
+});
+
 
 ProviderSchema.statics.getAccessToken = Promise.method(function(userId, provider){
   var _this = this;
