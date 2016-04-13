@@ -5,6 +5,7 @@
  */
 var dynamoose = require('dynamoose');
 var Contributor = dynamoose.model('Contributor');
+var Content = dynamoose.model('Content');
 var config = require('config/config');
 var knex = require('config/lib/bookshelf').knex;
 /* global -Promise */
@@ -22,8 +23,7 @@ var sendApprovedEmail = sendApprovedEmail;
  */
 exports.read = function (req, res) {
   var _item;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
-  .then(function(item){
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec().then(function(item){
     if(_.isUndefined(item)){
       return res.status(204).send({
         message: 'Contributor not found'
@@ -39,6 +39,15 @@ exports.read = function (req, res) {
       _item.channel = channel;
       return;
     }).catch(function(){
+      return;
+    });
+  })
+  .then(function(){
+    return Content.query('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec().then(function(items){
+      _item.content = items;
+      return;
+    }).catch(function(err){
+      console.log('err here', err);
       return;
     });
   })
@@ -73,7 +82,7 @@ exports.create = function (req, res) {
 exports.update = function (req, res) {
   var _item;
   var _previousState;
-    Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
     .then(function(item){
       if(_.isUndefined(item)){
         return res.status(400).send({
@@ -188,7 +197,7 @@ exports.listByUser = function (req, res) {
   .then(function(items){
     campaigns = items;
     _.forEach(contributions, function(val){
-      val.campaign = _.find(campaigns, 'id', val.campaignId);
+      val.campaign = _.find(campaigns, ['id', val.campaignId]);
     });
     res.json(contributions);
   })

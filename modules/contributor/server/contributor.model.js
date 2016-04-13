@@ -97,6 +97,34 @@ ContributorSchema.methods.populate = Promise.method(function (_schema) {
   });
 });
 
+/**
+ * Populate method
+ */
+ContributorSchema.statics.updateState = Promise.method(function (campaignId, userId, state) {
+  var _item;
+  var _previousState;
+
+  return Contributor.queryOne('campaignId').eq(campaignId).where('userId').eq(userId).exec()
+    .then(function(item){
+      if(_.isUndefined(item)){
+        throw 'Contributor not found.';
+      }
+      _previousState = item.state;
+
+      return item;
+  })
+  .then(function(item){
+    if (state === item.state) {
+      return item;
+    }
+
+    _item = item;
+    _item.state = state;
+    return item.save();
+  }).catch(function (err) {
+    throw 'Something went wrong while we updated your request status';
+  });
+});
 
 var Contributor = dynamoose.model('Contributor', ContributorSchema);
 

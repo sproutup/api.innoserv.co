@@ -136,27 +136,35 @@ CompanySchema.statics.getCached = Promise.method(function(id){
 
   return cache.wrap(key, function() {
     return Company.get(id).then(function(item){
-      if(_.isUndefined(item)) return item;
+      if(_.isUndefined(item)) {
+        return null;
+      }
       _item = item;
+      debug('getCached: ', item.id);
+
       return Team.query('companyId').eq(id).exec().then(function(team){
         _item.team = team;
+        debug('team: ', team ? team.length : 0);
+        return;
+      }).then(function(){
+        // Get banner
+        if(!_item.banner || !_item.banner.fileId) return _item;
+        return File.getCached(_item.banner.fileId).then(function(file){
+          debug('banner: ', file.id);
+          _item.banner.file = file;
+          return;
+        });
+      }).then(function(){
+        // Get logo
+        if(!_item.logo || !_item.logo.fileId) return _item;
+        return File.getCached(_item.logo.fileId).then(function(file){
+          debug('logo: ', file.id);
+          _item.logo.file = file;
+          return;
+        });
+      }).then(function(){
         return _item;
       });
-    }).then(function(_item){
-      if(_.isUndefined(_item)) return _item;
-      if(!_item.banner || !_item.banner.fileId) return _item;
-      if(_item.banner.fileId) return File.getCached(_item.banner.fileId).then(function(file){
-        _item.banner.file = file;
-        return _item;
-      });
-    }).then(function(_item){
-      if(!_item.logo || !_item.logo.fileId) return _item;
-      if(_item.logo.fileId) return File.getCached(_item.logo.fileId).then(function(file){
-        _item.logo.file = file;
-        return _item;
-      });
-    }).then(function(){
-      return _item;
     });
   });
 });

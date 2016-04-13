@@ -7,11 +7,13 @@ var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Content = dynamoose.model('Content');
 var Campaign = dynamoose.model('Campaign');
+var Contributor = dynamoose.model('Contributor');
 var Company = dynamoose.model('Company');
 var knex = require('config/lib/bookshelf').knex;
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var path = require('path');
+var debug = require('debug')('up:debug:content:ctrl');
   /* global -Promise */
 var Promise = require('bluebird');
 var sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service'));
@@ -61,9 +63,13 @@ var sendContentEmail = function(content) {
  */
 exports.create = function (req, res) {
   var item = new Content(req.body);
+  item.userId = req.user.id;
+  debug('Saving content', item);
 
   item.save().then(function(val) {
+    debug('After saving content', val.id);
     sendContentEmail(item);
+    Contributor.updateState(val.campaignId, val.userId, 2);
     res.json(item);
   })
   .catch(function(err){
@@ -130,7 +136,9 @@ exports.list = function (req, res) {
  */
 exports.listByCampaign = function (req, res) {
   Content.query('campaignId').eq(req.params.campaignId).exec().then(function(items){
-    return items;
+    return Promise.map(items, function(val){
+      return val.populate('User');
+    });
 
 //    return Promise.map(items, function(item){
       // wont work because we havent migrated the mvp user yet
