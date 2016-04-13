@@ -197,7 +197,7 @@ exports.listByUser = function (req, res) {
   .then(function(items){
     campaigns = items;
     _.forEach(contributions, function(val){
-      val.campaign = _.find(campaigns, 'id', val.campaignId);
+      val.campaign = _.find(campaigns, ['id', val.campaignId]);
     });
     res.json(contributions);
   })
