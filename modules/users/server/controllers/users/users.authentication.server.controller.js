@@ -303,8 +303,10 @@ exports.signin = function (req, res, next) {
   passport.authenticate('local', function (err, user, info) {
     if (err || !user) {
       debug('err: ', err);
-      debug('err: ', user);
-      res.status(400).send(info);
+      debug('err: ', info);
+      res.status(400).send({
+        message: 'We couldn\'t authenticate a user.'
+      });
     } else {
       debug('user authenticated: ', user.username);
 

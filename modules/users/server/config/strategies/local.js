@@ -36,7 +36,7 @@ module.exports = function () {
         return provider.authenticate(password);
       }).then(function(isAuthenticated){
         if(!isAuthenticated){
-          throw { message: 'Invalid username or password' };
+          throw new Error('Invalid username or password');
         }
         debug('authenticated user');
         return User.getCached(userId);
