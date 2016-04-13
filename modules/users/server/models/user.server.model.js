@@ -54,7 +54,6 @@ var UserSchema = new Schema({
   firstName: {
     type: String,
     trim: true,
-    required: true,
     default: '',
     validate: validateLocalStrategyProperty
   },
@@ -92,17 +91,6 @@ var UserSchema = new Schema({
   cashtag: {
     type: String
   },
-  password: {
-    type: String,
-    default: '',
-    validate: validateLocalStrategyPassword
-  },
-  salt: {
-    type: String
-  },
-  hash: {
-    type: String
-  },
   avatar: {
     fileId: {
       type: String
@@ -113,11 +101,8 @@ var UserSchema = new Schema({
     default: 'modules/core/client/img/default-avatar.png'
   },
   provider: {
-    type: String,
-    required: 'Provider is required'
+    type: String
   },
-  providerData: {},
-  additionalProvidersData: {},
   roles: {
     type: [{
       type: String,
@@ -173,8 +158,9 @@ UserSchema.method('populate', function (path) {
 /**
  * Create instance method for authenticating user
  */
-UserSchema.method('authenticate', function (password) {
-  return this.hash === this.hashPassword(password);
+UserSchema.methods.authenticate = Promise.method(function (password) {
+  var Provider = require('Provider');
+  return Provider.authenticate(password);
 });
 
 /**
@@ -254,7 +240,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
   var _item;
 
   return cache.wrap(key, function() {
-    console.log('cache miss: ', key);
+    debug('cache miss: ', key);
     return User.get(id).then(function(item){
       if(_.isUndefined(item)) return null;
       _item = item;
@@ -275,28 +261,32 @@ UserSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
-UserSchema.static('createWithSlug', Promise.method(function(body) {
+UserSchema.statics.createWithSlug = Promise.method(function(body) {
+  var Provider = dynamoose.model('Provider');
   var Slug = dynamoose.model('Slug');
   var User = dynamoose.model('User');
   body.id = body.id || intformat(flakeIdGen.next(), 'dec');
 
-  if (body.password) {
-    body.salt = crypto.randomBytes(16).toString('base64');
-    body.hash = User.hashPassword(body.password, body.salt);
+  return Promise.try(function(){
+    // create password provider if needed
+    if(_.isUndefined(body.password)) return;
+    debug('create password: ', body.id);
+    return Provider.createPassword(body.email, body.password, body.id);
+  }).then(function(){
     body.password = '';
-  }
-
-  return Slug.createWrapper({id: body.username, refId: body.id, refType: 'User'}).then(function(slug){
-    debug('slug: ', slug);
-    return User.create(body).then(function(item){
-      debug('user: ', item);
-      return item;
-    });
+    if(_.isUndefined(body.username)) return;
+    // create slug if needed
+    debug('create slug: ', body.username);
+    return Slug.createWrapper({id: body.username, refId: body.id, refType: 'User'});
+  }).then(function(slug){
+    debug('create user: ', body.id);
+    // create user
+    return User.create(body);
   }).catch(function(err){
     debug('createWithSlug: ', err.stack);
     throw err;
   });
-}));
+});
 
 UserSchema.static('purge', Promise.method(function(userId) {
   var User = dynamoose.model('User');
