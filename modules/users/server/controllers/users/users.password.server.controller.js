@@ -165,54 +165,59 @@ exports.reset = function (req, res, next) {
 /**
  * Change Password
  */
-exports.changePassword = function (req, res, next) {
+exports.changePassword = function (req, res) {
   // Init Variables
   var passwordDetails = req.body;
   var message = null;
+  var _provider;
 
-  if (req.user) {
-    if (passwordDetails.newPassword) {
-      User.get(req.user.id, function (err, user) {
-        if (!err && user) {
-          if (user.authenticate(passwordDetails.currentPassword)) {
-            user.changePassword(passwordDetails.newPassword);
-
-            user.save(function (err) {
-              if (err) {
-                return res.status(400).send({
-                  message: errorHandler.getErrorMessage(err)
-                });
-              } else {
-                req.login(user, function (err) {
-                  if (err) {
-                    res.status(400).send(err);
-                  } else {
-                    res.send({
-                      message: 'Password changed successfully'
-                    });
-                  }
-                });
-              }
-            });
-          } else {
-            res.status(400).send({
-              message: 'Current password is incorrect'
-            });
-          }
-        } else {
-          res.status(400).send({
-            message: 'User is not found'
-          });
-        }
-      });
-    } else {
-      res.status(400).send({
-        message: 'Please provide a new password'
+  Promise.try(function(){
+    return Provider.get({
+      id: req.user.email,
+      provider: 'password'
+    });
+  }).then(function(provider) {
+    _provider = provider;
+    if(!provider){
+      debug('provider not found');
+      return res.status(400).send({
+        message: 'Invalid username or password'
       });
     }
-  } else {
-    res.status(400).send({
-      message: 'User is not signed in'
+    debug('found password provider');
+
+    // Try to authenticate the user with 'currentPassword'
+    return _provider.authenticate(passwordDetails.currentPassword).then(function(isAuthenticated) {
+      debug('isAuthenticated ', isAuthenticated);
+      if(!isAuthenticated) {
+        return res.status(400).send({
+          message: 'Invalid username or password'
+        });
+      }
+
+      // Change password, get the user, log them in, and return.
+      debug('authenticated user');
+      return _provider.changePassword(passwordDetails.newPassword).then(function() {
+        debug('save user');
+        return _provider.save();
+      }).then(function() {
+        debug('getCached user');
+        return User.getCached(_provider.userId);
+      }).then(function(user){
+        debug('logging in cached user');
+        req.login(user, function (err) {
+          if (err) {
+            res.status(400).send(err);
+            return;
+          } else {
+            debug('returning success');
+            res.send({
+              message: 'Password changed successfully'
+            });
+            return;
+          }
+        });
+      });
     });
-  }
+  });
 };
