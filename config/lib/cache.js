@@ -21,7 +21,7 @@ var redisCache = cacheManager.caching({
 
 var memoryCache = cacheManager.caching({
   store: 'memory',
-  isCacheableValue: isCacheableValue,
+  // isCacheableValue: isCacheableValue,
   max: 100,
   ttl: 10 /* seconds */});
 var ttl = 10;
@@ -34,5 +34,5 @@ console.log(chalk.green('Host:\t', config.redis.host));
 console.log(chalk.green('Port:\t', config.redis.port));
 
 
-module.exports = cache;
+module.exports = memoryCache;
 
