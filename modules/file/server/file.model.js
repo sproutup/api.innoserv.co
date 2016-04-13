@@ -14,6 +14,7 @@ var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+var debug = require('debug')('up:debug:file:model');
 
 /**
  * Schema
@@ -70,6 +71,7 @@ var FileSchema = new Schema({
  */
 FileSchema.method('addCloudfront', function () {
   this.url = 'https://' + config.aws.cloudfront.files + '/' + this.key;
+  debug('addCloudfront', this.url);
   return this;
 });
 
@@ -80,12 +82,9 @@ FileSchema.statics.getCached = Promise.method(function(id){
   return cache.wrap(key, function() {
     console.log('cache miss: file');
     return File.get(id).then(function(item){
-      if(_.isUndefined(item)) return item;
+      if(_.isUndefined(item)) return null;
       item.addCloudfront('companyId');
       return item;
-    }).catch(function(err){
-      console.log('err: ', err);
-      return null;
     });
   });
 });

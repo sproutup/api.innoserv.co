@@ -182,8 +182,7 @@ exports.campaignByID = function (req, res, next, id) {
   }
 
   Campaign.getCached(id).then(function(item){
-    console.log(item);
-    if(_.isUndefined(item)){
+    if(_.isUndefined(item) || !item){
       return res.status(400).send({
         message: 'Campaign not found'
       });

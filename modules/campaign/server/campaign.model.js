@@ -136,7 +136,7 @@ CampaignSchema.methods.populate = Promise.method(function (_schema) {
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]) return null;
 
-  console.log('populate: ', _schema);
+  debug('populate: ', _schema);
   var model = dynamoose.model(_schema);
   return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
@@ -149,23 +149,28 @@ CampaignSchema.statics.getCached = Promise.method(function(id){
   var File = dynamoose.model('File');
   var key = 'campaign:' + id;
   var _item;
+  debug('looking for ' + key + ' in cache');
 
   return cache.wrap(key, function() {
-    console.log('cache miss: campaign');
+    debug('cache miss: ' + key);
     return Campaign.get(id).then(function(item){
-      if(_.isUndefined(item)) return null;
+      if(_.isUndefined(item)) {
+        debug('campaign not found');
+        return null;
+      }
+
       _item = item;
+
       return Promise.join(
         _item.populate('Product'),
         _item.populate('Company')
-      );
-    }).then(function(){
-      if(!_item.banner || !_item.banner.fileId) return _item;
+      ).then(function(){
+        if(!_item.banner || !_item.banner.fileId) return _item;
 
-      return File.getCached(_item.banner.fileId).then(function(file){
-        debug('_item: ', _item);
-        _item.banner.file = file;
-        return _item;
+        return File.getCached(_item.banner.fileId).then(function(file){
+          _item.banner.file = file;
+          return _item;
+        });
       });
     });
   });
@@ -177,7 +182,7 @@ CampaignSchema.statics.queryActive = Promise.method(function(id){
   var _item;
 
   return cache.wrap(key, function() {
-    console.log('cache miss: active campaign');
+    debug('cache miss: active campaign');
     return Campaign.query('status').eq(1).attributes(['id']).exec()
       .then(function(items){
         return Promise.map(items, function(item){
