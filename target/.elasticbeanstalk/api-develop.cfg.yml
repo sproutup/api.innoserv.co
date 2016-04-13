@@ -1,10 +1,10 @@
 EnvironmentConfigurationMetadata:
-  Description: API server standard configuration.
+  Description: API Server Development Configuration.
 AWSConfigurationTemplateVersion: 1.1.0.0
 EnvironmentTier:
   Name: WebServer
   Type: Standard
-SolutionStack: 64bit Amazon Linux 2015.09 v2.0.8 running Docker 1.9.1
+SolutionStack: 64bit Amazon Linux 2016.03 v2.1.0 running Docker 1.9.1
 OptionSettings:
   aws:elasticbeanstalk:command:
     Timeout: 1800
@@ -24,4 +24,8 @@ OptionSettings:
     SSLCertificateId: arn:aws:iam::772918356582:server-certificate/sproutup-dev
   aws:elasticbeanstalk:environment:
     EnvironmentType: LoadBalanced
-
+  aws:elasticbeanstalk:application:environment:
+    PORT: 3000
+    NODE_ENV: develop
+    REDIS_PORT: 6379
+    REDIS_HOST: develop.2yq2tv.0001.usw2.cache.amazonaws.com

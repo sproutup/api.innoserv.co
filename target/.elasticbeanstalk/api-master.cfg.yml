@@ -1,12 +1,10 @@
 EnvironmentConfigurationMetadata:
-  Description: Analytics server standard configuration.
-  DateModified: '1434116451000'
-  DateCreated: '1434116451000'
+  Description: API Server Production Configuration.
 AWSConfigurationTemplateVersion: 1.1.0.0
 EnvironmentTier:
   Name: WebServer
   Type: Standard
-SolutionStack: 64bit Amazon Linux 2015.09 v2.0.8 running Docker 1.9.1
+SolutionStack: 64bit Amazon Linux 2016.03 v2.1.0 running Docker 1.9.1
 OptionSettings:
   aws:elasticbeanstalk:command:
     Timeout: 1800
@@ -18,12 +16,16 @@ OptionSettings:
   aws:autoscaling:launchconfiguration:
     IamInstanceProfile: aws-elasticbeanstalk-ec2-role
     EC2KeyName: endurance
-    InstanceType: t2.small
+    InstanceType: t2.medium
     SecurityGroups: webserver
   aws:elb:loadbalancer:
     LoadBalancerHTTPSPort: '443'
     LoadBalancerHTTPPort: '80'
-    SSLCertificateId: arn:aws:iam::772918356582:server-certificate/xxx
+    SSLCertificateId: arn:aws:iam::772918356582:server-certificate/digicert_ev_multi_domain
   aws:elasticbeanstalk:environment:
     EnvironmentType: LoadBalanced
-
+  aws:elasticbeanstalk:application:environment:
+    PORT: 3000
+    NODE_ENV: production
+    REDIS_PORT: 6379
+    REDIS_HOST: redis-cluster.2yq2tv.0001.usw2.cache.amazonaws.com
