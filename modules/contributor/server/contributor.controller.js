@@ -186,20 +186,20 @@ exports.listByUser = function (req, res) {
   var campaigns = null;
   Contributor.query({userId: req.params.userId}).exec().then(function(items){
     contributions = items;
-    if(items.length>0){
-      var query = _.map(items, function(val){ return {id: val.campaignId}; });
-      return Campaign.batchGet(query);
+    if(items.length > 0){
+      return Promise.map(contributions, function(item){
+         return item.populate('Campaign')
+          .then(function(res) {
+            return res;
+          });
+      });
     }
     else{
       return [];
     }
   })
-  .then(function(items){
-    campaigns = items;
-    _.forEach(contributions, function(val){
-      val.campaign = _.find(campaigns, ['id', val.campaignId]);
-    });
-    res.json(contributions);
+  .then(function(_items){
+    res.json(_items);
   })
   .catch(function(err){
     console.log('err: ', err);
