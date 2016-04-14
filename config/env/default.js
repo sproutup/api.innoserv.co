@@ -11,6 +11,19 @@ module.exports = {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: process.env.REDIS_PORT || '6379'
   },
+  knex: {
+    client: 'mysql',
+    connection: {
+      host: process.env.MYSQL_HOST || '127.0.0.1',
+      user: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'root',
+      database: process.env.MYSQL_DATABASE || 'sproutup_db'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    }
+  },
   port: process.env.PORT || 3333,
   templateEngine: 'swig',
   // Session Cookie settings
@@ -55,6 +68,48 @@ module.exports = {
     clientSecret: process.env.INSTAGRAM_SECRET || 'APP_SECRET',
     callbackURL: '/api/auth/instagram/callback',
     scope: ['basic'] // 'comments relationships likes'
+  },
+  facebook: {
+    clientID: process.env.FACEBOOK_ID || 'APP_ID',
+    clientSecret: process.env.FACEBOOK_SECRET || 'APP_SECRET',
+    callbackURL: '/api/auth/facebook/callback'
+  },
+  twitter: {
+    clientID: process.env.TWITTER_CONSUMER_KEY || 'CONSUMER_KEY',
+    clientSecret: process.env.TWITTER_CONSUMER_SECRET || 'CONSUMER_SECRET',
+    accessID: process.env.TWITTER_ACCESS_TOKEN || 'ACCESS_TOKEN',
+    accessSecret: process.env.TWITTER_ACCESS_SECRET || 'ACCESS_SECRET',
+    callbackURL: '/api/auth/twitter/callback'
+  },
+  google: {
+    clientID: process.env.GOOGLE_ID || 'APP_ID',
+    clientSecret: process.env.GOOGLE_SECRET || 'APP_SECRET',
+    callbackURL: '/api/auth/google/callback',
+    baseURL: 'https://',
+    accessTokenURL: 'www.googleapis.com/oauth2/v3/token',
+    jwt: {
+      client_email: process.env.GOOGLE_JWT_CLIENT_EMAIL || 'EMAIL',
+      private_key: process.env.GOOGLE_JWT_PRIVATE_KEY || 'KEY'
+    },
+    calendar: {
+      id: process.env.GOOGLE_CALENDAR_ID
+    }
+  },
+  linkedin: {
+    clientID: process.env.LINKEDIN_ID || 'APP_ID',
+    clientSecret: process.env.LINKEDIN_SECRET || 'APP_SECRET',
+    callbackURL: '/api/auth/linkedin/callback'
+  },
+  github: {
+    clientID: process.env.GITHUB_ID || 'APP_ID',
+    clientSecret: process.env.GITHUB_SECRET || 'APP_SECRET',
+    callbackURL: '/api/auth/github/callback'
+  },
+  paypal: {
+    clientID: process.env.PAYPAL_ID || 'CLIENT_ID',
+    clientSecret: process.env.PAYPAL_SECRET || 'CLIENT_SECRET',
+    callbackURL: '/api/auth/paypal/callback',
+    sandbox: true
   },
   sendgrid: {
     templates: {
