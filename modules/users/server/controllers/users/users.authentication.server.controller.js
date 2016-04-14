@@ -512,7 +512,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         // provider found -> don't add the provider again
         else{
           debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again');
-          return done(new Error('Someone is already connected with this ' + _provider + ' account'), user);
+          return done(new Error('Looks like another SproutUp account is already connected with this ' + _provider + ' account'), user);
         }
       }
     });
