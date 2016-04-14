@@ -126,12 +126,11 @@ exports.signup = function (req, res) {
   // Add missing user fields
   user.provider = 'local';
   user.displayName = user.firstName + ' ' + user.lastName;
+  user.emailConfirmed = true;
 
   // Then save the user
   User.createWithSlug(user).then(function(newuser) {
     debug('user created: ', newuser.id);
-
-    signedUpEmail(newuser, req.headers.host);
 
     // If the user is claiming a company, save a team obj, then remove the token
     if (req.body.token) {
