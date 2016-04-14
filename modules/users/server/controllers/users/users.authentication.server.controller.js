@@ -449,6 +449,24 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
             return User.createWithSlug(user).then(function (newuser) {
               provider.userId = newuser.id;
               provider.save(function (err){
+                if (newuser.email) {
+                  // Send email verification
+                  crypto.randomBytesAsync(20).then(function(buffer) {
+                    var token = buffer.toString('hex');
+                    redis.hmset('token:' + token, { 'userId': newuser.id, 'email': newuser.email });
+
+                    url = 'http://' + req.headers.host + '/i/update-email/' + token;
+                    var to = newuser.email;
+                    var subject = 'Confirm Your Email';
+                    var substitutions = {
+                      ':user': [newuser.displayName],
+                      ':url': [url]
+                    };
+
+                    return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.verification);
+                  });
+                }
+
                 return done(err, newuser);
               });
             });
