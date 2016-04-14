@@ -384,8 +384,8 @@ exports.oauthCallback = function (strategy) {
 
     passport.authenticate(strategy, function (err, user, redirectURL) {
       if (err) {
-        console.log('err: ', err);
-        return res.redirect('/authentication/signin?err=' + encodeURIComponent(errorHandler.getErrorMessage(err)));
+        debug(err.name + ': ' + err.message);
+        return res.redirect('/authentication/signin?err=' + encodeURIComponent(err.message));
       }
       if (!user) {
         return res.redirect('/authentication/signin');
@@ -494,8 +494,8 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         }
         // provider found -> don't add the provider again
         else{
-          debug('provider found -> dont add the provider again');
-          return done(new Error('User is already connected using this provider'), user);
+          debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again');
+          return done(new Error('Someone is already connected with this ' + _provider + ' account'), user);
         }
       }
     });
