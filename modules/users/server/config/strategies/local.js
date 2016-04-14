@@ -29,7 +29,7 @@ module.exports = function () {
       }).then(function(provider){
         if(!provider){
           debug('provider not found', provider);
-          throw { message: 'Invalid username or password' };
+          throw new Error('Invalid username or password');
         }
         debug('found password provider');
         userId = provider.userId;
