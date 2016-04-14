@@ -50,21 +50,24 @@ exports.update = function (req, res) {
       });
     } else {
       if (company.banner && company.banner.fileId) {
-        if (company.logo && company.logo.fileId) {
-          File.getCached(company.logo.fileId).then(function(file){
-            company.logo.file = file;
-          });
-          File.getCached(company.banner.fileId).then(function(file){
-            company.banner.file = file;
-          });
-          res.json(company);
-        }
-        else {
-          File.getCached(company.banner.fileId).then(function(file){
-            company.banner.file = file;
+        // Populate banner and logo
+        File.getCached(company.banner.fileId).then(function(file){
+          company.banner.file = file;
+          if (company.logo && company.logo.fileId) {
+            return File.getCached(company.logo.fileId).then(function(file){
+              company.logo.file = file;
+              res.json(company);
+            });
+          } else {
             res.json(company);
-          });
-        }
+          }
+        });
+      } else if (company.logo && company.logo.fileId) {
+        // Populate logo
+        File.getCached(company.logo.fileId).then(function(file){
+          company.logo.file = file;
+          res.json(company);
+        });
       } else {
         res.json(company);
       }
