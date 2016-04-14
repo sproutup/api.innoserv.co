@@ -34,9 +34,9 @@ module.exports = {
     }
   },
   sendgrid: {
-    local: process.env.SENDGRID_LOCAL | false,
-    username: process.env.SENDGRID_USERNAME | 'SENDGRID',
-    pass: process.env.SENDGRID_PASSWORD | 'PASSWORD'
+    local: false,
+    username: process.env.SENDGRID_USERNAME || 'SENDGRID',
+    pass: process.env.SENDGRID_PASSWORD || 'PASSWORD'
   },
   seedDB: process.env.MONGO_SEED || false
 };
