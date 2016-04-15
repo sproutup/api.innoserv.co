@@ -8,7 +8,7 @@ module.exports = {
   db: {
     local: false,
     region: 'us-west-2',
-    create: false,
+    create: true,
     prefix: 'Prod_'
   },
   log: {
