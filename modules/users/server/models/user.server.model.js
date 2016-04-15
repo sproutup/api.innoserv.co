@@ -315,6 +315,22 @@ UserSchema.static('purge', Promise.method(function(userId) {
   });
 }));
 
+UserSchema.statics.updateAndClearCache = Promise.method(function(id, update){
+  var User = dynamoose.model('User');
+  var File = dynamoose.model('File');
+  var key = 'user:' + id;
+  var _item;
+
+  return User.update({id: id}, update).then(function (user, error) {
+    if (error) {
+      console.log('err:', error);
+      throw new Error(error);
+    } else {
+      return User.getCached(user.id);
+    }
+  });
+});
+
 var UserModel = dynamoose.model('User', UserSchema);
 
 /**

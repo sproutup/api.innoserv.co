@@ -10,6 +10,7 @@ var _ = require('lodash'),
   config = require('config/config'),
   fs = require('fs'),
   path = require('path'),
+  debug = require('debug')('up:debug:user:profile:controller'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
   sendgrid = require('sendgrid')(config.sendgrid.username, config.sendgrid.pass),
   sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service')),
@@ -115,38 +116,21 @@ exports.changeProfilePicture = function (req, res) {
   var user = req.user;
   var message = null;
 
-  if (user) {
-    user.avatar = {fileId: req.body.fileId};
-    User.update({id: user.id}, {avatar:{fileId: req.body.fileId}},function (saveError) {
-      if (saveError) {
-        console.log('err:', saveError);
-        return res.status(400).send({
-          message: errorHandler.getErrorMessage(saveError)
-        });
-      } else {
-        _File.get(user.avatar.fileId).then(function(file){
-          if(file){
-            file.addCloudfront();
-            user.avatar.file = file;
-          }
-          req.login(user, function (err) {
-            if (err) {
-              res.status(400).send(err);
-            } else {
-              res.json(user);
-            }
-          });
-        })
-        .catch(function(err){
-          console.log('err', err);
+  if (user && user.id && req.body.fileId) {
+    User.updateAndClearCache(user.id, {avatar:{fileId: req.body.fileId}}).then(function(newuser) {
+      req.login(newuser, function (err) {
+        if (err) {
           res.status(400).send(err);
-        });
-
-      }
+        } else {
+          res.json(newuser);
+        }
+      });
+    }).catch(function(error) {
+      res.status(400).send(error);
     });
   } else {
     res.status(400).send({
-      message: 'User is not signed in'
+      message: 'Oops. Something isn\'t right.'
     });
   }
 };
