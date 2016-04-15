@@ -97,10 +97,10 @@ describe('User Model Unit Tests:', function () {
       });
     });
 */
-    it('should be able to show an error when try to save without first name', function (done) {
+    it('should be able to save without first name', function (done) {
       try {
       User.create(user4, function (err, data) {
-        should.exist(err);
+        should.not.exist(err);
         done();
       });
       } catch(err){

@@ -17,7 +17,7 @@ var app, agent, credentials, user, userdata, channel, admin;
 /**
  * Company routes tests
  */
-describe('Channel CRUD tests', function () {
+describe('Channel routes tests', function () {
   this.timeout(5000);
 
   before(function (done) {
