@@ -36,7 +36,8 @@ exports.send = Promise.method(function(to, subject, substitutions, template) {
 
   if (config.sendgrid && config.sendgrid.local) {
     debug('We didn\'t send an email to ' + to + '. Here are the sendgrid substitutions: ', substitutions);
-    debug('Here\'s the template we would\'ve used: ', template);
+    debug('Sendgrid template id: ', template);
+    debug('Email subject: ', subject);
     return substitutions;
   } else {
     return sendgrid.sendAsync(email);
@@ -54,22 +55,6 @@ exports.sendToUser = function(userId, subject, substitutions, template) {
     .catch(function(error) {
       throw error;
     });
-};
-
-/**
- * Send to a mvp user
- */
-exports.sendToMvpUser = function(userId, subject, substitutions, template) {
-  return knex
-    .select('id', 'email')
-    .from('users')
-    .where('id', userId)
-      .then(function(user){
-        return _this.send(user[0].email, subject, substitutions, template);
-      })
-      .catch(function(error) {
-        throw error;
-      });
 };
 
 /**
