@@ -42,9 +42,9 @@ else {
 // Load the mongoose models
 module.exports.loadModels = function (callback) {
   // Globbing model files
-  config.files.server.models.forEach(function (modelPath) {
-    require(modelPath);
-  });
+//  config.files.server.models.forEach(function (modelPath) {
+//    require(modelPath);
+//  });
 
   if (callback) callback();
 };
