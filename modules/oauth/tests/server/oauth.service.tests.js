@@ -4,12 +4,8 @@
  * Module dependencies.
  */
 
-var dynamooselib = require('config/lib/dynamoose');
-dynamooselib.loadModels();
-
 var should = require('should'),
   dynamoose = require('dynamoose'),
-  Oauth = dynamoose.model('oauth'),
   OAuthService = require('modules/oauth/server/oauth.service.js');
 
 /**
@@ -40,7 +36,7 @@ describe('OAuth Service Unit Tests:', function () {
   });
 
   describe('Method Save', function () {
-
+/*
     it('should begin with no oauths', function (done) {
       Oauth.scan({}, function (err, oauths) {
         oauths.should.have.length(0);
@@ -62,6 +58,9 @@ describe('OAuth Service Unit Tests:', function () {
     });
 
   });
+
+*/
+  
 /*
     it('should fail to save an existing user again', function (done) {
       var _user = new User(user);
@@ -405,11 +404,11 @@ describe('OAuth Service Unit Tests:', function () {
       });
     });
 
-  });
 */
-  after(function (done) {
-    Oauth.$__.table.delete(function(err){
-      done();
-    });
   });
+//  after(function (done) {
+//    Oauth.$__.table.delete(function(err){
+//      done();
+//    });
+//  });
 });

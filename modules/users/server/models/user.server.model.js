@@ -291,6 +291,7 @@ UserSchema.statics.createWithSlug = Promise.method(function(body) {
 UserSchema.static('purge', Promise.method(function(userId) {
   var User = dynamoose.model('User');
   var Slug = dynamoose.model('Slug');
+  var Provider = dynamoose.model('Provider');
   var _item;
 
   return User.get(userId).then(function(item) {
@@ -302,6 +303,9 @@ UserSchema.static('purge', Promise.method(function(userId) {
     else{
       return false;
     }
+  }).then(function() {
+    // delete all user providers
+    return Provider.purge(_item.id);
   }).then(function() {
     if(_item){
       return _item.delete();

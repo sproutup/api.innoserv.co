@@ -246,6 +246,26 @@ ProviderSchema.statics.refreshAccessTokenOAuth2 = Promise.method(function (refre
   }
 });
 
+
+ProviderSchema.statics.purge = Promise.method(function(userId) {
+  var _this = this;
+
+  debug('purge: ', userId);
+  return _this.query('userId').eq(userId).exec().then(function(items) {
+    if(_.isUndefined(items)) return true;
+
+    // delete all user providers
+    return Promise.each(items, function(item){
+      debug('delete ', item.provider , ' provider: ', item.id);
+      return _this.delete({id: item.id, provider: item.provider});
+    });
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+});
+
+
 /*
  * refresh access token
  */
