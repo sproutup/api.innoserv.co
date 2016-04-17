@@ -61,14 +61,14 @@ exports.forgot = function (req, res, next) {
     function (token, done) {
       User.getCached(_provider.userId).then(function(user) {
         var to = _provider.id;
-        var subject = ' ';
+        var subject = 'Reset your password.';
         var url = 'http://' + req.headers.host + '/api/auth/reset/' + token;
         var substitutions = {
           ':user': [user.displayName],
           ':url': [url]
         };
 
-        sendgridService.send(to, subject, substitutions, config.sendgrid.templates.forgot.password)
+        return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.forgot.password)
           .then(function() {
             return res.status(200).send({
               message: 'An email has been sent to the provided email with further instructions.',

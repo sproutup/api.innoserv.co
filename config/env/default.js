@@ -117,7 +117,7 @@ module.exports = {
       message: '2530a4ef-a779-4050-b1ff-01a8c5dfe1ff',
       verification: '4ff03cde-62c2-4148-ab56-fe467a3fe5ef',
       forgot: {
-        passport: 'd46dbccc-3eb8-4788-9b8a-330d5d3aecdf'
+        password: 'd46dbccc-3eb8-4788-9b8a-330d5d3aecdf'
       }
     }
   }
