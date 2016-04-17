@@ -330,6 +330,7 @@ UserSchema.statics.updateAndClearCache = Promise.method(function(id, update){
       console.log('err:', error);
       throw new Error(error);
     } else {
+      cache.del('user:' + user.id);
       return User.getCached(user.id);
     }
   });
