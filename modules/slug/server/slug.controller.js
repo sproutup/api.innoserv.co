@@ -19,18 +19,18 @@ exports.read = function (req, res) {
     item: null
   };
 
-  var item = req.model;
-  var model = dynamoose.model(item.refType);
-  model.getCached(item.refId).then(function(ref){
+//  var item = req.model;
+//  var model = dynamoose.model(item.refType);
+/*  return model.getCached(item.refId).then(function(ref){
     if(_.isUndefined(ref)) {
       result.ok = false;
       result.error = 'not found';
       return res.json(result);
-    }
-    result.type = item.refType;
-    result.item = ref;
+    } */
+    result.type = req.model.refType;
+    result.item = req.item;
     return res.json(result);
-  });
+ // });
 };
 
 /**
@@ -153,8 +153,9 @@ exports.findByID = function (req, res, next, id) {
     });
   }
 
-  Slug.getCached(id).then(function(item){
-    if(_.isUndefined(item)){
+  // look up slug
+  return Slug.getCached(id).then(function(item){
+    if(_.isUndefined(item)) {
       return res.status(400).send({
         ok: false,
         error: 'slug not found'
@@ -162,7 +163,19 @@ exports.findByID = function (req, res, next, id) {
     }
 
     req.model = item;
-    next();
+
+    // look up item that slug points to
+    var model = dynamoose.model(item.refType);
+    return model.getCached(item.refId).then(function(ref){
+      if(_.isUndefined(ref)) {
+        return res.status(400).send({
+          ok: false,
+          error: 'slug reference not found'
+        });
+      }
+      req.item = ref;
+      return next();
+    });
   })
   .catch(function(err){
     console.log(err);

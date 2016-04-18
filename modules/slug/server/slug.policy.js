@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var acl = require('acl');
+var _ = require('lodash');
 
 // Using the memory backend
 acl = new acl(new acl.memoryBackend());
@@ -16,6 +17,9 @@ exports.invokeRolesPolicies = function () {
     roles: ['admin'],
     allows: [{
       resources: '/api/slug',
+      permissions: '*'
+    }, {
+      resources: '/api/me/slug',
       permissions: '*'
     }, {
       resources: '/api/slug/:slugId',
@@ -53,6 +57,30 @@ exports.invokeRolesPolicies = function () {
  */
 exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
+
+  // If an item is being processed and the current user created it then allow any manipulation
+  console.log('item: ', req.item);
+  if (req.model && req.user && req.item) {
+    switch(req.model.refType){
+      case 'Company':
+        console.log('found company: ', req.user.id);
+        if(req.item.team && _.findIndex(req.item.team, function(o){
+          console.log('compare: ', o.userId);
+          return o.userId === req.user.id;
+        })!==-1){ return next(); }
+        break;
+      case 'User':
+        console.log('found user: ', req.user.username);
+        if(req.user.id === req.item.id) {
+          console.log('its me !');
+          return next();
+        }
+        break;
+      case 'Campaign':
+        console.log('found campaign');
+        break;
+    }
+  }
 
   // Check for user roles
   acl.areAnyRolesAllowed(roles, req.route.path, req.method.toLowerCase(), function (err, isAllowed) {
