@@ -79,10 +79,15 @@ FileSchema.statics.getCached = Promise.method(function(id){
   var File = dynamoose.model('File');
   var key = 'file:' + id;
 
+  if(_.isUndefined(id)) return null;
+
   return cache.wrap(key, function() {
-    console.log('cache miss: file');
+    debug('cache miss: file ', key);
     return File.get(id).then(function(item){
-      if(_.isUndefined(item)) return null;
+      if(_.isUndefined(item)) {
+        debug('file not found');
+        return null;
+      }
       item.addCloudfront('companyId');
       return item;
     });
