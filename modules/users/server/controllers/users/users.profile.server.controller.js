@@ -10,7 +10,7 @@ var _ = require('lodash'),
   config = require('config/config'),
   fs = require('fs'),
   path = require('path'),
-  debug = require('debug')('up:debug:user:profile:controller'),
+  debug = require('debug')('up:debug:user:profile:ctrl'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
   sendgrid = require('sendgrid')(config.sendgrid.username, config.sendgrid.pass),
   sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service')),
@@ -32,7 +32,7 @@ exports.update = function (req, res) {
 
   Promise.try(function(){
     if(user.username !== req.user.username){
-      console.log('changing username', user.username);
+      debug('changing username', user.username);
       return Slug.change({id: user.username, refId: req.user.id, refType: 'User'}, req.user.username).then(function(val){
         return;
       }).catch(function(err){
@@ -45,7 +45,7 @@ exports.update = function (req, res) {
     }
   }).then(function(){
     if(user && user.email && user.email.toLowerCase().trim() !== req.user.email.toLowerCase().trim()) {
-      console.log('changing email', user.email);
+      debug('changing email', user.email);
       user.emailConfirmed = false;
       return changeEmail(user, req.user.id, req.headers.host);
     }
@@ -63,7 +63,7 @@ exports.update = function (req, res) {
       } else {
         User.getPopulated(req.user.id).then(function(updated){
 //        var updated = _.extend(user, req.user, {username: user.username});
-          console.log('updated user', updated);
+          debug('updated user', updated);
           if (_result && _result.url) {
             updated.emailUrl = _result.url;
           }
