@@ -273,12 +273,27 @@ ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
   if(_.isUndefined(userId)) return null;
 
   // update the account
-  return _this.query('userId').eq(userId).attributes(['id', 'provider']).exec()
+  return _this.query('userId').eq(userId).attributes(['id', 'provider', 'data']).exec()
     .then(function(items){
       return _.forEach(items, function(item) {
-        if(item.provider === 'password'){
-          item.id = 'yeah we dont show the email';
+        switch (item.provider){
+         case 'twitter':
+            item.screen_name = item.data.screen_name;
+            break;
+         case 'facebook':
+            break;
+         case 'instagram':
+            console.log('data', item);
+            item.username = item.data ? item.data.username : '';
+            break;
+         case 'google':
+            item.account = 'todo';
+            break;
+         case 'password':
+            item.id = 'yeah we dont show the email';
+            break;
         }
+        delete item.data;
       });
     })
     .catch(function(err){
