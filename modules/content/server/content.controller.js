@@ -8,6 +8,7 @@ var dynamoose = require('dynamoose');
 var Content = dynamoose.model('Content');
 var Campaign = dynamoose.model('Campaign');
 var Contributor = dynamoose.model('Contributor');
+var User = dynamoose.model('User');
 var Company = dynamoose.model('Company');
 var knex = require('config/lib/bookshelf').knex;
 var errorHandler = require('modules/core/server/errors.controller');
@@ -35,17 +36,14 @@ var sendContentEmail = function(content) {
   })
   .then(function(company) {
     _company = company;
-    return knex
-      .select('id','name')
-      .from('users')
-      .where('id', content.userId);
+    return User.getCached(content.userId);
   })
   .then(function(user) {
     var companyId = _campaign.companyId;
     var subject = 'New Content on your SproutUp Campaign!';
     var url = config.domains.creator + 'com/' + _company.slug + '/campaign/' + _campaign.type + '/' + _campaign.id + '/stats/' + content.id;
     var substitutions = {
-      ':user_name': [user[0].name],
+      ':user_name': [user.displayName],
       ':content_title': [content.title],
       ':content_url': [url]
     };
@@ -53,7 +51,7 @@ var sendContentEmail = function(content) {
     sendgridService.sendToCompanyUsers(subject, substitutions, template, companyId);
   })
   .catch(function(error) {
-    console.log('error: ', error);
+    console.log('error: ', error.stack);
     throw error;
   });
 };
