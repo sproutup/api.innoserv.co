@@ -261,6 +261,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
     }).then(function(providers){
       if(providers){
         _item.providers = providers;
+        _item.hasPassword = !_.isUndefined(_.find(providers, function(o){ return o.provider === 'password'; }));
       }
       return _item;
     }).catch(function(err){
