@@ -266,6 +266,29 @@ ProviderSchema.statics.purge = Promise.method(function(userId) {
 });
 
 
+ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
+  var _this = this;
+  debug('getUserProviders: userId:', userId);
+
+  if(_.isUndefined(userId)) return null;
+
+  // update the account
+  return _this.query('userId').eq(userId).attributes(['id', 'provider']).exec()
+    .then(function(items){
+      return _.forEach(items, function(item) {
+        if(item.provider === 'password'){
+          item.id = 'yeah we dont show the email';
+        }
+      });
+    })
+    .catch(function(err){
+      console.log('err: ', err.stack);
+      throw err;
+    });
+});
+
+
+
 /*
  * refresh access token
  */
