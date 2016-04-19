@@ -73,6 +73,7 @@ var ContributorSchema = new Schema({
     }
   ],
   trial: { // trial specific information
+    shippingDate: Date,
     shippingState: Number
   }
 });
