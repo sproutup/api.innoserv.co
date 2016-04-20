@@ -5,6 +5,7 @@
  */
 var acl = require('acl');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:slug:policy');
 
 // Using the memory backend
 acl = new acl(new acl.memoryBackend());
@@ -59,13 +60,13 @@ exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
   // If an item is being processed and the current user created it then allow any manipulation
-  console.log('item: ', req.item);
+  debug('item: ', req.item.id);
   if (req.model && req.user && req.item) {
     switch(req.model.refType){
       case 'Company':
-        console.log('found company: ', req.user.id);
+        debug('found company: ', req.user.id);
         if(req.item.team && _.findIndex(req.item.team, function(o){
-          console.log('compare: ', o.userId);
+          debug('compare: ', o.userId);
           return o.userId === req.user.id;
         })!==-1){ return next(); }
         break;
