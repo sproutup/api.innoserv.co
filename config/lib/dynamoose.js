@@ -1,11 +1,13 @@
 'use strict';
 
 var dynamoose = require('dynamoose');
+var Promise = require('bluebird');
 var config = require('../config');
 var chalk = require('chalk');
 const https = require('https');
 
 console.log('--');
+console.log('db: ', config.db);
 console.log(chalk.green('Dynamodb'));
 console.log(chalk.green('Local:\t', config.db.local));
 console.log(chalk.green('Region:\t', config.db.region));
@@ -41,7 +43,15 @@ else {
 
 // Load the mongoose models
 module.exports.loadModels = function (callback) {
-  // Globbing model files
+  console.log('loadModels');
+  Promise.each(config.files.server.models, function(path){
+    console.log('model: ', path);
+    require(path);
+  }).then(function(){
+    if (callback) callback();
+  });
+
+ // Globbing model files
 //  config.files.server.models.forEach(function (modelPath) {
 //    require(modelPath);
 //  });
