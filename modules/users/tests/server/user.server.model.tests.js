@@ -60,7 +60,12 @@ describe('User Model Unit Tests:', function () {
       password: 'password',
       provider: 'local'
     };
- 
+
+    return User.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
+        return item.delete();
+      });
+    });
   });
 
   describe('Method Save', function () {
