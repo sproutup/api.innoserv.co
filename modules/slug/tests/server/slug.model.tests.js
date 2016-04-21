@@ -42,6 +42,12 @@ describe('Slug Model Unit Tests:', function () {
       refId: '3456',
       refType: 'Company'
     };
+
+    return Slug.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
+        return item.delete();
+      });
+    });
   });
 
   describe('Method Save', function () {

@@ -91,6 +91,9 @@ var UserSchema = new Schema({
   cashtag: {
     type: String
   },
+  paypalme: {
+    type: String
+  },
   avatar: {
     fileId: {
       type: String
