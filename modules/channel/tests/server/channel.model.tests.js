@@ -4,19 +4,26 @@
  * Module dependencies.
  */
 
+var dynamoose = require('dynamoose');
 var dynamooselib = require('config/lib/dynamoose');
 /* global -Promise */
 var Promise = require('bluebird');
+var chai = require('chai');
+var should = chai.should;
+var expect = chai.expect;
+var chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
 
-var should = require('should'),
-  dynamoose = require('dynamoose'),
-  Channel = dynamoose.model('Channel'),
-  Member = dynamoose.model('Member');
+var Channel = dynamoose.model('Channel'),
+  Member = dynamoose.model('Member'),
+  Company = dynamoose.model('Company'),
+  Team = dynamoose.model('Team'),
+  User = dynamoose.model('User');
 
 /**
  * Globals
  */
-var channel1, channel2;
+var channel1, channel2, _user1, _user2, _company;
 
 /**
  * Unit tests
@@ -25,18 +32,57 @@ describe('Channel Model Unit Tests:', function () {
   this.timeout(5000);
 
   before(function () {
-    channel1 = {
-      id: '123',
-      userId: '123',
-      refId: '321',
-      title: 'channel 1'
+    Channel.delete({});
+
+    _user1 = {
+      firstName: 'Full',
+      lastName: 'Name',
+      displayName: 'Full Name',
+      email: 'test@test.com',
+      username: 'username',
+      password: 'password',
+      provider: 'local'
     };
-    channel2 = {
-      id: '456',
-//      userId: '123',
-      refId: '654',
-      title: 'channel 2'
+
+    _user2 = {
+      firstName: 'Full',
+      lastName: 'Name',
+      displayName: 'Full Name',
+      email: 'test2@test.com',
+      username: 'username2',
+      password: 'password',
+      provider: 'local'
     };
+
+    _company = new Company({
+      name: 'facebook',
+      url: 'www.facebook.com',
+      slug: 'facebook'
+    });
+
+    // Delete members
+    return Member.scan().exec().then(function(items){
+      return Promise.each(items, function(item){
+        return item.delete();
+      });
+    }).then(function() {
+      // Create 2 users
+
+       _user1 = new User(_user1);
+       _user2 = new User(_user2);
+       return _user1.save().then(function(res) {
+        return _user2.save();
+       });
+    }).then(function() {
+      // Create a company and the team members
+
+      return Company.createWithSlug(_company).then(function(item) {
+        _company = item;
+        return Promise.each([_user1, _user2], function(item){
+          return Team.addTeamMember(item.id, _company.id);
+        });
+      });
+    });
   });
 
   after(function (done) {
@@ -46,54 +92,84 @@ describe('Channel Model Unit Tests:', function () {
       }).then(function(val){
         Member.scan().exec().then(function(items){
           Promise.all(items, function(item){
-            console.log('delete member');
             return item.delete();
-          }).then(function(val){
-            done();
           });
         });
       });
+    }).then(function() {
+      User.scan().exec().then(function(items){
+        Promise.all(items, function(item){
+          return item.delete();
+        });
+      });
+    }).then(function() {
+      done();
     });
   });
 
   describe('Method Save', function () {
-    it('should be able to save and delete without problems', function (done) {
-      var _ch = new Channel(channel1);
-      _ch.save(function (err) {
-        should.not.exist(err);
-        _ch.delete(function (err) {
-          should.not.exist(err);
-          done();
-        });
-      });
-    });
-
-    it('should be able to show an error when try to save without userId', function (done) {
-      try {
-        Channel.create(channel2, function (err, data) {
-          should.exist(err);
-          done();
-        });
-      } catch(err){
-        should.exist(err);
-        done();
-      }
-    });
-
-    it('should create channel and add member', function (done) {
-      Channel.createNewChannel('123', '321', 'User').then(function (data) {
-        data.userId.should.equal('123');
-        data.refId.should.equal('321');
-        data.refType.should.equal('User');
-        data.members.should.have.length(1);
-        data.members[0].userId.should.equal('123');
+    it('should create channel and add member', function () {
+      var create = Channel.createNewChannel('1', '123', 'User').then(function (data) {
+        channel1 = data;
         data.members[0].channelId.should.equal(data.id);
-        done();
+        return data;
       }).catch(function(err){
-        should.not.exist(err);
-        done();
+        return err;
       });
+
+      return Promise.all([
+        expect(create).to.eventually.have.property('userId').that.equals('1'),
+        expect(create).to.eventually.have.property('refId').that.equals('123'),
+        expect(create).to.eventually.have.property('refType').that.equals('User'),
+        expect(create).to.eventually.have.property('members')
+          .that.is.an('array')
+          .with.deep.property('[0]')
+          .that.deep.property('userId')
+          .that.equals('1')
+      ]);
     });
+
+    it('should not a create channel without a userId', function () {
+      var create = Channel.createNewChannel('');
+      return expect(create).to.eventually.be.rejected;
+    });
+
+    it('should be able to add a member to a channel', function () {
+      var create = Channel.addMember('2', channel1.id);
+
+      return Promise.all([
+        expect(create).to.eventually.be.fulfilled,
+        expect(create).to.eventually.have.property('userId').that.equals('2'),
+        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+      ]);
+    });
+
+    it('should not add a member to a channel twice', function () {
+      var create = Channel.addMember('1', channel1.id);
+      return expect(create).to.eventually.be.rejectedWith(TypeError, 'This user has already been added to this channel');
+    });
+
+    it('should not add a member to a channel that doesn\'t exsist', function () {
+      var create = Channel.addMember('1', '666');
+      return expect(create).to.eventually.be.rejectedWith(TypeError, 'This channel doesn\'t exist');
+    });
+
+    it('should be able to add company members to a channel', function () {
+      var create = Channel.addCompanyMembers(_company.id, channel1.id);
+
+      return Promise.all([
+        expect(create).to.eventually.be.fulfilled,
+        expect(create).to.eventually.be.an('array')
+          .with.deep.property('[0]')
+          .that.deep.property('userId')
+          .that.equals(_user1.id)
+      ]);
+    });
+
+    // it('should not add company members to a channel that doesn\'t exsist', function () {
+    //   var create = Channel.addCompanyMembers(_company.id, '666');
+    //   return expect(create).to.eventually.be.rejectedWith(TypeError, 'This channel doesn\'t exirt');
+    // });
 
   });
 });

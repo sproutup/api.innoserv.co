@@ -133,6 +133,10 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
 });
 
 ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, refType){
+  if (!userId) {
+    throw 'A user is required to start a channel.';
+  }
+
   var _this = this;
   var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
@@ -155,9 +159,37 @@ ChannelSchema.methods.addMember = Promise.method(function(userId){
 });
 
 ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
+  if (!userId) {
+    throw new TypeError('A user is required to start a channel.');
+  } else if (!channelId) {
+    throw new TypeError('A channel is required to start a channel.');
+  }
+
+  var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
-  var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
-  return item.save();
+
+  // Make sure the channel exists
+  // Then make sure this user isn't already added to the channel
+  // If we're good, save the member
+  return Channel.getCached(channelId).then(function(item) {
+    if (item && item.id) {
+      return;
+    } else {
+      throw new TypeError('This channel doesn\'t exist');
+    }
+  }).then(function() {
+    return Member.query('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(items) {
+      if (items.length < 1) {
+        var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+        return item.save();
+      } else {
+        throw new TypeError('This user has already been added to this channel');
+      }
+    });
+  }).catch(function(error) {
+    console.log('error in addMember', error);
+    throw error;
+  });
 });
 
 ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
@@ -165,9 +197,12 @@ ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, cha
   var isCreator = true;
 
   return Team.query('companyId').eq(companyId).exec().then(function(team) {
-    for (var i = 0; i < team.length; i ++) {
-      ChannelSchema.statics.addMember(team[i].userId, channelId, isCreator);
-    }
+    return Promise.each(team, function(item){
+      return ChannelSchema.statics.addMember(item.userId, channelId, isCreator);
+    });
+  }).catch(function(error) {
+    console.log('error in addCompanyMembers', error);
+    throw error;
   });
 });
 
