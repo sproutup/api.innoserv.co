@@ -6,6 +6,7 @@
 /* global -Promise */
 var Promise = require('bluebird');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:post:model');
 var cache = require('config/lib/cache');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
@@ -82,7 +83,7 @@ PostSchema.methods.populate = Promise.method(function (_schema) {
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]) return null;
 
-  console.log('populate: ', _schema, this[_attribute]);
+  debug('populate: ', _schema, ' Attr: ', this[_attribute]);
   var model = dynamoose.model(_schema);
   return model.getCached(this[_attribute]).then(function(item){
     if(_.isUndefined(item)) return _this;
@@ -100,7 +101,7 @@ PostSchema.statics.getCached = Promise.method(function(id){
   var _item;
 
   return cache.wrap(key, function() {
-    console.log('cache miss: ', key);
+    debug('cache miss: ', key);
     return Post.get(id).then(function(post){
       if(_.isUndefined(post)) return null;
       _item = post;
@@ -120,7 +121,7 @@ PostSchema.statics.getCached = Promise.method(function(id){
  */
 PostSchema.method('populateRef', function (_schema, _id) {
   var _this = this;
-  console.log('populateRef: ', _schema);
+  debug('populateRef: ', _schema);
   var model = dynamoose.model(_schema);
   return model.query('refId').eq(this.id).exec().then(function(items){
     _this[_schema.toLowerCase().trim()] = items;
