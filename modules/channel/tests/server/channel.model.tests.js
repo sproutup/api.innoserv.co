@@ -68,12 +68,12 @@ describe('Channel Model Unit Tests:', function () {
     }).then(function() {
       // Create 2 users
 
-       _user1 = new User(_user1);
-       _user2 = new User(_user2);
-       return _user1.save().then(function(res) {
-        return _user2.save();
-       });
-    }).then(function() {
+      _user1 = new User(_user1);
+      _user2 = new User(_user2);
+      return Promise.each([_user1, _user2], function(item){
+        return item.save();
+      });
+    }).then(function(res) {
       // Create a company and the team members
 
       return Company.createWithSlug(_company).then(function(item) {
