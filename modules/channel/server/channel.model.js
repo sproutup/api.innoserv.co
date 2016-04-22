@@ -147,15 +147,15 @@ ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, 
   });
 
   return channel.save().then(function(val){
-    return channel.addMember(userId, val.id);
+    return channel.addMember(userId, true);
   }).then(function(member){
     channel.members = [member];
     return channel;
   });
 });
 
-ChannelSchema.methods.addMember = Promise.method(function(userId){
-  return dynamoose.model('Channel').addMember(userId, this.id);
+ChannelSchema.methods.addMember = Promise.method(function(userId, isCreator){
+  return dynamoose.model('Channel').addMember(userId, this.id, isCreator);
 });
 
 ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
@@ -178,12 +178,12 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
       throw new TypeError('This channel doesn\'t exist');
     }
   }).then(function() {
-    return Member.query('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(items) {
-      if (items.length < 1) {
-        var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
-        return item.save();
+    return Member.queryOne('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(item) {
+      if (!item || !item.id) {
+        var newItem = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+        return newItem.save();
       } else {
-        throw new TypeError('This user has already been added to this channel');
+        return item;
       }
     });
   }).catch(function(error) {
