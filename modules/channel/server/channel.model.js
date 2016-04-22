@@ -112,7 +112,7 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
-ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, refType){
+ChannelSchema.statics.createNewChannel = Promise.method(function(userId, id, type){
   if (!userId) {
     throw 'A user is required to start a channel.';
   }
@@ -121,9 +121,8 @@ ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, 
   var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
   var channel = new Channel({
-    userId: userId,
-    refId: refId,
-    refType: refType
+    id: id,
+    type: type
   });
 
   return channel.save().then(function(val){
@@ -131,6 +130,24 @@ ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, 
   }).then(function(member){
     channel.members = [member];
     return channel;
+  });
+});
+
+ChannelSchema.statics.createCampaignChannel = Promise.method(function(userId, campaignId){
+  var _userId;
+  var _channel;
+  var Campaign = dynamoose.model('Campaign');
+
+  var channelKey = campaignId + ':' + userId;
+  return Channel.createNewChannel(userId, channelKey, 'Campaign:User').then(function(ch){
+    // Get company ID so we can call addCompanyUsers
+    _channel = ch;
+    return Campaign.get(campaignId);
+   }).then(function(campaign) {
+    // Add company members to the message channel
+    return Channel.addCompanyMembers(campaign.companyId, _channel.id);
+  }).then(function() {
+    return _channel;
   });
 });
 
@@ -171,6 +188,7 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
     throw error;
   });
 });
+
 
 ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
   var Team = dynamoose.model('Team');

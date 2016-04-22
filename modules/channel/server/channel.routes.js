@@ -25,7 +25,7 @@ module.exports = function (app) {
     .get(ctrl.listByUser);
 
   // Single routes
-  app.route('/api/my/channel/ref/:refId').all(policy.isAllowed)
+  app.route('/api/my/channel/ref/:id').all(policy.isAllowed)
     .get(ctrl.findByRefId)
     .post(ctrl.findByRefId);
 
