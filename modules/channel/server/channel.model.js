@@ -20,36 +20,16 @@ var cache = require('config/lib/cache');
  * Schema
  */
 var ChannelSchema = new Schema({
+  // id can be a composite key like 'campaignId:userId'
   id: {
     type: String,
     default: function(){ return intformat(flakeIdGen.next(), 'dec'); },
     hashKey: true
   },
-  userId: {
+  // type describes what is in the composite id
+  type: {
     type: String,
-    required: true,
-    index: {
-      global: true,
-      rangeKey: 'created',
-      name: 'ChannelUserIndex',
-      project: true, // ProjectionType: ALL
-      throughput: 5 // read and write are both 5
-    }
-  },
-  refId: {
-    type: String,
-    required: false,
-    index: {
-      global: true,
-      rangeKey: 'userId',
-      name: 'ChannelRefIdUserIdIndex',
-      project: true, // ProjectionType: ALL
-      throughput: 5 // read and write are both 5
-    }
-  },
-  refType: {
-    type: String,
-    required: false
+    required: true
   },
   created: {
     type: Date,
