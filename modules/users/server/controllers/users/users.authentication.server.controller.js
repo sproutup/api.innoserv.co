@@ -373,11 +373,13 @@ exports.oauthCallback = function (strategy) {
     var protocol = tls ? 'https' : 'http';
     debug('proto: ', protocol);
     req.headers['x-forwarded-proto'] = protocol;
-    if(req.headers.referer){
-      var fields = url.parse(req.headers.referer);
-      debug('host: ', fields.host);
-      req.headers['x-forwarded-host'] = fields.host;
-    }
+    req.headers['x-forwarded-host'] = req.headers['x-up-proxy-host'];
+//    if(req.headers.referer){
+//      var fields = url.parse(req.headers.referer);
+//      debug('host: ', fields.host);
+//      req.headers['x-forwarded-host'] = fields.host;
+//    }
+    debug('x-up-proxy-header: ', req.headers['x-up-proxy-host']);
     debug('x-forwarded-proto: ', req.headers['x-forwarded-proto']);
     debug('x-forwarded-host: ', req.headers['x-forwarded-host']);
 
