@@ -60,8 +60,8 @@ exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
   // If an item is being processed and the current user created it then allow any manipulation
-  debug('item: ', req.item.id);
   if (req.model && req.user && req.item) {
+    debug('item: ', req.item.id);
     switch(req.model.refType){
       case 'Company':
         debug('found company: ', req.user.id);
