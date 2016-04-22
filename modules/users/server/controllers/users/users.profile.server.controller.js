@@ -44,7 +44,7 @@ exports.update = function (req, res) {
       return;
     }
   }).then(function(){
-    if(user && user.email && user.email.toLowerCase().trim() !== req.user.email.toLowerCase().trim()) {
+    if(user && user.email && (!req.user.email || user.email.toLowerCase().trim() !== req.user.email)) {
       debug('changing email', user.email);
       user.emailConfirmed = false;
       return changeEmail(user, req.user.id, req.headers.host);

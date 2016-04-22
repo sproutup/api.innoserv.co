@@ -117,7 +117,9 @@ exports.signup = function (req, res) {
   delete req.body.roles;
 
   // Make sure the the email has only lowercase letters
-  req.body.email = req.body.email.toLowerCase();
+  if(req.body.email){
+    req.body.email = req.body.email.toLowerCase();
+  }
 
   // Init Variables
   var user = req.body;
