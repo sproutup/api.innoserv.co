@@ -164,11 +164,24 @@ describe('Channel Model Unit Tests:', function () {
       ]);
     });
 
-    it('should not add a member to a channel twice', function () {
-      // var create = Channel.addMember('1', channel1.id);
-      // return expect(create).to.eventually.be.rejectedWith(TypeError, 'This user has already been added to this channel');
+    it('should return the member when we try to add it a second time', function () {
+      var create = Channel.addMember('2', channel1.id);
 
-      // TODO - check to see if we've added an extra member
+      return Promise.all([
+        expect(create).to.eventually.be.fulfilled,
+        expect(create).to.eventually.have.property('userId').that.equals('2'),
+        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+      ]);
+    });
+
+    it('should not add a member to a channel twice', function () {
+      var query = Member.query('channelId').eq(channel1.id).where('userId').eq('2').exec();
+
+      return Promise.all([
+        expect(query).to.eventually.be.fulfilled,
+        expect(query).to.eventually.have.length.of.at.most(1),
+        expect(query).to.eventually.have.deep.property('[0]')
+      ]);
     });
 
     it('should not add a member to a channel that doesn\'t exsist', function () {
