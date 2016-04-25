@@ -14,38 +14,44 @@ var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
+var moment = require('moment');
 
 /**
  * Schema
  */
 var MetricsSchema = new Schema({
-  refId: {
+  id: {  // ContentId:MetricsType
     type: String,
     hashkey: true
   },
-  network: {
+  timestamp: {
+    type: Number,
     rangeKey: true,
-    type: String
+    required: true,
+    default: moment().unix()
   },
   refType: {
     type: String,
     required: true,
-    default: 'User'
+    default: 'Service' // Content, Service, etc
   },
-  created: {
-    type: Date,
-    default: Date.now
-  },
-  followers: {
+  value: {
     type: Number,
-    default: 0
+    required: true
   }
 });
 
 MetricsSchema.static('updateFollowers', Promise.method(function(userId, network, value) {
   var Metrics = dynamoose.model('Metrics');
 
-  return Metrics.update({refId: userId, network: network}, {$PUT: {followers: value}});
+  return Metrics.update(
+    {refId: userId, network: network},
+    {$PUT: {
+        followers: value,
+        updated: Date.now()
+      }
+    }
+  );
 }));
 
 MetricsSchema.static('getAll', Promise.method(function(userId) {
@@ -65,7 +71,65 @@ MetricsSchema.static('getAll', Promise.method(function(userId) {
     return result;
   });
 }));
+/*
+MetricsSchema.statics.getUser = Promise.method(function(network, oauth){
+  console.log('network - get user', network.provider);
+  var accessToken = oauth.accessToken;
+  var accessSecret = oauth.accessSecret;
 
+    if(_.isUndefined(oauth)){
+      return -1;
+    }
+
+    switch(network.provider){
+      case 'tw':
+        return twitter.verifyCredentials(accessToken, accessSecret)
+          .then(function(data){
+            return {identifier: data.id,
+              name: data.name,
+              url: 'https://twitter.com/' + data.screen_name};
+        });
+      case 'fb':
+        return facebook.showUser('me', accessToken).then(function(data){
+          return {identifier: data.id,
+            name: data.name,
+            url: data.link};
+        });
+      case 'ga':
+        return googleAnalytics.showUser(network.identifier, accessToken)
+          .then(function(data){
+            return {identifier: data.webProperties[0].profiles[0].id,
+                 name: data.name,
+                 url: data.webProperties[0].websiteUrl};
+          });
+      case 'yt':
+        return youtube.showUser('self', accessToken).then(function(data){
+            return {identifier: data.id,
+              handle: data.id,
+              name: data.snippet.title,
+              url: 'https://www.youtube.com/channel/' + data.id};
+        });
+      case 'ig':
+        return instagram.showUser('self', accessToken).then(function(data){
+          return {identifier: data.id,
+            handle: data.username,
+            name: data.full_name,
+            url: 'https://www.instagram.com/' + data.username};
+        });
+      case 'pi':
+        return pinterest.showUser('me', accessToken)
+          .then(function(data){
+            return {identifier: data.id,
+              handle: data.username,
+              name: data.first_name + ' ' + data.last_name,
+              url: data.url};
+        });
+      default:
+        return 0;
+    }
+});
+
+*/
 
 /**
  * get cached if possible
