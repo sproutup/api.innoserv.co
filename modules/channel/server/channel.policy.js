@@ -33,7 +33,7 @@ exports.invokeRolesPolicies = function () {
       resources: '/api/my/channel',
       permissions: ['*']
     }, {
-      resources: '/api/my/channel/ref/:refId',
+      resources: '/api/my/channel/ref/:id',
       permissions: ['*']
     }, {
       resources: '/api/campaign/:campaignId/channel',

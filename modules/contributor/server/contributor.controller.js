@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var debug = require('debug')('up:debug:contributor:ctrl');
 var Contributor = dynamoose.model('Contributor');
 var Content = dynamoose.model('Content');
 var config = require('config/config');
@@ -24,6 +25,7 @@ var sendApprovedEmail = sendApprovedEmail;
 exports.read = function (req, res) {
   var _item;
   Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec().then(function(item){
+    debug('found contributor: ' + item.id);
     if(_.isUndefined(item)){
       return res.status(204).send({
         message: 'Contributor not found'
@@ -35,19 +37,11 @@ exports.read = function (req, res) {
     return _item.populate('User');
   })
   .then(function(){
-    return Channel.queryOne('refId').eq(_item.id).exec().then(function(channel){
-      _item.channel = channel;
-      return;
-    }).catch(function(){
-      return;
-    });
-  })
-  .then(function(){
     return Content.query('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec().then(function(items){
       _item.content = items;
       return;
     }).catch(function(err){
-      console.log('err here', err);
+      console.log('contributor err: ', err);
       return;
     });
   })
@@ -55,6 +49,7 @@ exports.read = function (req, res) {
     return res.json(_item);
   })
   .catch(function(err){
+    console.log('contributor err: ', err);
     return res.json(err);
   });
 };

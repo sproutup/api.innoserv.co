@@ -39,19 +39,20 @@ exports.create = function (req, res) {
 };
 
 exports.createCampaignChannel = function (req, res) {
+  var _userId;
   var _channel;
-  Channel.createNewChannel(req.user.id, req.params.campaignId, 'Campaign').then(function(ch){
+
+  if (req.body.userId) {
+    _userId = req.body.userId;
+  } else {
+    _userId = req.user.id;
+  }
+
+  Channel.createCampaignChannel(_userId, req.params.campaignId).then(function(ch){
     // Get company ID so we can call addCompanyUsers
-    _channel = ch;
-    return Campaign.get(req.params.campaignId);
-   }).then(function(campaign) {
-    // Add company members to the message channel
-    return Channel.addCompanyMembers(campaign.companyId, _channel.id);
-  }).then(function(campaign) {
-    // Add company members to the message channel
-    return Channel.addMember(req.user.id, _channel.id);
-  }).then(function() {
-    res.json(_channel);
+    res.json(ch);
+  }).catch(function(err) {
+    return res.status(400).send(err);
   });
 };
 
@@ -135,18 +136,8 @@ exports.listByUser = function (req, res) {
 };
 
 exports.findByRefId = function (req, res) {
-  var _userId = req.user.id;
-  if(req.body.userId){
-    console.log('found user id:', req.body.userId);
-    _userId = req.body.userId;
-  }
-
-  Channel
-    .queryOne('refId').eq(req.params.refId)
-    .where('userId').eq(_userId)
-    .exec().then(function(item){
-      console.log('found channel: ', item);
-      res.json(item);
+  Channel.get(req.params.id).then(function(item){
+    res.json(item);
   })
   .catch(function(err){
     console.log('err: ', err);

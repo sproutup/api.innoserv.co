@@ -112,7 +112,7 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
-ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, refType){
+ChannelSchema.statics.createNewChannel = Promise.method(function(userId, id, type){
   if (!userId) {
     throw 'A user is required to start a channel.';
   }
@@ -121,21 +121,38 @@ ChannelSchema.statics.createNewChannel = Promise.method(function(userId, refId, 
   var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
   var channel = new Channel({
-    userId: userId,
-    refId: refId,
-    refType: refType
+    id: id,
+    type: type
   });
 
   return channel.save().then(function(val){
-    return channel.addMember(userId, val.id);
+    return channel.addMember(userId, true);
   }).then(function(member){
     channel.members = [member];
     return channel;
   });
 });
 
-ChannelSchema.methods.addMember = Promise.method(function(userId){
-  return dynamoose.model('Channel').addMember(userId, this.id);
+ChannelSchema.statics.createCampaignChannel = Promise.method(function(userId, campaignId){
+  var _userId;
+  var _channel;
+  var Campaign = dynamoose.model('Campaign');
+
+  var channelKey = campaignId + ':' + userId;
+  return Channel.createNewChannel(userId, channelKey, 'Campaign:User').then(function(ch){
+    // Get company ID so we can call addCompanyUsers
+    _channel = ch;
+    return Campaign.get(campaignId);
+   }).then(function(campaign) {
+    // Add company members to the message channel
+    return Channel.addCompanyMembers(campaign.companyId, _channel.id);
+  }).then(function() {
+    return _channel;
+  });
+});
+
+ChannelSchema.methods.addMember = Promise.method(function(userId, isCreator){
+  return dynamoose.model('Channel').addMember(userId, this.id, isCreator);
 });
 
 ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
@@ -158,12 +175,12 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
       throw new TypeError('This channel doesn\'t exist');
     }
   }).then(function() {
-    return Member.query('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(items) {
-      if (items.length < 1) {
-        var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
-        return item.save();
+    return Member.queryOne('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(item) {
+      if (!item || !item.id) {
+        var newItem = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+        return newItem.save();
       } else {
-        throw new TypeError('This user has already been added to this channel');
+        return item;
       }
     });
   }).catch(function(error) {
@@ -171,6 +188,7 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
     throw error;
   });
 });
+
 
 ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
   var Team = dynamoose.model('Team');
