@@ -99,7 +99,7 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
     return Channel.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
       return Member.queryByChannel(id).then(function(members){
-        item.members = _.keyBy(members, 'id');
+        item.members = _.keyBy(members, 'userId');
         return item;
       }).then(function(item){
         if(!item.refType) return item;
