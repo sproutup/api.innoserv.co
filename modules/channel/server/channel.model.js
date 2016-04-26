@@ -15,6 +15,7 @@ var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
 var cache = require('config/lib/cache');
+var debug = require('debug')('up:debug:channel:model');
 
 /**
  * Schema
@@ -94,7 +95,7 @@ ChannelSchema.statics.getCached = Promise.method(function(id){
   var key = 'channel:' + id;
 
   return cache.wrap(key, function() {
-    console.log('cache miss: channel');
+    debug('cache miss: channel');
     return Channel.get(id).then(function(item){
       if(_.isUndefined(item)) return item;
       return Member.queryByChannel(id).then(function(members){
