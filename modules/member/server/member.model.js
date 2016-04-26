@@ -13,6 +13,7 @@ var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
 var cache = require('config/lib/cache');
+var debug = require('debug')('up:debug:member:model');
 
 /**
  * Schema
@@ -80,7 +81,7 @@ MemberSchema.static('queryByChannel', Promise.method(function(channelId){
 
   return cache.wrap(key, function() {
     return Member.query('channelId').eq(channelId).exec().then(function(members){
-      console.log('member: ', members);
+      debug('member: ', members);
       return Promise.map(members, function(val){
         return val.populate('User');
       }).then(function(){

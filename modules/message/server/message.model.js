@@ -144,7 +144,7 @@ MessageSchema.method('addMessageToChannel', Promise.method(function (ttl) {
   var _this = this;
   var key = 'channel:' + _this.channelId + ':messages';
 
-  redis.zadd(key, moment(_this.created).unix(), JSON.stringify(_this));
+  return redis.zadd(key, moment(_this.created).unix(), JSON.stringify(_this));
 })
 );
 
