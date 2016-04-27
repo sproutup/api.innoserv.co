@@ -81,7 +81,6 @@ MemberSchema.static('queryByChannel', Promise.method(function(channelId){
 
   return cache.wrap(key, function() {
     return Member.query('channelId').eq(channelId).exec().then(function(members){
-      debug('member: ', members);
       return Promise.map(members, function(val){
         return val.populate('User');
       }).then(function(){
