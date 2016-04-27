@@ -15,34 +15,28 @@ exports.invokeRolesPolicies = function () {
   acl.allow([{
     roles: ['admin'],
     allows: [{
-      resources: '/api/provider',
+      resources: '/api/metric',
       permissions: '*'
     }, {
-      resources: '/api/provider/:providerId',
+      resources: '/api/metric/:metricId',
       permissions: '*'
     }]
   }, {
     roles: ['user'],
     allows: [{
-      resources: '/api/provider',
+      resources: '/api/metric',
       permissions: ['get', 'post', 'provider']
     }, {
-      resources: '/api/provider/:providerId',
-      permissions: ['*']
-    }, {
-      resources: '/api/user/:userId/provider',
+      resources: '/api/metric/:metricId',
       permissions: ['*']
     }]
   }, {
     roles: ['guest'],
     allows: [{
-      resources: '/api/provider',
+      resources: '/api/metric',
       permissions: ['*']
     }, {
-      resources: '/api/provider/:providerId',
-      permissions: ['*']
-    }, {
-      resources: '/api/user/:userId/service',
+      resources: '/api/metric/:metricId',
       permissions: ['*']
     }]
   }]);
@@ -53,11 +47,6 @@ exports.invokeRolesPolicies = function () {
  */
 exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
-
-  // If an provider is being processed and the current user created it then allow any manipulation
-  if (req.provider && req.user && req.provider.userId === req.user.id) {
-    return next();
-  }
 
   // Check for user roles
   acl.areAnyRolesAllowed(roles, req.route.path, req.method.toLowerCase(), function (err, isAllowed) {

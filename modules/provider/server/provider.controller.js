@@ -39,3 +39,31 @@ exports.listByUser = function (req, res) {
     });
   });
 };
+
+/**
+ * List
+ */
+exports.listServicesByUser = function (req, res) {
+  Provider.refreshProviderServices(req.params.userId).then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};
+
+/**
+ * List
+ */
+exports.listMetricsByUser = function (req, res) {
+  Provider.refreshProviderMetrics(req.params.userId).then(function(items){
+    res.json(items);
+  })
+  .catch(function(err){
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  });
+};

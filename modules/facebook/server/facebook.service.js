@@ -1,10 +1,8 @@
 'use strict';
 
-var debug = require('debug')('up:debug:youtube:service');
-var moment = require('moment'),
-    redis = require('config/lib/redis'),
-    Promise = require('bluebird');
-//var CronJob = require('cron').CronJob;
+var moment = require('moment');
+var redis = require('config/lib/redis');
+var Promise = require('bluebird');
 var request = require('request-promise');
 
 // GET /users/user-id                 Get basic information about a user. To get information about the owner of the access token, you can use self instead of the user-id.
@@ -13,7 +11,7 @@ var request = require('request-promise');
 // GET /users/self/media/liked        See the authenticated user's list of liked media.
 // GET /users/search                  Search for a user by name.
 
-var YoutubeService = function(){
+var FacebookService = function(){
   this.schema = {
     user: {
       id: null,
@@ -27,8 +25,8 @@ var YoutubeService = function(){
 /*
  * Init the api quotas and setup intervals
  */
-YoutubeService.init = function(){
-  debug('youtube service init');
+FacebookService.init = function(){
+  console.log('facebook service init');
 
 //  setInterval(LinkedAccount.process, moment.duration(1, 's').asMilliseconds());
 
@@ -42,52 +40,15 @@ YoutubeService.init = function(){
 //  );
 };
 
-YoutubeService.showUser = function(id, token){
-  debug('showUser:', id);
+FacebookService.showUser = function(id, token){
   var options = {
-    uri: 'https://www.googleapis.com/youtube/v3/channels',
-    qs: {
-      access_token: token,
-      part: 'id,snippet,statistics',
-      mine: true
-    },
+    uri: 'https://graph.facebook.com/me?fields=id,name,email,friends,verified,link,picture',
+    qs: {access_token: token},
     json: true
   };
-
-
+//  console.log('options:', options);
   return request(options).then(function(response){
-/*    var user = {
-      id: response.data.id,
-      followers: response.data.counts.followed_by,
-      friends: response.data.counts.follows,
-      statuses: response.data.counts.media
-    };*/
-//    console.log('updating youtube stats: ', response.items);
-//      redis.hmset('twitter:user:'+id, user);
-    return response.items[0];
-  });
-//  .catch(function(err){
-//    console.log('Error: ', err);
-//    return {err: err};
-//  });
-};
-
-
-YoutubeService.search = function(token, part, maxResults){
-  debug('search');
-  var options = {
-    uri: 'https://www.googleapis.com/youtube/v3/search',
-    qs: {
-      access_token: token,
-      part: 'id,snippet',
-      type: 'video',
-      forMine: true,
-      maxResults: maxResults
-    },
-    json: true
-  };
-
-  return request(options).then(function(response){
+//    console.log('facebook: ', response);
     return response;
   })
   .catch(function(err){
@@ -96,5 +57,4 @@ YoutubeService.search = function(token, part, maxResults){
   });
 };
 
-
-module.exports = YoutubeService;
+module.exports = FacebookService;

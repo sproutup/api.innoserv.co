@@ -14,4 +14,12 @@ module.exports = function (app) {
   // collection routes
   app.route('/api/user/:userId/provider').all(policy.isAllowed)
     .get(ctrl.listByUser);
+
+  // collection routes
+  app.route('/api/user/:userId/service')//.all(policy.isAllowed)
+    .get(ctrl.listServicesByUser);
+
+  app.route('/api/user/:userId/metrics')//.all(policy.isAllowed)
+    .get(ctrl.listMetricsByUser);
+
 };

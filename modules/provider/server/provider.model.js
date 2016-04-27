@@ -16,7 +16,6 @@ var validator = require('validator');
 var _ = require('lodash');
 var moment = require('moment');
 var OAuth = require('oauth');
-
 var oauthService = require('modules/oauth/server/oauth.service.js');
 
 /**
@@ -47,8 +46,157 @@ var ProviderSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  status: {
+    type: Number,
+    default: 1
+  },
   data: {}
 });
+
+/**
+ * Refresh metrics by providers
+ */
+//ProviderSchema.statics.refreshProviderMetrics = Promise.method(function (userId) {
+//  var res = [];
+//  if (_.isUndefined(userId)) throw {err: 'missing required param userId'};
+//
+//  debug('refresh provider metrics: ', userId);
+//  return this.query('userId').eq(userId).exec().then(function(provider){
+//    return Promise.each(provider, function(val, index, length){
+//      debug('provider ' + (index+1) + ' of ' + length + ':' + val.provider);
+//      return val.refreshMetrics().then(function(o){
+//        res.push(o);
+//      });
+//    });
+//  }).then(function(){
+//    return _.flatten(res);
+//  });
+//});
+//
+//ProviderSchema.methods.refreshMetrics = Promise.method(function(){
+//  var Provider = dynamoose.model('Provider');
+//  var Metrics = dynamoose.model('Metrics');
+//  var _this = this;
+//
+//  if(_this.status !== 1 && false){
+//    console.log('Provider is not connected');
+//    return 0;
+//  }
+//
+//  debug('refresh services for ' + _this.provider);
+//
+//  switch(_this.provider){
+//    case 'twitter':
+//      return Metrics.fetch(_this.provider, _this.data.token, _this.userId, _this.data.tokenSecret);
+//    case 'google':
+//      return _this.getAccessToken().then(function(accessToken){
+//        return Promise.join(
+//          Metrics.fetch('youtube', accessToken, _this.userId),
+//          Metrics.fetch('google+', accessToken, _this.userId),
+//          Metrics.fetch('google.analytics', accessToken, _this.userId)
+//        );
+//      });
+//    default:
+//      return Metrics.fetch(_this.provider, _this.data.accessToken, _this.userId);
+//  }
+//});
+
+/**
+ * Refresh list of services by providers
+ */
+ProviderSchema.statics.refreshProviderServices = Promise.method(function (userId) {
+  var res = [];
+  if (_.isUndefined(userId)) throw {err: 'missing required param userId'};
+
+  debug('refresh provider services: ', userId);
+  return this.query('userId').eq(userId).exec().then(function(provider){
+    return Promise.each(provider, function(val, index, length){
+      debug('provider ' + (index+1) + ' of ' + length + ':' + val.provider);
+      return val.refreshServices().then(function(o){
+        res.push(o);
+      });
+    });
+  }).then(function(){
+    return _.flatten(res);
+  });
+});
+
+ProviderSchema.methods.refreshServices = Promise.method(function(){
+  var Provider = dynamoose.model('Provider');
+  var Service = dynamoose.model('Service');
+  var _this = this;
+
+  if(_this.status !== 1 && false){
+    console.log('Provider is not connected');
+    return 0;
+  }
+
+  debug('refresh services for ' + _this.provider);
+
+  switch(_this.provider){
+    case 'twitter':
+      return Service.refresh(_this.provider, _this.data.token, _this.userId, _this.data.tokenSecret);
+    case 'google':
+      return _this.getAccessToken().then(function(accessToken){
+        return Promise.join(
+          Service.refresh('youtube', accessToken, _this.userId),
+          Service.refresh('googleplus', accessToken, _this.userId)
+//          Service.refresh('googleanalytics', accessToken, _this.userId)
+        );
+      });
+    default:
+      return Service.refresh(_this.provider, _this.data.accessToken, _this.userId);
+  }
+});
+
+/*
+ProviderSchema.methods.getFollowers = Promise.method(function(network, oauth){
+  console.log('getFollowers', network, oauth);
+
+  if(this.status !== 1 && false){
+    console.log('cant get reach when network is not connected');
+    return 0;
+  }
+  else{
+    switch(network.provider){
+      case 'tw':
+        return twitter.verifyCredentials(oauth.accessToken, oauth.accessSecret)
+          .then(function(data){
+            console.log('show user: ', data);
+            return data.followers_count;
+        });
+      case 'fb':
+        return facebook.showUser('me', oauth.accessToken).then(function(data){
+          console.log('show user: ', data);
+          return data.friends.summary.total_count;
+        });
+      case 'ga':
+        return googleAnalytics.getReach(network.identifier, oauth.accessToken)
+          .then(function(data){
+            console.log('show reach: ', data);
+            return Math.ceil(data[0]/3);
+          });
+      case 'yt':
+        return youtube.showUser('self', oauth.accessToken).then(function(data){
+          console.log('show user: ', data);
+          return data.statistics.subscriberCount;
+        });
+      case 'ig':
+        return instagram.showUser('self', oauth.accessToken).then(function(data){
+          console.log('show user: ', data);
+          return data.counts.followed_by;
+        });
+      case 'pi':
+        return pinterest.showUser('me', oauth.accessToken).then(function(data){
+          console.log('show user: ', data);
+          return data.counts.followers;
+        });
+      default:
+        return 0;
+    }
+  }
+});
+*/
 
 /**
  * Create instance method for hashing a password
@@ -139,28 +287,79 @@ ProviderSchema.methods.changePassword = Promise.method(function(password) {
 ProviderSchema.statics.getAccessToken = Promise.method(function(userId, provider){
   var _this = this;
   var _provider = provider;
-  debug('getAccessToken: userId:', userId);
-  debug('getAccessToken: provider: ', provider);
-
-  // change to google if provider is a google service
-  if(provider==='ga' || provider === 'yt' || provider === 'g+'){
-    _provider = 'google';
-  }
+  debug('get ' + provider + ' access token');
 
   // update the account
   return _this.queryOne('userId').eq(userId).where('provider').eq(_provider).exec()
     .then(function(item){
-      if(!_.isUndefined(item.data.expires) && moment().isAfter(item.data.expires)){
-        debug('token expired');
-        return _this.refreshAccessToken(userId, provider).then(function(token){
-          return token.data.accessToken;
-        });
+      if(!_.isUndefined(item.data.expires)) {
+        if(moment().isAfter(item.data.expires)){
+          debug('token expired');
+          return _this.refreshAccessToken(userId, provider).then(function(token){
+            return token.data.accessToken;
+          });
+        }
+        else{
+          debug('token expires ', moment(item.data.expires).fromNow());
+        }
       }
-      debug('token expires ', moment(item.data.expires).fromNow());
-      return item.data.accessToken;
+      if(provider==='twitter'){
+        return {
+          token: item.data.token,
+          secret: item.data.tokenSecret
+        };
+      }
+      else{
+        return item.data.accessToken;
+      }
     })
     .catch(function(err){
       console.log('[OAuth model] get access: ', err);
+      throw err;
+    });
+});
+
+ProviderSchema.methods.getAccessToken = Promise.method(function(){
+  var _this = this;
+
+  debug('get access token for ', _this.provider);
+
+  // update the account
+  if(!_.isUndefined(_this.data.expires) && moment().isAfter(_this.data.expires)){
+    debug('token expired ' + moment(_this.data.expires).toNow());
+    return _this.refreshAccessToken().then(function(token){
+      return token.data.accessToken;
+    });
+  }
+  debug(_this.provider + ' token expires ' + moment(_this.data.expires).fromNow());
+  return _this.data.accessToken;
+});
+
+ProviderSchema.methods.refreshAccessToken = Promise.method(function(){
+  var Provider = dynamoose.model('Provider');
+  var _this = this;
+  var _result = null;
+
+  debug('refresh access token: ', _this.provider);
+
+  return Provider.refreshAccessTokenOAuth2(_this.data.refreshToken, _this.provider, '', '')
+    .then(function(access){
+      _this.data.accessToken = access.accessToken;
+      _this.data.expires = access.expires;
+      _this.data.accessSecret = access.accessSecret;
+      debug('update provider with fresh token: ' + _this.provider);
+      console.log(access);
+      return Provider.update(
+        {provider: _this.provider, id: _this.id},
+        {$PUT: {
+          data: _this.data,
+          status: 1}});
+    })
+    .catch(function(err){
+      console.log('token refresh error: ', err);
+      _this.update(
+        {provider: _result.provider, id: _result.id},
+        {$PUT: {status: -1}});
       throw err;
     });
 });
@@ -171,7 +370,7 @@ ProviderSchema.statics.refreshAccessToken = Promise.method(function(userId, prov
   var _result = null;
   var _provider = provider;
 
-  debug('refreshAccessToken: user: ', userId, ' provider ', provider);
+  debug('refresh access token ' + provider);
   // change to google if provider is a google service
   if(provider==='ga' || provider === 'yt' || provider === 'g+'){
     _provider = 'google';
@@ -237,8 +436,9 @@ ProviderSchema.statics.refreshAccessTokenOAuth2 = Promise.method(function (refre
       config.google.tokenSecret = tokenSecret;
       return _this.getOAuthAccessTokenAsync(refreshToken, config.google)
          .then(function(response){
-          result.accessToken = response[0];
-          result.expires = moment().add(response[2].expires_in, 's').valueOf();
+          console.log('oauth2: ', response);
+          result.accessToken = response;
+          result.expires = moment().utc().add(3600, 's').valueOf();
           return result;
         });
     default:
@@ -325,7 +525,7 @@ ProviderSchema.statics.getOAuthAccessTokenAsync = Promise.method(function(refres
 //  debug('config:', config);
 
   return oauth2.getOAuthAccessTokenAsync(refreshToken, params)
-    .then(function(res){
+    .then(function(res, params){
       debug('got refreshed access token');
       return res;
     })

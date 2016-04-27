@@ -13,7 +13,7 @@ var expect = chai.expect;
 var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 
-var Metrics = dynamoose.model('Metrics');
+var Metric = dynamoose.model('Metric');
 
 /**
  * Globals
@@ -49,12 +49,12 @@ describe('Metrics Model Unit Tests:', function () {
 
   describe('Method Save', function () {
     it('should begin with no metrics', function () {
-      var scan = Metrics.scan().exec();
+      var scan = Metric.scan().exec();
       return expect(scan).to.eventually.have.length(0);
     });
 
     it('should be able to add followers', function () {
-      var update = Metrics.create(data1);
+      var update = Metric.create(data1);
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data1.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data1.timestamp),
@@ -63,7 +63,7 @@ describe('Metrics Model Unit Tests:', function () {
     });
 
     it('should be able to get latest followers', function () {
-      var update = Metrics.queryOne('id').eq(data1.id).descending().exec();
+      var update = Metric.queryOne('id').eq(data1.id).descending().exec();
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data1.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data1.timestamp),
@@ -72,7 +72,7 @@ describe('Metrics Model Unit Tests:', function () {
     });
 
     it('should be able to add more followers', function () {
-      var update = Metrics.create(data2);
+      var update = Metric.create(data2);
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data2.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data2.timestamp),
@@ -81,7 +81,7 @@ describe('Metrics Model Unit Tests:', function () {
     });
 
     it('should be able to get latest followers in timeseries', function () {
-      var update = Metrics.queryOne('id').eq(data1.id).descending().exec();
+      var update = Metric.queryOne('id').eq(data1.id).descending().exec();
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data2.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data2.timestamp),
@@ -90,7 +90,7 @@ describe('Metrics Model Unit Tests:', function () {
     });
 
     it('should be able to add more followers', function () {
-      var update = Metrics.create(data3);
+      var update = Metric.create(data3);
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data3.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data3.timestamp),
@@ -99,7 +99,7 @@ describe('Metrics Model Unit Tests:', function () {
     });
 
     it('should be able to get latest followers in timeseries', function () {
-      var update = Metrics.queryOne('id').eq(data1.id).descending().exec();
+      var update = Metric.queryOne('id').eq(data1.id).descending().exec();
       return Promise.all([
         expect(update).to.eventually.have.property('id').and.equals(data3.id),
         expect(update).to.eventually.have.property('timestamp').and.equals(data3.timestamp),
@@ -133,7 +133,7 @@ describe('Metrics Model Unit Tests:', function () {
   });
 
   after(function () {
-    return Metrics.scan().exec().then(function(items){
+    return Metric.scan().exec().then(function(items){
       return Promise.each(items, function(item){
 //        console.log('item: ', item);
         return item.delete();
