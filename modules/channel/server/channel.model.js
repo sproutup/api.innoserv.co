@@ -8,6 +8,7 @@
 var Promise = require('bluebird');
 var _ = require('lodash');
 var dynamoose = require('dynamoose');
+var moment = require('moment');
 var Schema = dynamoose.Schema;
 var redis = require('config/lib/redis');
 var FlakeId = require('flake-idgen');
@@ -15,6 +16,7 @@ var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
 var cache = require('config/lib/cache');
+var debug = require('debug')('up:debug:channel:model');
 
 /**
  * Schema
@@ -58,56 +60,82 @@ ChannelSchema.method('populate', function (_schema) {
 
 ChannelSchema.statics.populateLatestMessage = Promise.method(function(channel){
   var key = 'channel:' + channel.id + ':messages';
-  return redis.zrevrange(key, 0, 0).then(function(val){
-    if(val[0]){
-      channel.last = JSON.parse(val[0]);
-    }
-    console.log('not found');
-    return;
+  var Message = dynamoose.model('Message');
+
+  debug('populating latest message');
+  if (!channel || !channel.id) {
+    return null;
+  }
+
+  return redis.exists(key).then(function(val) {
+    if (val) return val;
+
+    debug('cache miss');
+    return Message.refreshChannelCache(channel.id);
+  }).then(function(val){
+    return redis.zrevrange(key, 0, 0).then(function(val){
+      if(val[0]){
+        channel.last = JSON.parse(val[0]);
+      } else {
+        console.log('channel not found');
+      }
+
+      return channel;
+    });
   });
 });
 
 ChannelSchema.statics.queryByUser = Promise.method(function(userId){
   var key = 'user:' + userId + ':channel:feed';
   var promises = [];
+  var Member = dynamoose.model('Member');
+  debug('query by user');
 
-  return redis.zrevrange(key, 0, -1).then(function(channels){
-    _.forEach(channels, function(channelId){
-      var key = 'user:' + channelId + ':channel:feed';
-      promises.push(Channel.getCached(channelId).then(function(channel){
-          return channel;
-        })
-      );
+  return redis.exists(key).then(function(val) {
+    debug('redis exists val: ', val);
+    if (val) return;
+
+    return Member.query('userId').eq(userId).exec().then(function(items){
+      debug('member of ', items.length);
+      return Promise.map(items, function(val){
+        return redis.zadd(key, moment(val.created).utc().unix(), val.channelId);
+      });
     });
+  }).then(function(){
+    return redis.zrevrange(key, 0, -1);
+  }).then(function(channels){
     return Promise.map(channels, function(channelId) {
-      var key = 'user:' + channelId + ':channel:feed';
-      console.log('mapping: ', key);
       return Channel.getCached(channelId);
     });
   });
 });
-
 
 ChannelSchema.statics.getCached = Promise.method(function(id){
   var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
   var key = 'channel:' + id;
 
+  debug('get cached', key);
   return cache.wrap(key, function() {
-    console.log('cache miss: channel');
+    debug('cache miss: ', key);
     return Channel.get(id).then(function(item){
+      debug('got channel: ', item.id);
       if(_.isUndefined(item)) return item;
       return Member.queryByChannel(id).then(function(members){
-        item.members = _.keyBy(members, 'id');
+        item.members = _.keyBy(members, 'userId');
         return item;
       }).then(function(item){
+        // debug('after queryByChannel', item.id);
         if(!item.refType) return item;
         var model = dynamoose.model(item.refType);
         return model.getCached(item.refId).then(function(model){
+          debug('cached item: ', model.id);
           item.ref = model;
           return item;
         });
       });
+    }).catch(function(err) {
+      console.log('error in get cached channel', err);
     });
   });
 });

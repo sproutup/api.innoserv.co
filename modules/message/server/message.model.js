@@ -15,6 +15,7 @@ var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:message:model');
 
 /**
  * Schema
@@ -72,7 +73,6 @@ MessageSchema.statics.getCached = Promise.method(function(id){
   });
 });
 
-
 MessageSchema.statics.getChannelMessages = Promise.method(function(channelId){
   var Message = dynamoose.model('Message');
   var Channel = dynamoose.model('Channel');
@@ -83,20 +83,13 @@ MessageSchema.statics.getChannelMessages = Promise.method(function(channelId){
   };
 
   return redis.exists(key).then(function(val) {
-    console.log('cache exists: ', val);
-    if(val===1){
+    if (val===1) {
       return redis.zrange(key, 0, -1).map(function(val){
         return JSON.parse(val);
       });
     }
-    else{
-      return Message.query('channelId').eq(channelId).exec().then(function(items){
-        return Promise.map(items, function(val){
-          return redis.zadd(key, moment(val.created).unix(), JSON.stringify(val)).then(function(){
-            return val;
-          });
-        });
-      });
+    else {
+      return Message.refreshChannelCache(channelId);
     }
   }).then(function(messages){
     res.messages = messages;
@@ -107,6 +100,19 @@ MessageSchema.statics.getChannelMessages = Promise.method(function(channelId){
   });
 });
 
+MessageSchema.statics.refreshChannelCache = Promise.method(function(channelId){
+  debug('refreshing channel cache', channelId);
+  var key = 'channel:' + channelId + ':messages';
+  var Message = dynamoose.model('Message');
+
+  return Message.query('channelId').eq(channelId).exec().then(function(items){
+    return Promise.map(items, function(val){
+      return redis.zadd(key, moment(val.created).utc().unix(), JSON.stringify(val)).then(function(){
+        return val;
+      });
+    });
+  });
+});
 
 /**
  * Each user has a channel feed with a list of that users channels.
@@ -144,7 +150,7 @@ MessageSchema.method('addMessageToChannel', Promise.method(function (ttl) {
   var _this = this;
   var key = 'channel:' + _this.channelId + ':messages';
 
-  redis.zadd(key, moment(_this.created).unix(), JSON.stringify(_this));
+  return redis.zadd(key, moment(_this.created).unix(), JSON.stringify(_this));
 })
 );
 

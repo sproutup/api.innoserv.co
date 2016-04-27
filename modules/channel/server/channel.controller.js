@@ -13,6 +13,7 @@ var Member = dynamoose.model('Member');
 var Campaign = dynamoose.model('Campaign');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var debug = require('debug')('up:debug:channel:ctrl');
 
 /**
  * Show
@@ -111,22 +112,19 @@ exports.list = function (req, res) {
  * listByUser
  */
 exports.listByUser = function (req, res) {
-  console.log('list by user');
+  debug('list by user');
   var channels = [];
   var items;
-//  Channel.query('userId').eq(req.user.id).exec().then(function(result){
+
   Channel.queryByUser(req.user.id).then(function(result){
     items = result;
-    console.log('items: ', items);
-    for (var i = 0; i < items.length; ++i) {
-      console.log('push');
-      channels.push(Channel.populateLatestMessage(items[i]));
-    }
-    return Promise.all(channels);
-//    return items;
+
+    debug('got' + items.length + ' channels for this user.');
+    return Promise.each(items, function(o) {
+      return Channel.populateLatestMessage(o);
+    });
   }).then(function(val){
-    console.log('all done');
-    res.json(items);
+    res.json(val);
   })
   .catch(function(err){
     return res.status(400).send({

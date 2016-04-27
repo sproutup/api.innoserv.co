@@ -13,6 +13,7 @@ var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
 var validator = require('validator');
 var cache = require('config/lib/cache');
+var debug = require('debug')('up:debug:member:model');
 
 /**
  * Schema
@@ -59,7 +60,7 @@ MemberSchema.method('populate', function (_schema) {
   var _this = this;
   var _attribute = _schema.toLowerCase() + 'Id';
   var model = dynamoose.model(_schema);
-  return model.get(this[_attribute]).then(function(item){
+  return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
     return _this;
   });
@@ -80,7 +81,6 @@ MemberSchema.static('queryByChannel', Promise.method(function(channelId){
 
   return cache.wrap(key, function() {
     return Member.query('channelId').eq(channelId).exec().then(function(members){
-      console.log('member: ', members);
       return Promise.map(members, function(val){
         return val.populate('User');
       }).then(function(){

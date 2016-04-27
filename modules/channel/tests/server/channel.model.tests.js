@@ -11,12 +11,14 @@ var Promise = require('bluebird');
 var chai = require('chai');
 var should = chai.should;
 var expect = chai.expect;
+var redis = require('config/lib/redis');
 var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 
 var Channel = dynamoose.model('Channel'),
   Campaign = dynamoose.model('Campaign'),
   Member = dynamoose.model('Member'),
+  Message = dynamoose.model('Message'),
   Company = dynamoose.model('Company'),
   Team = dynamoose.model('Team'),
   User = dynamoose.model('User');
@@ -24,12 +26,12 @@ var Channel = dynamoose.model('Channel'),
 /**
  * Globals
  */
-var channel1, channel2, _user1, _user2, _company, _campaign;
+var channel1, channel2, _user1, _user2, _company, _campaign, _message;
 
 /**
  * Unit tests
  */
-describe('Channel Model Unit Tests:', function () {
+describe('Messaging Models Unit Tests:', function () {
   this.timeout(5000);
 
   before(function () {
@@ -109,12 +111,20 @@ describe('Channel Model Unit Tests:', function () {
           return item.delete();
         });
       });
+    }).then(function(){
+      Message.scan().exec().then(function(items){
+        Promise.each(items, function(item){
+          return item.delete();
+        });
+      });
+    }).then(function(){
+      redis.flushall();
     }).then(function() {
       done();
     });
   });
 
-  describe('Method Save', function () {
+  describe('Channel Model Unit Tests: ', function () {
     it('should create channel and add member', function () {
       var create = Channel.createNewChannel('1', '123', 'Campaign:User').then(function (data) {
         channel1 = data;
@@ -205,6 +215,55 @@ describe('Channel Model Unit Tests:', function () {
     //   var create = Channel.addCompanyMembers(_company.id, '666');
     //   return expect(create).to.eventually.be.rejectedWith(TypeError, 'This channel doesn\'t exirt');
     // });
+  });
 
+  describe('Message Model Unit Tests:', function () {
+    it('should be able to create a message', function () {
+      _message = new Message({
+        userId: '1',
+        channelId: channel1.id,
+        body: 'Testing 1, 2'
+      });
+
+      var create = _message.save();
+
+      return Promise.all([
+        expect(create).to.eventually.be.fulfilled,
+        expect(create).to.eventually.have.property('userId').that.equals('1'),
+        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+      ]);
+    });
+
+    it('should be able to add a messgage to a channel', function () {
+      var add = _message.addMessageToChannel();
+
+      return Promise.all([
+        expect(add).to.eventually.be.fulfilled,
+        expect(add).to.eventually.equal(1)
+      ]);
+    });
+
+    it('should be able to update members\' channel feeds', function () {
+      var update = _message.updateMembersChannelFeed();
+
+      return Promise.all([
+        expect(update).to.eventually.be.fulfilled,
+        expect(update).to.eventually.equal(true)
+      ]);
+    });
+
+    it('should be able to get a channel\'s messages', function () {
+      var get = Message.getChannelMessages(channel1.id);
+
+      return Promise.all([
+        expect(get).to.eventually.be.fulfilled,
+        expect(get).to.eventually.have.property('messages')
+          .that.is.an('array')
+          .with.length.of.at.most(1)
+          .with.deep.property('[0]')
+          .that.deep.property('body')
+          .that.equals('Testing 1, 2')
+      ]);
+    });
   });
 });
