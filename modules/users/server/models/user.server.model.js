@@ -240,6 +240,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
   var User = dynamoose.model('User');
   var File = dynamoose.model('File');
   var Provider = dynamoose.model('Provider');
+  var Service = dynamoose.model('Service');
   var key = 'user:' + id;
   var _item;
 
@@ -259,6 +260,10 @@ UserSchema.statics.getCached = Promise.method(function(id){
         _item.avatar.file = file;
       }
       return file;
+    }).then(function(){
+      return Service.fetchUserServiceMetrics(_item.id);
+    }).then(function(services){
+      _item.services = services;
     }).then(function(){
       return Provider.getUserProviders(_item.id);
     }).then(function(providers){
