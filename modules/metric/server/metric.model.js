@@ -16,9 +16,9 @@ var intformat = require('biguint-format');
 var validator = require('validator');
 var moment = require('moment');
 
-var facebook = require('modules/facebook/server/facebook.service');
+var facebook = require('modules/service/server/facebook.service');
 var youtube = require('modules/youtube/server/youtube.service');
-var instagram = require('modules/instagram/server/instagram.service');
+var instagram = require('modules/service/server/instagram.service');
 var twitter = require('modules/service/server/twitter.service');
 var googleplus = require('modules/service/server/googleplus.service');
 var googleanalytics = require('modules/service/server/googleanalytics.service');

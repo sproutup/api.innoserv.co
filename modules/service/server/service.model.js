@@ -17,9 +17,9 @@ var validator = require('validator');
 var moment = require('moment');
 var errorHandler = require('modules/core/server/errors.controller');
 
-var facebook = require('modules/facebook/server/facebook.service');
+var facebook = require('./facebook.service');
 var youtube = require('modules/youtube/server/youtube.service');
-var instagram = require('modules/instagram/server/instagram.service');
+var instagram = require('./instagram.service');
 var twitter = require('./twitter.service');
 var googleplus = require('./googleplus.service');
 var googleanalytics = require('./googleanalytics.service');
