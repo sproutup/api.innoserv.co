@@ -169,7 +169,9 @@ MetricSchema.statics.getCached = Promise.method(function(userId, service, metric
 
   return cache.wrap(key, function() {
     debug('cache miss: ', key);
-    return _this.get({id: key, timestamp: timestamp});
+    return _this.get({id: key, timestamp: timestamp}).then(function(val){
+      return val || null;
+    });
   });
 });
 

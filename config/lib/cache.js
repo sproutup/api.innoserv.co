@@ -22,7 +22,7 @@ var redisCache = cacheManager.caching({
 var memoryCache = cacheManager.caching({
   store: 'memory',
   // isCacheableValue: isCacheableValue,
-  max: 100,
+  max: 1000,
   ttl: 10 /* seconds */});
 var ttl = 10;
 

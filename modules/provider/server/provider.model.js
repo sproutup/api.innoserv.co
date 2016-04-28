@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var cache = require('config/lib/cache');
 var config = require('config/config');
 var debug = require('debug')('up:debug:provider:model');
 var Promise = require('bluebird');
@@ -125,28 +126,31 @@ ProviderSchema.methods.refreshServices = Promise.method(function(){
   var Provider = dynamoose.model('Provider');
   var Service = dynamoose.model('Service');
   var _this = this;
+  var key = 'services:provider:' + _this.provider + ':user:' + _this.id;
 
-  if(_this.status !== 1 && false){
-    console.log('Provider is not connected');
-    return 0;
-  }
+  return cache.wrap(key, function() {
+    if(_this.status !== 1 && false){
+      console.log('Provider is not connected');
+      return 0;
+    }
 
-  debug('refresh services for ' + _this.provider);
+    debug('refresh services for ' + _this.provider);
 
-  switch(_this.provider){
-    case 'twitter':
-      return Service.refresh(_this.provider, _this.data.token, _this.userId, _this.data.tokenSecret);
-    case 'google':
-      return _this.getAccessToken().then(function(accessToken){
-        return Promise.join(
-          Service.refresh('youtube', accessToken, _this.userId),
-          Service.refresh('googleplus', accessToken, _this.userId)
-//          Service.refresh('googleanalytics', accessToken, _this.userId)
-        );
-      });
-    default:
-      return Service.refresh(_this.provider, _this.data.accessToken, _this.userId);
-  }
+    switch(_this.provider){
+      case 'twitter':
+        return Service.refresh(_this.provider, _this.data.token, _this.userId, _this.data.tokenSecret);
+      case 'google':
+        return _this.getAccessToken().then(function(accessToken){
+          return Promise.join(
+            Service.refresh('youtube', accessToken, _this.userId),
+            Service.refresh('googleplus', accessToken, _this.userId)
+  //          Service.refresh('googleanalytics', accessToken, _this.userId)
+          );
+        });
+      default:
+        return Service.refresh(_this.provider, _this.data.accessToken, _this.userId);
+    }
+  },{ttl: 3600});
 });
 
 /*

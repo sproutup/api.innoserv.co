@@ -205,15 +205,15 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
   var Metric = dynamoose.model('Metric');
   var Provider = dynamoose.model('Provider');
 
+  debug('get metrics');
   return Metric.getCached(this.id, this.service, metric).then(function(val){
     if(val) {
-      debug('found current metric ' + metric);
+      debug('found ' + metric + ' metric in db');
       return val;
     }
 
-    debug('fetching current metric ' + metric);
     return Provider.getAccessToken(_this.id, _this.provider).then(function(token){
-      debug('fetch metric...');
+      debug('fetching ' + metric + ' metric');
       return Metric.fetch(_this.identifier, _this.service, _this.id, token);
     });
   });
@@ -222,30 +222,35 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
 /**
  * Fetch Metrics
  */
-ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function (userId) {
+ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) {
+  var _this = this;
   var Provider = dynamoose.model('Provider');
 
   if (_.isUndefined(userId)) throw new Error('missing required param userId');
 
-  var key = 'service:metrics:' + userId;
-//  return cache.wrap(key, function() {
+  var key = 'service:metric:' + userId;
+  return cache.wrap(key, function() {
     debug('fetch service metrics: ' + userId);
-    return this.query('id').eq(userId).exec().then(function(services){
-      return Promise.each(services, function(val, index, length){
+    return _this.query('id').eq(userId).exec().then(function(services) {
+      if(!services || services.length === 0) {
+        debug('...no services found');
+        return [];
+      }
+      return Promise.each(services, function(val, index, length) {
         debug(val.service + ' service ' + (index+1) + ' of ' + length);
         val.metrics = {};
-        return val.getMetrics('followers').then(function(metric){
+        return val.getMetrics('followers').then(function(metric) {
           val.metrics.followers = metric.value;
           return val;
         });
+      }).then(function(res){
+        return _.keyBy(res, 'service');
       });
-    }).then(function(res){
-      return _.keyBy(res, 'service') || [];
     }).catch(function(err){
       console.log(err);
-      return err;
+      return null;
     });
-//  });
+  },{ttl: 60});
 });
 
 /**
@@ -258,14 +263,8 @@ ServiceSchema.statics.getCached = Promise.method(function(id) {
   return cache.wrap(key, function() {
     debug('cache miss: ', key);
     return Service.get(id).then(function(item){
-      return item;
-    }).catch(function(err){
-      debug('err [getCached]: ', err);
-      return null;
+      return item || null;
     });
-  }).then(function(item){
-    debug('get cached: ', item);
-    return item;
   });
 });
 
