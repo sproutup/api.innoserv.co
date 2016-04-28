@@ -224,6 +224,7 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
  */
 ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) {
   var _this = this;
+  var followers = 0;
   var Provider = dynamoose.model('Provider');
 
   if (_.isUndefined(userId)) throw new Error('missing required param userId');
@@ -241,10 +242,13 @@ ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) 
         val.metrics = {};
         return val.getMetrics('followers').then(function(metric) {
           val.metrics.followers = metric.value;
+          followers += metric.value;
           return val;
         });
       }).then(function(res){
-        return _.keyBy(res, 'service');
+        var srvs = _.keyBy(res, 'service');
+        srvs.followers = followers;
+        return srvs;
       });
     }).catch(function(err){
       console.log(err);
