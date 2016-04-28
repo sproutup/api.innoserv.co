@@ -275,7 +275,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
     }).catch(function(err){
       return null;
     });
-  });
+  }, {ttl: 60});
 });
 
 UserSchema.statics.createWithSlug = Promise.method(function(body) {
