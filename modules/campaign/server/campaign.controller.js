@@ -7,10 +7,14 @@ var dynamoose = require('dynamoose');
 var debug = require('debug')('up:debug:campaign:ctrl');
 var cache = require('config/lib/cache');
 var Campaign = dynamoose.model('Campaign');
+var Slug = dynamoose.model('Slug');
 var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var config = require('config/config');
+var FlakeId = require('flake-idgen');
+var flakeIdGen = new FlakeId();
+var intformat = require('biguint-format');
 
 /* const variables */
 var _isTemplate = -10;
@@ -43,17 +47,31 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  var item = new Campaign(req.body);
+  // Make sure we have a hashtag
+  if (!req.body.hashtag) {
+    return res.status(400).send({
+      message: 'A hashtag is required to save a campaign'
+    });
+  }
 
-  item.save(function (err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+  // Create hashtag, then create campaign
+  req.body.id = intformat(flakeIdGen.next(), 'dec');
+  Slug.createWrapper({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'})
+    .then(function() {
+      var item = new Campaign(req.body);
+
+      item.save(function (err) {
+        if (err) {
+          return res.status(400).send({
+            message: errorHandler.getErrorMessage(err)
+          });
+        } else {
+          res.json(item);
+        }
       });
-    } else {
-      res.json(item);
-    }
-  });
+    }).catch(function(err) {
+      return res.status(400).send(err);
+    });
 };
 
 /**
@@ -83,18 +101,32 @@ exports.update = function (req, res) {
   var obj = _.omit(req.body, ['id']);
   obj.updated = new Date();
 
-  Campaign.update({ id: req.model.id }, obj, function (error, campaign) {
-    if (error) {
-      console.log('error:', error);
-      return res.status(400).send({
-        message: error
+  // If the hashtag changed, update the slug before update the campaign
+  if (req.model.hashtag !== req.body.hashtag) {
+    Slug.change({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'}, req.model.hashtag)
+      .then(function() {
+        updateCampaign();
+      }).catch(function(err) {
+        return res.status(400).send(err);
       });
-    } else {
-      debug('campaign cache del: ', req.model.id);
-      cache.del('campaign:' + req.model.id );
-      res.json(campaign);
-    }
-  });
+  } else {
+    updateCampaign();
+  }
+
+  function updateCampaign() {
+    Campaign.update({ id: req.model.id }, obj, function (error, campaign) {
+      if (error) {
+        console.log('error:', error);
+        return res.status(400).send({
+          message: error
+        });
+      } else {
+        debug('campaign cache del: ', req.model.id);
+        cache.del('campaign:' + req.model.id );
+        res.json(campaign);
+      }
+    });
+  }
 };
 
 /**
