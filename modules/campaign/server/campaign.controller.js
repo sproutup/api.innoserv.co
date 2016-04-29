@@ -47,31 +47,30 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  // Make sure we have a hashtag
-  if (!req.body.hashtag) {
-    return res.status(400).send({
-      message: 'A hashtag is required to save a campaign'
-    });
-  }
-
-  // Create hashtag, then create campaign
   req.body.id = intformat(flakeIdGen.next(), 'dec');
-  Slug.createWrapper({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'})
-    .then(function() {
-      var item = new Campaign(req.body);
 
-      item.save(function (err) {
-        if (err) {
-          return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
-          });
-        } else {
-          res.json(item);
-        }
-      });
+  if (req.body.hashtag) {
+    Slug.createWrapper({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'}).then(function() {
+      saveCampaign();
     }).catch(function(err) {
       return res.status(400).send(err);
     });
+  } else {
+    saveCampaign();
+  }
+
+  function saveCampaign() {
+    var item = new Campaign(req.body);
+    item.save(function (err) {
+      if (err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      } else {
+        res.json(item);
+      }
+    });
+  }
 };
 
 /**
@@ -100,6 +99,12 @@ exports.createTemplate = function (req, res) {
 exports.update = function (req, res) {
   var obj = _.omit(req.body, ['id']);
   obj.updated = new Date();
+
+  if (obj.status === 1 && !req.body.hashtag) {
+    return res.status(400).send({
+      message: 'A hashtag is required to save a campaign'
+    });
+  }
 
   // If the hashtag changed, update the slug before update the campaign
   if (req.model.hashtag !== req.body.hashtag) {
