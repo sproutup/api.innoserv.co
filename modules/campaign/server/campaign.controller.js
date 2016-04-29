@@ -47,7 +47,8 @@ exports.read = function (req, res) {
  * Create
  */
 exports.create = function (req, res) {
-  req.body.id = intformat(flakeIdGen.next(), 'dec');
+  var id = intformat(flakeIdGen.next(), 'dec');
+  req.body.id = req.body.groupId = id;
 
   if (req.body.hashtag) {
     Slug.createWrapper({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'}).then(function() {
