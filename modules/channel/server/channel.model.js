@@ -214,14 +214,7 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
     return Member.queryOne('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(item) {
       if (!item || !item.id) {
         newItem = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
-        return newItem.save().then(function() {
-          debug('added new member', newItem);
-          var key = 'channel:' + channelId + ':messages';
-          return redis.zadd(key, moment(newItem.created).utc().unix(), JSON.stringify(newItem));
-        }).then(function(result) {
-          debug('new redis item added result', result);
-          return newItem;
-        });
+        return newItem.save();
       } else {
         return item;
       }
