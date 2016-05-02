@@ -169,13 +169,18 @@ ChannelSchema.statics.createCampaignChannel = Promise.method(function(userId, ca
   var channelKey = campaignId + ':' + userId;
   return Channel.createNewChannel(userId, channelKey, 'Campaign:User').then(function(ch){
     // Get company ID so we can call addCompanyUsers
+    debug('created channel: ', ch);
     _channel = ch;
     return Campaign.get(campaignId);
    }).then(function(campaign) {
     // Add company members to the message channel
+    debug('going to add members from company ', campaign.companyId);
     return Channel.addCompanyMembers(campaign.companyId, _channel.id);
   }).then(function() {
-    return _channel;
+    // Returning getCached so we get all the members back
+    return Channel.getCached(channelKey).then(function(result) {
+      return result;
+    });
   });
 });
 
@@ -189,14 +194,17 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
   } else if (!channelId) {
     throw new TypeError('A channel is required to start a channel.');
   }
+  debug('adding ', userId, 'to channel ', channelId);
 
   var Channel = dynamoose.model('Channel');
   var Member = dynamoose.model('Member');
+  var newItem;
 
   // Make sure the channel exists
   // Then make sure this user isn't already added to the channel
   // If we're good, save the member
-  return Channel.getCached(channelId).then(function(item) {
+  // We're using 'get' instead of 'getCached' so we don't cache.wrap when we're first adding members to the channel
+  return Channel.get(channelId).then(function(item) {
     if (item && item.id) {
       return;
     } else {
@@ -205,8 +213,15 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
   }).then(function() {
     return Member.queryOne('channelId').eq(channelId).where('userId').eq(userId).exec().then(function(item) {
       if (!item || !item.id) {
-        var newItem = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
-        return newItem.save();
+        newItem = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+        return newItem.save().then(function() {
+          debug('added new member', newItem);
+          var key = 'channel:' + channelId + ':messages';
+          return redis.zadd(key, moment(newItem.created).utc().unix(), JSON.stringify(newItem));
+        }).then(function(result) {
+          debug('new redis item added result', result);
+          return newItem;
+        });
       } else {
         return item;
       }
@@ -220,11 +235,10 @@ ChannelSchema.statics.addMember = Promise.method(function(userId, channelId, isC
 
 ChannelSchema.statics.addCompanyMembers = Promise.method(function(companyId, channelId){
   var Team = dynamoose.model('Team');
-  var isCreator = true;
 
   return Team.query('companyId').eq(companyId).exec().then(function(team) {
     return Promise.each(team, function(item){
-      return ChannelSchema.statics.addMember(item.userId, channelId, isCreator);
+      return ChannelSchema.statics.addMember(item.userId, channelId);
     });
   }).catch(function(error) {
     console.log('error in addCompanyMembers', error);
