@@ -247,7 +247,7 @@ var sendApprovedEmail = function(data) {
       ':phone_number': [data.phone]
     };
 
-    sendgridService.sendToUser(data.userId, 'You\'re request has been approved!', substitutions, config.sendgrid.templates.approved);
+    sendgridService.sendToUser(data.userId, 'Hooray! Your request has been approved!', substitutions, config.sendgrid.templates.approved);
   })
   .catch(function(error) {
     console.log('approved email error: ', error);
