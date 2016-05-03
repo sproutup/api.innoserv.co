@@ -10,6 +10,7 @@ var User = dynamoose.model('User');
 var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
+var moment = require('moment');
 
 /**
  * Show
@@ -42,6 +43,7 @@ exports.create = function (req, res) {
     } else {
       item.populate('User')
         .then(function() {
+          item.created = moment(item.created);
           res.json(item);
         });
     }
