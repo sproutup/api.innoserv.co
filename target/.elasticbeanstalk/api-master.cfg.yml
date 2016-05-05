@@ -21,7 +21,7 @@ OptionSettings:
   aws:elb:loadbalancer:
     LoadBalancerHTTPSPort: '443'
     LoadBalancerHTTPPort: '80'
-    SSLCertificateId: arn:aws:iam::772918356582:server-certificate/sproutup_digicert
+    SSLCertificateId: arn:aws:iam::772918356582:server-certificate/sproutup_digicert_5_5_2016
   aws:elasticbeanstalk:environment:
     EnvironmentType: LoadBalanced
   aws:elasticbeanstalk:application:environment:
