@@ -60,7 +60,7 @@ exports.sendToUser = function(userId, subject, substitutions, template) {
 /**
  * Send to all members of a company
  */
-exports.sendToCompanyUsers = function(subject, substitutions, template, companyId) {
+exports.sendToCompanyUsers = function(companyId, subject, substitutions, template) {
   return Team.query({ companyId: companyId }).exec().then(function(items) {
     return Promise.map(items, function(item) {
       _this.sendToUser(item.userId, subject, substitutions, template);

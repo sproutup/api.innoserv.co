@@ -17,7 +17,6 @@ var Channel = dynamoose.model('Channel');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
 var sendgridService = require('modules/sendgrid/server/sendgrid.service');
-var sendApprovedEmail = sendApprovedEmail;
 
 /**
  * Show
@@ -77,6 +76,7 @@ exports.create = function (req, res) {
 exports.update = function (req, res) {
   var _item;
   var _previousState;
+  var _previousRecommended;
   Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
     .then(function(item){
       if(_.isUndefined(item)){
@@ -88,6 +88,7 @@ exports.update = function (req, res) {
   })
   .then(function(item){
     _previousState = item.state;
+    _previousRecommended = item.recommended;
     _item = item;
     //For security purposes only merge these parameters
     // _.extend(item, _.pick(req.body, ['state','link','address','phone','comment','bid', 'trial.shippingState']));
@@ -95,8 +96,14 @@ exports.update = function (req, res) {
     return item.save();
   })
   .then(function(data){
+    // Send an email if a contributor has been approved
     if ((_previousState === 0) && (_item.state === 1 || _item.state === '1')) {
       sendApprovedEmail(_item);
+    }
+
+    // Send an email if we've just recommended someone
+    if (!_previousRecommended && _item.recommended) {
+      sendRecommendedEmail(_item);
     }
 
     return data;
@@ -251,5 +258,28 @@ var sendApprovedEmail = function(data) {
   })
   .catch(function(error) {
     console.log('approved email error: ', error);
+  });
+};
+
+var sendRecommendedEmail = function(data) {
+  var _campaign;
+
+  return Campaign.get(data.campaignId).then(function(campaign) {
+    _campaign = campaign;
+    return Company.get(campaign.companyId);
+  })
+  .then(function(company) {
+    var url = config.domains.creator + company.slug + '/campaign/' + _campaign.id + '/view/' + _campaign.type + '/requests/contributor/' + data.userId;
+    var substitutions = {
+      ':campaign_name': [_campaign.name],
+      ':contributor_name': [data.user.displayName],
+      ':contributor_url': [url],
+      ':brand_name': [company.name]
+    };
+
+    sendgridService.sendToCompanyUsers(company.id, 'We recommended you someone for ' + _campaign.name, substitutions, config.sendgrid.templates.approved);
+  })
+  .catch(function(error) {
+    console.log('recommended email error: ', error);
   });
 };
