@@ -103,7 +103,7 @@ exports.update = function (req, res) {
 
     // Send an email if we've just recommended someone
     if (!_previousRecommended && _item.recommended) {
-      sendRecommendedEmail(_item);
+      sendRecommendedEmails(_item);
     }
 
     return data;
@@ -261,7 +261,10 @@ var sendApprovedEmail = function(data) {
   });
 };
 
-var sendRecommendedEmail = function(data) {
+// sendRecommendedEmails sends out two sets of emails
+// One to the company, letting them know we've recommended someone
+// And another to the user to let them know that they were recommended
+var sendRecommendedEmails = function(data) {
   var _campaign;
 
   return Campaign.get(data.campaignId).then(function(campaign) {
@@ -273,11 +276,13 @@ var sendRecommendedEmail = function(data) {
     var substitutions = {
       ':campaign_name': [_campaign.name],
       ':contributor_name': [data.user.displayName],
+      ':contributor_note': [data.note],
       ':contributor_url': [url],
       ':brand_name': [company.name]
     };
 
     sendgridService.sendToCompanyUsers(company.id, 'We recommended you someone for ' + _campaign.name, substitutions, config.sendgrid.templates.approved);
+    sendgridService.sendToUser(data.user.id, 'We recommended you to ' + company.name +  ' for ' + _campaign.name, substitutions, config.sendgrid.templates.approved);
   })
   .catch(function(error) {
     console.log('recommended email error: ', error);

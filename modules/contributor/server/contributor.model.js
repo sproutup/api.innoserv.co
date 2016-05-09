@@ -67,7 +67,7 @@ var ContributorSchema = new Schema({
     type: Number
   },
   recommended: {
-    type: Boolean
+    type: Number
   },
   note: {
     type: String
