@@ -6,6 +6,7 @@
 var config = require('../config');
 var chalk = require('chalk');
 var redis = require('./redis');
+var ioredis = require('modules/node-cache-manager-ioredis');
 var cacheManager = require('cache-manager');
 var _ = require('lodash');
 
@@ -14,10 +15,11 @@ var isCacheableValue = function(value) {
 };
 
 var redisCache = cacheManager.caching({
-  store: redis,
+  store: ioredis,
+  redis: redis,
   isCacheableValue: isCacheableValue,
   db: 0,
-  ttl: 600});
+  ttl: 20});
 
 var memoryCache = cacheManager.caching({
   store: 'memory',
@@ -26,7 +28,7 @@ var memoryCache = cacheManager.caching({
   ttl: 10 /* seconds */});
 var ttl = 10;
 
-var cache = cacheManager.multiCaching([memoryCache/*, redisCache*/], { isCacheableValue: isCacheableValue });
+var cache = cacheManager.multiCaching([memoryCache, redisCache], { isCacheableValue: isCacheableValue });
 
 console.log('--');
 console.log(chalk.green('Cache'));
@@ -34,5 +36,5 @@ console.log(chalk.green('Host:\t', config.redis.host));
 console.log(chalk.green('Port:\t', config.redis.port));
 
 
-module.exports = memoryCache;
+module.exports =  cache; //redisCache; //memoryCache;
 
