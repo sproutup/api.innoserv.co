@@ -281,8 +281,8 @@ var sendRecommendedEmails = function(data) {
       ':brand_name': [company.name]
     };
 
-    sendgridService.sendToCompanyUsers(company.id, 'We recommended you someone for ' + _campaign.name, substitutions, config.sendgrid.templates.approved);
-    sendgridService.sendToUser(data.user.id, 'We recommended you to ' + company.name +  ' for ' + _campaign.name, substitutions, config.sendgrid.templates.approved);
+    sendgridService.sendToCompanyUsers(company.id, 'We recommended you ' + data.user.displayName + ' for ' + _campaign.name, substitutions, config.sendgrid.templates.recommend2brand);
+    sendgridService.sendToUser(data.user.id, 'Congrats! SproutUp recommended you to ' + company.name +  ' for ' + _campaign.name, substitutions, config.sendgrid.templates.recommended);
   })
   .catch(function(error) {
     console.log('recommended email error: ', error);
