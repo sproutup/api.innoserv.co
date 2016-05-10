@@ -33,14 +33,8 @@ exports.dropTable = function (req, res) {
  * Show
  */
 exports.read = function (req, res) {
-  Promise.join(req.model.populate('Product'), req.model.populate('Company'))
-    .then(function(){
-      req.model.url = config.domains.mvp + 'campaign/' + req.model.id + '/' + req.model.type;
-      res.json(req.model);
-    })
-    .catch(function(err){
-      res.json({err: err});
-    });
+  req.model.url = config.domains.mvp + 'campaign/' + req.model.id + '/' + req.model.type;
+  res.json(req.model);
 };
 
 /**
