@@ -66,6 +66,12 @@ var ContributorSchema = new Schema({
   bid: {
     type: Number
   },
+  recommended: {
+    type: Number
+  },
+  note: {
+    type: String
+  },
   log: [
     {
       created: Date,

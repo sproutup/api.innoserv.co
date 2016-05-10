@@ -143,19 +143,30 @@ exports.listByCompany = function (req, res) {
  * List by user
  */
 exports.listByUser = function (req, res) {
-  Team.query({userId: req.user.id}).exec().then(function(items){
-    if(items.length === 0) return [];
-    var query = _.map(items, function(val){ return {id: val.companyId}; });
-    return Company.batchGet(query);
-  })
-  .then(function(items){
-    res.json(items);
-  })
-  .catch(function(err){
-    return res.status(400).send({
-      message: err
+  if (req.user.roles.indexOf('admin') > -1) {
+    Company.scan().exec().then(function(companies){
+      res.json(companies);
+    })
+    .catch(function(err){
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
     });
-  });
+  } else {
+    Team.query({userId: req.user.id}).exec().then(function(items){
+      if(items.length === 0) return [];
+      var query = _.map(items, function(val){ return {id: val.companyId}; });
+      return Company.batchGet(query);
+    })
+    .then(function(items){
+      res.json(items);
+    })
+    .catch(function(err){
+      return res.status(400).send({
+        message: err
+      });
+    });
+  }
 };
 
 

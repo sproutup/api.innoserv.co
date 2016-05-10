@@ -48,7 +48,7 @@ var sendContentEmail = function(content) {
       ':content_url': [url]
     };
     var template = '3ca10b9d-1f15-4bde-bd25-9cc84cb75a11';
-    sendgridService.sendToCompanyUsers(subject, substitutions, template, companyId);
+    sendgridService.sendToCompanyUsers(companyId, subject, substitutions, template);
   })
   .catch(function(error) {
     console.log('error: ', error.stack);
