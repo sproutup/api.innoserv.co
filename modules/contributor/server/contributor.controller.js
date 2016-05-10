@@ -23,7 +23,7 @@ var sendgridService = require('modules/sendgrid/server/sendgrid.service');
  */
 exports.read = function (req, res) {
   var _item;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec().then(function(item){
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).attributes(['address', 'bid', 'campaignId', 'comment', 'created', 'id', 'phone', 'state', 'userId']).exec().then(function(item){
     debug('found contributor: ' + item.id);
     if(_.isUndefined(item)){
       return res.status(204).send({
@@ -77,7 +77,7 @@ exports.update = function (req, res) {
   var _item;
   var _previousState;
   var _previousRecommended;
-  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).exec()
+  Contributor.queryOne('campaignId').eq(req.params.campaignId).where('userId').eq(req.params.userId).attributes(['address', 'bid', 'campaignId', 'comment', 'created', 'id', 'phone', 'state', 'userId']).exec()
     .then(function(item){
       if(_.isUndefined(item)){
         return res.status(400).send({
@@ -186,7 +186,7 @@ exports.listByCampaign = function (req, res) {
 exports.listByUser = function (req, res) {
   var contributions = null;
   var campaigns = null;
-  Contributor.query({userId: req.params.userId}).exec().then(function(items){
+  Contributor.query({userId: req.params.userId}).attributes(['address', 'bid', 'campaignId', 'comment', 'created', 'id', 'phone', 'state', 'userId']).exec().then(function(items){
     contributions = items;
     if(items.length > 0){
       return Promise.map(contributions, function(item){
