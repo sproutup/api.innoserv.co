@@ -59,7 +59,7 @@ exports.invokeRolesPolicies = function () {
 exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
-  if (req.user.roles.indexOf('admin') > -1) {
+  if (req.user && req.user.roles && req.user.roles.indexOf('admin') > -1) {
     return next();
   }
 
