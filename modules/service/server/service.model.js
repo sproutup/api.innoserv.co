@@ -235,7 +235,7 @@ ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) 
     return _this.query('id').eq(userId).exec().then(function(services) {
       if(!services || services.length === 0) {
         debug('...no services found');
-        return [];
+        return null;
       }
       return Promise.each(services, function(val, index, length) {
         debug(val.service + ' service ' + (index+1) + ' of ' + length);
