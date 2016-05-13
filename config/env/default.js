@@ -120,7 +120,11 @@ module.exports = {
       verification: '4ff03cde-62c2-4148-ab56-fe467a3fe5ef',
       forgot: {
         password: 'd46dbccc-3eb8-4788-9b8a-330d5d3aecdf'
-      }
+      },
+      campaignStarted: 'missing template'
     }
+  },
+  admin: {
+    users: process.env.ADMIN_USERS
   }
 };

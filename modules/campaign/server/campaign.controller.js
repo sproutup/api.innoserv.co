@@ -7,6 +7,8 @@ var dynamoose = require('dynamoose');
 var debug = require('debug')('up:debug:campaign:ctrl');
 var cache = require('config/lib/cache');
 var Campaign = dynamoose.model('Campaign');
+var Company = dynamoose.model('Company');
+var Product = dynamoose.model('Product');
 var Slug = dynamoose.model('Slug');
 var Promise = require('bluebird');
 var errorHandler = require('modules/core/server/errors.controller');
@@ -15,6 +17,7 @@ var config = require('config/config');
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
 var intformat = require('biguint-format');
+var sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service'));
 
 /* const variables */
 var _isTemplate = -10;
@@ -56,6 +59,7 @@ exports.create = function (req, res) {
 
   function saveCampaign() {
     var item = new Campaign(req.body);
+
     item.save(function (err) {
       if (err) {
         return res.status(400).send({
@@ -121,11 +125,38 @@ exports.update = function (req, res) {
           message: error
         });
       } else {
+        if (req.model.status < 1 && obj.status === 1) {
+          sendNewCampaignEmails(campaign);
+        }
+
         debug('campaign cache del: ', req.model.id);
         cache.del('campaign:' + req.model.id );
         res.json(campaign);
       }
     });
+  }
+
+
+  function sendNewCampaignEmails(campaign) {
+    var _company;
+
+    Company.getCached(campaign.companyId)
+      .then(function(company) {
+        _company = company;
+        return Product.getCached(campaign.productId);
+
+      }).then(function(product) {
+        var subject = 'New campaign started by ' + _company.name + ' called ' + campaign.name;
+        var substitutions = {
+          ':campaign_name': [campaign.name],
+          ':product_name': [product.name],
+          ':company_name': [_company.name]
+        };
+
+        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaignStarted);
+      }).catch(function(err) {
+        console.log('error sending new campaign email: ', err);
+      });
   }
 };
 

@@ -68,3 +68,13 @@ exports.sendToCompanyUsers = function(companyId, subject, substitutions, templat
   });
 };
 
+/**
+ * Send to all admin users
+ */
+exports.sendToAdminUsers = function(subject, substitutions, template) {
+  var admins = config.admin.users.split(',');
+
+  return Promise.map(admins, function(item) {
+    _this.send(item, subject, substitutions, template);
+  });
+};
