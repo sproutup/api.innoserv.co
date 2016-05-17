@@ -12,7 +12,7 @@ module.exports = function (app) {
     .get(ctrl.list);
 
   // collection routes
-  app.route('/api/user/:userId/provider').all(policy.isAllowed)
+  app.route('/api/user/:userId/provider')//.all(policy.isAllowed)
     .get(ctrl.listByUser);
 
   // collection routes

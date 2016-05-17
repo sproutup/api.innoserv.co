@@ -172,7 +172,7 @@ MetricSchema.statics.getCached = Promise.method(function(userId, service, metric
     return _this.get({id: key, timestamp: timestamp}).then(function(val){
       return val || null;
     });
-  });
+  },{ttl: 3600});
 });
 
 dynamoose.model('Metric', MetricSchema);

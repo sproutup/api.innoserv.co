@@ -47,9 +47,22 @@ var ProviderSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  timestamp: {
+    type: Number,
+    required: true,
+    default: moment().utc().unix()
+  },
   status: {
     type: Number,
-    default: 1
+    default: 1,
+    required: true,
+    index: {
+      global: true,
+      rangeKey: 'timestamp',
+      name: 'ProviderStatusTimestampIndex',
+      project: true, // ProjectionType: ALL
+      throughput: 1 // read and write are both 1
+    }
   },
   data: {}
 });
@@ -101,6 +114,29 @@ var ProviderSchema = new Schema({
 //      return Metrics.fetch(_this.provider, _this.data.accessToken, _this.userId);
 //  }
 //});
+
+ProviderSchema.static('fetchServiceForOldest', function() {
+  var _this = this;
+  var time = moment().utc().startOf('minute').unix();
+  return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
+    if(val){
+      debug('updating expired provider ' +  val.provider + ' : ' + val.timestamp);
+      return _this.update({id: val.id, provider: val.provider}, {timestamp: time}).then(function(val){
+        return val.refreshServices().then(function(services) {
+          debug('services updated');
+          return services;
+        });
+      });
+    }
+    else{
+      return null;
+    }
+  }).catch(function(err){
+    debug(err);
+    return err;
+  });
+});
+
 
 /**
  * Refresh list of services by providers
@@ -448,6 +484,10 @@ ProviderSchema.statics.refreshAccessTokenOAuth2 = Promise.method(function (refre
     default:
       return Promise.reject('Invalid provider');
   }
+});
+
+ProviderSchema.statics.add = Promise.method(function(data) {
+  var _this = this;
 });
 
 

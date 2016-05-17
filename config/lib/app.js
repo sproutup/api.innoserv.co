@@ -28,6 +28,8 @@ module.exports.loadModels = function loadModels() {
 module.exports.init = function init(callback) {
   bookshelf.connect(function (db){
     console.log('bookshelf connected');
+    dynamoose.loadModels();
+    var cron = require('./cron');
     var app = express.init(db);
 
     if(callback) callback(app, db, config);
