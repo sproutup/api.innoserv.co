@@ -143,7 +143,7 @@ exports.listByCompany = function (req, res) {
  * List by user
  */
 exports.listByUser = function (req, res) {
-  if (req.user.roles.indexOf('admin') > -1) {
+  if (req.user && req.user.roles.indexOf('admin') > -1) {
     Company.scan().exec().then(function(companies){
       res.json(companies);
     })
