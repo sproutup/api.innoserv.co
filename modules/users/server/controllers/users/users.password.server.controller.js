@@ -111,7 +111,7 @@ exports.reset = function (req, res, next) {
 
   async.waterfall([
     function (done) {
-      // Get the token in param and use the value (user.id) to find the user to update 
+      // Get the token in param and use the value (user.id) to find the user to update
       redis.get('token:' + req.params.token).then(function(result) {
         if (result) {
           Provider.get({
@@ -181,7 +181,7 @@ exports.changePassword = function (req, res) {
     if(!provider){
       debug('provider not found');
       return res.status(400).send({
-        message: 'Invalid username or password'
+        message: 'Your current password is wrong...'
       });
     }
     debug('found password provider');
@@ -191,7 +191,7 @@ exports.changePassword = function (req, res) {
       debug('isAuthenticated ', isAuthenticated);
       if(!isAuthenticated) {
         return res.status(400).send({
-          message: 'Invalid username or password'
+          message: 'Your current password is wrong...'
         });
       }
 

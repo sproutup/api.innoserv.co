@@ -118,6 +118,9 @@ module.exports = {
       approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267',
       message: '2530a4ef-a779-4050-b1ff-01a8c5dfe1ff',
       verification: '4ff03cde-62c2-4148-ab56-fe467a3fe5ef',
+      campaign2review: '32a64a16-5537-4a59-a26e-014cc13d4794',
+      campaignApproved: 'f25c5991-5456-4151-8871-8b3fa2e59c29',
+      campaignDisapproved: '058f5ed0-f7b2-4952-abb5-14822d82e1cb',
       forgot: {
         password: 'd46dbccc-3eb8-4788-9b8a-330d5d3aecdf'
       },
