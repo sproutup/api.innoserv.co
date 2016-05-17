@@ -182,7 +182,7 @@ ServiceSchema.static('updateWrapper', Promise.method(function(userId, service, d
 
 ServiceSchema.static('fetchMetricForOldest', function() {
   var _this = this;
-  var time = moment().utc().startOf('minute').unix();
+  var time = moment().utc().startOf('day').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
     if(val){
       debug('updating expired service ' +  val.service + ' : ' + val.timestamp);

@@ -117,7 +117,7 @@ var ProviderSchema = new Schema({
 
 ProviderSchema.static('fetchServiceForOldest', function() {
   var _this = this;
-  var time = moment().utc().startOf('minute').unix();
+  var time = moment().utc().startOf('day').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
     if(val){
       debug('updating expired provider ' +  val.provider + ' : ' + val.timestamp);
