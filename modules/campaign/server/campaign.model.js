@@ -78,6 +78,7 @@ var CampaignSchema = new Schema({
     default: '',
     trim: true,
   },
+  // statuses: 0=draft, 1=pending, 10=active, -1=inactive
   status: {
     type: Number,
     default: 0,
@@ -183,7 +184,7 @@ CampaignSchema.statics.queryActive = Promise.method(function(id){
 
   return cache.wrap(key, function() {
     debug('cache miss: active campaign');
-    return Campaign.query('status').eq(1).attributes(['id']).exec()
+    return Campaign.query('status').eq(10).attributes(['id']).exec()
       .then(function(items){
         return Promise.map(items, function(item){
           return Campaign.getCached(item.id);

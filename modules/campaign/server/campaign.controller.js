@@ -153,7 +153,7 @@ exports.update = function (req, res) {
           ':company_name': [_company.name]
         };
 
-        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaignStarted);
+        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2review);
       }).catch(function(err) {
         console.log('error sending new campaign email: ', err);
       });
