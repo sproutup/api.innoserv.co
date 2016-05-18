@@ -548,7 +548,7 @@ exports.removeOAuthProvider = function (req, res, next) {
 
   Provider.queryOne('userId').eq(user.id).where('provider').eq(provider).exec().then(function (item) {
     console.log('item: ', item);
-    item.delete().then(function(){
+    item.purge().then(function(){
       req.login(user, function (err) {
         if (err) {
           return res.status(400).send(err);

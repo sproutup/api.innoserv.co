@@ -494,6 +494,28 @@ ProviderSchema.statics.add = Promise.method(function(data) {
   var _this = this;
 });
 
+ProviderSchema.methods.purge = Promise.method(function() {
+  var Service = dynamoose.model('Service');
+  var _this = this;
+
+  debug('purge: ', this.id);
+  return Service.query('id').eq(this.userId)
+    .filter('provider').eq(this.provider).exec().then(function(items) {
+    if(_.isUndefined(items)) return 0;
+    debug('purge ' + items.length + ' items');
+    // delete all user providers
+    return Promise.each(items, function(item){
+      debug('delete ', item.id , ' service: ', item.service);
+      return Service.delete({id: item.id, service: item.service});
+    });
+  }).then(function(){
+    return _this.delete();
+  }).catch(function(err){
+    debug('err', err.stack);
+    throw err;
+  });
+});
+
 
 ProviderSchema.statics.purge = Promise.method(function(userId) {
   var _this = this;
