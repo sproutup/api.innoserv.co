@@ -105,6 +105,12 @@ exports.update = function (req, res) {
     });
   }
 
+  if (obj.status === 10 && req.model.status < 10 && req.user && req.user.roles.indexOf('admin') < 0) {
+    return res.status(403).json({
+       message: 'User is not authorized'
+    });
+  }
+
   // If the hashtag changed, update the slug before update the campaign
   if (req.model.hashtag !== req.body.hashtag) {
     Slug.change({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'}, req.model.hashtag)
@@ -153,7 +159,7 @@ exports.update = function (req, res) {
           ':company_name': [_company.name]
         };
 
-        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2review);
+        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2Review);
       }).catch(function(err) {
         console.log('error sending new campaign email: ', err);
       });
