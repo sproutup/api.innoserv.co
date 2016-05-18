@@ -117,6 +117,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
 MetricSchema.static('updateWrapper', Promise.method(function(id, type, value) {
   var timestamp = moment().utc().startOf('day').unix();
   debug('update ' + id + ' == ' + value);
+  cache.del(id);
   return this.update({
     id: id,
     timestamp: timestamp
