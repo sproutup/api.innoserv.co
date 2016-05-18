@@ -7,7 +7,8 @@ var Promise = require('bluebird'),
   dynamoose = require('dynamoose'),
   express = require('config/lib/express'),
   User = dynamoose.model('User'),
-  Company = dynamoose.model('Company');
+  Company = dynamoose.model('Company'),
+  debug = require('debug')('up:debug:company:routes:tests');
 
 /**
  * Globals
@@ -81,6 +82,7 @@ describe('Company CRUD tests', function () {
   });
 
   it('should be able to save a company if logged in', function (done) {
+    debug('signing in with in company ', credentials);
     agent.post('/api/auth/signin')
       .send(credentials)
       .expect(200)
