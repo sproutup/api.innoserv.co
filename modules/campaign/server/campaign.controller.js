@@ -135,13 +135,16 @@ exports.update = function (req, res) {
           sendNewCampaignEmails(campaign);
         }
 
+        if (req.model.status < 10 && obj.status === 10) {
+          sendApprovedCampaignEmails(campaign);
+        }
+
         debug('campaign cache del: ', req.model.id);
         cache.del('campaign:' + req.model.id );
         res.json(campaign);
       }
     });
   }
-
 
   function sendNewCampaignEmails(campaign) {
     var _company;
@@ -162,6 +165,21 @@ exports.update = function (req, res) {
         return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2Review);
       }).catch(function(err) {
         console.log('error sending new campaign email: ', err);
+      });
+  }
+
+  function sendApprovedCampaignEmails(campaign) {
+    Company.getCached(campaign.companyId)
+      .then(function(company) {
+        var subject = campaign.name + ' has been approved.';
+        var url = config.domains.mvp + 'campaign/' + campaign.id;
+        var substitutions = {
+          ':campaign_name': [campaign.name],
+          ':company_name': [company.name],
+          ':campaign_url': [url]
+        };
+
+        sendgridService.sendToCompanyUsers(company.id, subject, substitutions, config.sendgrid.templates.campaignApproved);
       });
   }
 };
