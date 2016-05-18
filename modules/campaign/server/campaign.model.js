@@ -78,7 +78,7 @@ var CampaignSchema = new Schema({
     default: '',
     trim: true,
   },
-  // statuses: 0=draft, 1=pending, 10=active, -1=inactive
+  // statuses: -10=template, -5=ended, -1=disapproved, 0=draft, 1=pending, 10=active
   status: {
     type: Number,
     default: 0,
@@ -107,6 +107,9 @@ var CampaignSchema = new Schema({
     type: Date
   },
   ended: {
+    type: Date
+  },
+  disapproved: {
     type: Date
   },
   typeOfContent : {
