@@ -72,7 +72,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.friends.summary.total_count);
+          data.friends ? data.friends.summary.total_count : 0);
       });
     case 'youtube':
       return youtube.showUser('self', accessToken).then(function(data){
@@ -117,6 +117,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
 MetricSchema.static('updateWrapper', Promise.method(function(id, type, value) {
   var timestamp = moment().utc().startOf('day').unix();
   debug('update ' + id + ' == ' + value);
+  cache.del(id);
   return this.update({
     id: id,
     timestamp: timestamp

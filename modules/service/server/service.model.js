@@ -186,6 +186,9 @@ ServiceSchema.static('fetchMetricForOldest', function() {
     if(val){
       debug('updating expired service ' +  val.service + ' : ' + val.timestamp);
       return _this.update({id: val.id, service: val.service}, {timestamp: time}).then(function(val){
+        var key = val.id + ':' + val.service + ':' + 'followers';
+        debug('delete cache: ' + key);
+        cache.del(key);
         return val.getMetrics('followers').then(function(metric) {
           debug('metric: ' +  metric.value);
           return metric;
