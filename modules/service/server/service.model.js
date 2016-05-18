@@ -170,8 +170,7 @@ ServiceSchema.statics.refresh = Promise.method(function(serviceName, accessToken
 });
 
 ServiceSchema.static('updateWrapper', Promise.method(function(userId, service, data) {
-  data.timestamp = moment().utc().startOf('day').unix();
-
+  data.timestamp = moment().subtract(1,'day').utc().startOf('day').unix();
   return this.update({
     id: userId,
     service: service

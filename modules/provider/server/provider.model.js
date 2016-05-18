@@ -122,7 +122,7 @@ ProviderSchema.static('fetchServiceForOldest', function() {
     if(val){
       debug('updating expired provider ' +  val.provider + ' : ' + val.timestamp);
       return _this.update({id: val.id, provider: val.provider}, {timestamp: time}).then(function(val){
-        return val.refreshServices().then(function(services) {
+        return val.refreshServices(true).then(function(services) {
           debug('services updated');
           return services;
         });
@@ -158,11 +158,15 @@ ProviderSchema.statics.refreshProviderServices = Promise.method(function (userId
   });
 });
 
-ProviderSchema.methods.refreshServices = Promise.method(function(){
+ProviderSchema.methods.refreshServices = Promise.method(function(delCachedValue){
   var Provider = dynamoose.model('Provider');
   var Service = dynamoose.model('Service');
   var _this = this;
   var key = 'services:provider:' + _this.provider + ':user:' + _this.id;
+
+  if(delCachedValue){
+    cache.del(key);
+  }
 
   return cache.wrap(key, function() {
     if(_this.status !== 1 && false){
