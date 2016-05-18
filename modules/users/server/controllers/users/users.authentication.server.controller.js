@@ -6,6 +6,7 @@
 
 var url = require('url');
 var debug = require('debug')('up:debug:user:auth:ctrl');
+var moment = require('moment');
 var path = require('path'),
   config = require('config/config'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller')),
@@ -442,12 +443,15 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
               profileImageURL: providerUserProfile.profileImageURL
             };
 
+            var time = moment().subtract(1,'day').utc().startOf('day').unix();
             var provider = new Provider({
               id: _identifier,
               provider: _provider,
               email: providerUserProfile.email,
               profileImageURL: providerUserProfile.profileImageURL,
-              data: providerUserProfile.providerData
+              data: providerUserProfile.providerData,
+              status: 1,
+              timestamp: time // force refresh services
             });
 
             // And save the user
@@ -500,13 +504,16 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         // provider not found -> add to user
         if (!provider) {
           debug('add ', _provider, ' provider to user');
+          var time = moment().subtract(1,'day').utc().startOf('day').unix();
           provider = new Provider({
             id: _identifier,
             provider: _provider,
             userId: user.id,
             email: providerUserProfile.email,
             profileImageURL: providerUserProfile.profileImageURL,
-            data: providerUserProfile.providerData
+            data: providerUserProfile.providerData,
+            status: 1,
+            timestamp: time
           });
 
           // And save the provider
