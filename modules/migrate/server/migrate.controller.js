@@ -119,3 +119,29 @@ var migrateSlug = Promise.method(function(){
   });
 });
 
+/**
+ * upgrade
+ */
+exports.upgrade = function (req, res) {
+  Promise.join(
+    upgradeV1_01()
+  ).then(function(items){
+    res.json(items);
+  });
+};
+
+
+var upgradeV1_01 = Promise.method(function(){
+  return Provider.scan().exec().then(function(items){
+    console.log('v1.01 - ', items.length);
+    var time = moment().subtract(1,'day').utc().startOf('day').unix();
+    return Promise.each(items, function(o){
+      console.log('item - ', o.id, o.timestamp);
+      return Provider.update({id: o.id, provider: o.provider}, {status: 1, timestamp: time});
+    });
+  })
+  .catch(function(err){
+    return err;
+  });
+});
+

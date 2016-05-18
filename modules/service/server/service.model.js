@@ -42,8 +42,8 @@ var ServiceSchema = new Schema({
   },
   timestamp: {
     type: Number,
-//    required: true,
-    default: moment().unix()
+    required: true,
+    default: moment().utc().unix()
   },
   identifier: {
     type: String
@@ -62,7 +62,14 @@ var ServiceSchema = new Schema({
   },
   status: {
     type: Number,
-    required: true
+    required: true,
+    index: {
+      global: true,
+      rangeKey: 'timestamp',
+      name: 'ServiceStatusTimestampIndex',
+      project: true, // ProjectionType: ALL
+      throughput: 1 // read and write are both 1
+    }
   }
 });
 
@@ -163,14 +170,37 @@ ServiceSchema.statics.refresh = Promise.method(function(serviceName, accessToken
 });
 
 ServiceSchema.static('updateWrapper', Promise.method(function(userId, service, data) {
-  data.timestamp = moment().utc().startOf('day').unix();
-
+  data.timestamp = moment().subtract(1,'day').utc().startOf('day').unix();
   return this.update({
     id: userId,
     service: service
   }, data);
 
 }));
+
+
+ServiceSchema.static('fetchMetricForOldest', function() {
+  var _this = this;
+  var time = moment().utc().startOf('day').unix();
+  return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
+    if(val){
+      debug('updating expired service ' +  val.service + ' : ' + val.timestamp);
+      return _this.update({id: val.id, service: val.service}, {timestamp: time}).then(function(val){
+        return val.getMetrics('followers').then(function(metric) {
+          debug('metric: ' +  metric.value);
+          return metric;
+        });
+      });
+    }
+    else{
+      return null;
+    }
+  }).catch(function(err){
+    debug(err);
+    return err;
+  });
+});
+
 
 /**
  * Get Services
@@ -208,7 +238,7 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
   debug('get metrics');
   return Metric.getCached(this.id, this.service, metric).then(function(val){
     if(val) {
-      debug('found ' + metric + ' metric in db');
+      debug('found valid local ' + metric + ' metric');
       return val;
     }
 

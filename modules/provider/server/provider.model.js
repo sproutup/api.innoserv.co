@@ -47,9 +47,22 @@ var ProviderSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  timestamp: {
+    type: Number,
+    required: true,
+    default: moment().utc().unix()
+  },
   status: {
     type: Number,
-    default: 1
+    default: 1,
+    required: true,
+    index: {
+      global: true,
+      rangeKey: 'timestamp',
+      name: 'ProviderStatusTimestampIndex',
+      project: true, // ProjectionType: ALL
+      throughput: 1 // read and write are both 1
+    }
   },
   data: {}
 });
@@ -102,6 +115,29 @@ var ProviderSchema = new Schema({
 //  }
 //});
 
+ProviderSchema.static('fetchServiceForOldest', function() {
+  var _this = this;
+  var time = moment().utc().startOf('day').unix();
+  return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
+    if(val){
+      debug('updating expired provider ' +  val.provider + ' : ' + val.timestamp);
+      return _this.update({id: val.id, provider: val.provider}, {timestamp: time}).then(function(val){
+        return val.refreshServices(true).then(function(services) {
+          debug('services updated');
+          return services;
+        });
+      });
+    }
+    else{
+      return null;
+    }
+  }).catch(function(err){
+    debug(err);
+    return err;
+  });
+});
+
+
 /**
  * Refresh list of services by providers
  */
@@ -122,11 +158,15 @@ ProviderSchema.statics.refreshProviderServices = Promise.method(function (userId
   });
 });
 
-ProviderSchema.methods.refreshServices = Promise.method(function(){
+ProviderSchema.methods.refreshServices = Promise.method(function(delCachedValue){
   var Provider = dynamoose.model('Provider');
   var Service = dynamoose.model('Service');
   var _this = this;
   var key = 'services:provider:' + _this.provider + ':user:' + _this.id;
+
+  if(delCachedValue){
+    cache.del(key);
+  }
 
   return cache.wrap(key, function() {
     if(_this.status !== 1 && false){
@@ -448,6 +488,10 @@ ProviderSchema.statics.refreshAccessTokenOAuth2 = Promise.method(function (refre
     default:
       return Promise.reject('Invalid provider');
   }
+});
+
+ProviderSchema.statics.add = Promise.method(function(data) {
+  var _this = this;
 });
 
 
