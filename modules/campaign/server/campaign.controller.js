@@ -105,7 +105,15 @@ exports.update = function (req, res) {
     });
   }
 
+  // Make sure user is an admin before disapproving the campaign
   if (obj.status === 10 && req.model.status < 10 && req.user && req.user.roles.indexOf('admin') < 0) {
+    return res.status(403).json({
+       message: 'User is not authorized'
+    });
+  }
+
+  // Make sure user is an admin before disapproving the campaign
+  if (obj.status === -1 && req.model.status > -1 && req.user && req.user.roles.indexOf('admin') < 0) {
     return res.status(403).json({
        message: 'User is not authorized'
     });
@@ -139,50 +147,70 @@ exports.update = function (req, res) {
           sendApprovedCampaignEmails(campaign);
         }
 
+        if (req.model.status > -1 && obj.status === -1) {
+          sendDisapprovedCampaignEmails(campaign);
+        }
+
         debug('campaign cache del: ', req.model.id);
         cache.del('campaign:' + req.model.id );
         res.json(campaign);
       }
     });
   }
-
-  function sendNewCampaignEmails(campaign) {
-    var _company;
-
-    Company.getCached(campaign.companyId)
-      .then(function(company) {
-        _company = company;
-        return Product.getCached(campaign.productId);
-
-      }).then(function(product) {
-        var subject = 'New campaign started by ' + _company.name + ' called ' + campaign.name;
-        var substitutions = {
-          ':campaign_name': [campaign.name],
-          ':product_name': [product.name],
-          ':company_name': [_company.name]
-        };
-
-        return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2Review);
-      }).catch(function(err) {
-        console.log('error sending new campaign email: ', err);
-      });
-  }
-
-  function sendApprovedCampaignEmails(campaign) {
-    Company.getCached(campaign.companyId)
-      .then(function(company) {
-        var subject = campaign.name + ' has been approved.';
-        var url = config.domains.mvp + 'campaign/' + campaign.id;
-        var substitutions = {
-          ':campaign_name': [campaign.name],
-          ':company_name': [company.name],
-          ':campaign_url': [url]
-        };
-
-        sendgridService.sendToCompanyUsers(company.id, subject, substitutions, config.sendgrid.templates.campaignApproved);
-      });
-  }
 };
+
+
+function sendNewCampaignEmails(campaign) {
+  var _company;
+
+  Company.getCached(campaign.companyId)
+    .then(function(company) {
+      _company = company;
+      return Product.getCached(campaign.productId);
+
+    }).then(function(product) {
+      var subject = 'New campaign started by ' + _company.name + ' called ' + campaign.name;
+      var substitutions = {
+        ':campaign_name': [campaign.name],
+        ':product_name': [product.name],
+        ':company_name': [_company.name]
+      };
+
+      return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2Review);
+    }).catch(function(err) {
+      console.log('error sending new campaign email: ', err);
+    });
+}
+
+function sendApprovedCampaignEmails(campaign) {
+  Company.getCached(campaign.companyId)
+    .then(function(company) {
+      var subject = campaign.name + ' has been approved.';
+      var url = config.domains.mvp + 'campaign/' + campaign.id;
+      var substitutions = {
+        ':campaign_name': [campaign.name],
+        ':company_name': [company.name],
+        ':campaign_url': [url]
+      };
+
+      sendgridService.sendToCompanyUsers(company.id, subject, substitutions, config.sendgrid.templates.campaignApproved);
+    });
+}
+
+function sendDisapprovedCampaignEmails(campaign) {
+  Company.getCached(campaign.companyId)
+    .then(function(company) {
+      var subject = campaign.name + ' needs a bit more work before going live.';
+      var url = config.domains.creator + company.slug + '/campaign/' + campaign.id + '/edit/' + campaign.type;
+      var substitutions = {
+        ':campaign_name': [campaign.name],
+        ':company_name': [company.name],
+        ':campaign_url': [url]
+      };
+
+      sendgridService.sendToCompanyUsers(company.id, subject, substitutions, config.sendgrid.templates.campaignDisapproved);
+    });
+}
 
 /**
  * Delete
@@ -220,7 +248,7 @@ exports.list = function (req, res) {
  * List by company
  */
 exports.listByCompany = function (req, res) {
-  Campaign.query('companyId').eq(req.model.id).where('status').gt(-2).exec().then(function(items){
+  Campaign.query('companyId').eq(req.model.id).where('status').exec().then(function(items){
     res.json(items);
   })
   .catch(function(err){
