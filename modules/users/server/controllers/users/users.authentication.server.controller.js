@@ -261,7 +261,7 @@ exports.verifyEmailToken = function (req, res) {
       return User.update({ id: result.userId }, { email: result.email, emailConfirmed: true });
     }
   }).then(function(result){
-    if (req.user.id) {
+    if (req.user && req.user.id) {
       User.getPopulated(req.user.id).then(function(updated){
         req.login(updated, function (err) {
           if (err) {
