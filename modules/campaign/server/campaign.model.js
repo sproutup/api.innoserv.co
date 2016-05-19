@@ -78,7 +78,7 @@ var CampaignSchema = new Schema({
     default: '',
     trim: true,
   },
-  // statuses: -10=template, -5=ended, -1=disapproved, 0=draft, 1=pending, 10=active
+  // statuses: -10=template, -5=ended, -1=disapproved, 0=draft, 1=under review, 10=active
   status: {
     type: Number,
     default: 0,
@@ -111,6 +111,9 @@ var CampaignSchema = new Schema({
   },
   disapproved: {
     type: Date
+  },
+  disapprovedNote: {
+    type: String
   },
   typeOfContent : {
     type: [String] // yt, tw, ig etc..
