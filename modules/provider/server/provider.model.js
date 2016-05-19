@@ -280,6 +280,34 @@ ProviderSchema.methods.authenticate = Promise.method(function (password) {
   return bcrypt.compareAsync(password, this.data.hash);
 });
 
+ProviderSchema.statics.changeEmail = Promise.method(function(email, userId) {
+  var _this = this;
+
+  return Promise.try(function(){
+    // create password provider if needed
+    if(!email || !userId) {
+      debug('missing param', email, userId);
+      throw new Error('missing required param');
+    }
+    debug('change email');
+    return _this.queryOne('userId').eq(userId).where('provider').eq('password').exec();
+  }).then(function(item){
+    if(item){
+      debug('found email/password provider for user: ', userId);
+      var oldemail = item.id;
+      item.id = email;
+      return item.save().then(function(val){
+        return _this.delete({provider: 'password', id: oldemail});
+      });
+    }
+    debug('no email/password provider found user: ', userId);
+    return null;
+  }).catch(function(err){
+    debug('change email: ', err.stack);
+    throw err;
+  });
+});
+
 ProviderSchema.statics.createPassword = Promise.method(function(email, password, userId) {
   var Provider = dynamoose.model('Provider');
 

@@ -259,7 +259,13 @@ exports.verifyEmailToken = function (req, res) {
         message: 'This token is invalid'
       });
     } else {
-      return User.update({ id: result.userId }, { email: result.email, emailConfirmed: true });
+      return Promise.join(
+        User.update({ id: result.userId }, { email: result.email, emailConfirmed: true }),
+        Provider.changeEmail(result.email, result.userId),
+        function(user, provider){
+          console.log('email updated in user and provider');
+        }
+      );
     }
   }).then(function(result){
     if (req.user && req.user.id) {
