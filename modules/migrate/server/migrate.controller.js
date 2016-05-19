@@ -9,6 +9,7 @@ var knex = require('config/lib/bookshelf').knex;
 var User = dynamoose.model('User');
 var Provider = dynamoose.model('Provider');
 var Slug = dynamoose.model('Slug');
+var scrapper = require('modules/scrapper/server/scrapper.service');
 var _ = require('lodash');
 var moment = require('moment');
 var FlakeId = require('flake-idgen');
@@ -28,19 +29,27 @@ exports.read = function (req, res) {
 exports.list = function (req, res) {
   Promise.join(
       addSnowflakeToAllUsers(),
+      addSnowflakeToAllPosts(),
       migratePassword(),
       migrateUser(),
-      migrateSlug()
+      migrateSlug(),
+      migratePost()
     ).then(function(items){
     res.json(items);
   });
 };
 
-
 var addSnowflakeToAllUsers = Promise.method(function(){
   return knex.select('*').from('users').whereNull('external_type').map(function(row) {
     console.log('adding snowflake to user: ', row.id);
     return knex('users').where({id: row.id}).update({external_type: intformat(flakeIdGen.next(), 'dec')});
+  });
+});
+
+var addSnowflakeToAllPosts = Promise.method(function(){
+  return knex.select('*').from('post').whereNull('title').map(function(row) {
+    console.log('adding snowflake to post: ', row.id);
+    return knex('post').where({id: row.id}).update({title: intformat(flakeIdGen.next(), 'dec')});
   });
 });
 
@@ -119,6 +128,68 @@ var migrateSlug = Promise.method(function(){
   });
 });
 
+var migratePost = Promise.method(function(){
+  return knex.select([
+      'post.*',
+      'post.title as id',
+      'post.body as body',
+      'users.external_type as userId',
+      'content.url as url'])
+    .from('post')
+    .innerJoin('users', 'post.user_id', 'users.id')
+    .leftJoin('content', 'post.content_id', 'content.id')
+    .where({active: 1})
+    .whereNotNull('title')
+    .options({ nestTables: true, rowMode: 'array' })
+    .map(function(row) {
+      console.log('migrating post: ', row);
+      if(row.content.url){
+        console.log('get meta ', row.content.url);
+        return scrapper.getMeta(row.content.url).then(function(val){
+          console.log('got meta ', row.content.url);
+          var meta;
+          if(val){
+            meta = {
+              title: val.title(),
+              author: val.author(),
+              publisher: val.publisher(),
+              description: val.description(),
+              image: val.image(),
+              date: val.date()
+            };
+          }
+
+          var post = {
+            id: row.post.id,
+            created: moment(row.post.created_at).utc().unix(),
+            userId: row.users.userId,
+            body: row.post.body,
+            meta: meta
+          };
+          return post;
+        });
+      }
+      else{
+        var post = {
+          id: row.post.id,
+          created: moment(row.post.created_at).utc().unix(),
+          userId: row.users.userId,
+          body: row.post.body
+        };
+        return post;
+      }
+////      return user;
+//      return User.create(user).then(function(val){
+//        console.log('user migrate success: ', val.email);
+//        return val;
+//      }).catch(function(err){
+//        console.log('## user not migrated ## ', user.email);
+//        return {email: user.email, status: 'user not migrated'};
+//      });
+  });
+});
+
+
 /**
  * upgrade
  */
@@ -129,7 +200,6 @@ exports.upgrade = function (req, res) {
     res.json(items);
   });
 };
-
 
 var upgradeV1_01 = Promise.method(function(){
   return Provider.scan().exec().then(function(items){
