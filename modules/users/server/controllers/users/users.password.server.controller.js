@@ -165,6 +165,22 @@ exports.reset = function (req, res, next) {
 /**
  * Change Password
  */
+exports.createPassword = function (req, res) {
+  Provider.createPassword(req.user.email, req.body.password, req.user.id).then(function(item) {
+    return res.status(200).send({
+      message: 'Your password has been set.'
+    });
+  }).catch(function(err) {
+    console.log('error creating password: ', err);
+    return res.status(400).send({
+      message: 'Your current password is wrong...'
+    });
+  });
+};
+
+/**
+ * Change Password
+ */
 exports.changePassword = function (req, res) {
   // Init Variables
   var passwordDetails = req.body;
