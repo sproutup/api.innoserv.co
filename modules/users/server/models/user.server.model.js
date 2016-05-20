@@ -299,6 +299,8 @@ UserSchema.statics.createWithSlug = Promise.method(function(body) {
     debug('create user: ', body.id);
     // create user
     return User.create(body);
+  }).then(function(){
+    return User.getCached(body.id);
   }).catch(function(err){
     debug('createWithSlug: ', err.stack);
     throw err;
