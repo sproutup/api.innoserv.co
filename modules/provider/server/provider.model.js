@@ -600,7 +600,9 @@ ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
     });
 });
 
-
+ProviderSchema.statics.getUserPasswordProvider = Promise.method(function(userId){
+  return this.queryOne('userId').eq(userId).where('provider').eq('password').exec();
+});
 
 /*
  * refresh access token

@@ -188,10 +188,7 @@ exports.changePassword = function (req, res) {
   var _provider;
 
   Promise.try(function(){
-    return Provider.get({
-      id: req.user.email,
-      provider: 'password'
-    });
+    return Provider.getUserPasswordProvider(req.user.id);
   }).then(function(provider) {
     _provider = provider;
     if(!provider){
