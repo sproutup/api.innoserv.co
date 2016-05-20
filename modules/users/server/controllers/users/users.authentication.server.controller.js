@@ -269,7 +269,7 @@ exports.verifyEmailToken = function (req, res) {
     }
   }).then(function(result){
     if (req.user && req.user.id) {
-      User.getPopulated(req.user.id).then(function(updated){
+      User.getCached(req.user.id).then(function(updated){
         req.login(updated, function (err) {
           if (err) {
             return res.status(400).send(err);
