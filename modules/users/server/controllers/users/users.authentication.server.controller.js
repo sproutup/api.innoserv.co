@@ -6,6 +6,7 @@
 
 var url = require('url');
 var debug = require('debug')('up:debug:user:auth:ctrl');
+var cache = require('config/lib/cache');
 var moment = require('moment');
 var path = require('path'),
   config = require('config/config'),
@@ -268,7 +269,9 @@ exports.verifyEmailToken = function (req, res) {
       );
     }
   }).then(function(result){
+    redis.del('token:' + req.params.token);
     if (req.user && req.user.id) {
+      cache.del('user:' + req.user.id);
       User.getCached(req.user.id).then(function(updated){
         req.login(updated, function (err) {
           if (err) {
