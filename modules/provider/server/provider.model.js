@@ -292,7 +292,7 @@ ProviderSchema.statics.changeEmail = Promise.method(function(email, userId) {
     debug('change email');
     return _this.queryOne('userId').eq(userId).where('provider').eq('password').exec();
   }).then(function(item){
-    if(item){
+    if(item && (item.id !== email)) {
       debug('found email/password provider for user: ', userId);
       var oldemail = item.id;
       item.id = email;
@@ -600,7 +600,9 @@ ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
     });
 });
 
-
+ProviderSchema.statics.getUserPasswordProvider = Promise.method(function(userId){
+  return this.queryOne('userId').eq(userId).where('provider').eq('password').exec();
+});
 
 /*
  * refresh access token

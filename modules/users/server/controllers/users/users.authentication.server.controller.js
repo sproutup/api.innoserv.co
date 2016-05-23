@@ -6,6 +6,7 @@
 
 var url = require('url');
 var debug = require('debug')('up:debug:user:auth:ctrl');
+var cache = require('config/lib/cache');
 var moment = require('moment');
 var path = require('path'),
   config = require('config/config'),
@@ -253,7 +254,9 @@ exports.sendEmailVerification = function (req, res) {
  * Verify user's email token, update user, redirect them to the home page
  */
 exports.verifyEmailToken = function (req, res) {
+  var _cached;
   redis.hgetall('token:' + req.params.token).then(function(result) {
+    _cached = result;
     if (!result.email) {
       return res.status(400).send({
         message: 'This token is invalid'
@@ -267,9 +270,12 @@ exports.verifyEmailToken = function (req, res) {
         }
       );
     }
-  }).then(function(result){
+  }).then(function(){
+    redis.del('token:' + req.params.token);
+    cache.del('user:' + _cached.userId);
+
     if (req.user && req.user.id) {
-      User.getPopulated(req.user.id).then(function(updated){
+      User.getCached(req.user.id).then(function(updated){
         req.login(updated, function (err) {
           if (err) {
             return res.status(400).send(err);

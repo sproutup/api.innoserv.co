@@ -8,6 +8,7 @@
 var Promise = require('bluebird');
 var _ = require('lodash'),
   config = require('config/config'),
+  cache = require('config/lib/cache'),
   fs = require('fs'),
   path = require('path'),
   debug = require('debug')('up:debug:user:profile:ctrl'),
@@ -61,7 +62,9 @@ exports.update = function (req, res) {
           message: error
         });
       } else {
-        User.getPopulated(req.user.id).then(function(updated){
+
+        cache.del('user:' + req.user.id);
+        User.getCached(req.user.id).then(function(updated){
 //        var updated = _.extend(user, req.user, {username: user.username});
           debug('updated user', updated);
           if (_result && _result.url) {

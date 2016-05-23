@@ -5,6 +5,7 @@
  */
 var path = require('path'),
   config = require(path.resolve('./config/config')),
+  cache = require('config/lib/cache'),
   /* global -Promise */
   Promise = require('bluebird'),
   sendgrid = require('sendgrid')(config.sendgrid.username, config.sendgrid.pass),
@@ -163,6 +164,32 @@ exports.reset = function (req, res, next) {
 };
 
 /**
+ * Create Password
+ */
+exports.createPassword = function (req, res) {
+  Provider.createPassword(req.user.email, req.body.password, req.user.id).then(function(item) {
+    cache.del('user:' + req.user.id);
+    return User.getCached(req.user.id);
+  }).then(function(user) {
+    req.login(user, function (err) {
+      if (err) {
+        res.status(400).send(err);
+        return;
+      } else {
+        debug('returning success');
+        res.json(user);
+        return;
+      }
+    });
+  }).catch(function(err) {
+    console.log('error creating password: ', err);
+    return res.status(400).send({
+      message: 'Your current password is wrong...'
+    });
+  });
+};
+
+/**
  * Change Password
  */
 exports.changePassword = function (req, res) {
@@ -172,10 +199,7 @@ exports.changePassword = function (req, res) {
   var _provider;
 
   Promise.try(function(){
-    return Provider.get({
-      id: req.user.email,
-      provider: 'password'
-    });
+    return Provider.getUserPasswordProvider(req.user.id);
   }).then(function(provider) {
     _provider = provider;
     if(!provider){
