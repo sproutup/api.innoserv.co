@@ -9,6 +9,8 @@ var knex = require('config/lib/bookshelf').knex;
 var User = dynamoose.model('User');
 var Provider = dynamoose.model('Provider');
 var Slug = dynamoose.model('Slug');
+var Post = dynamoose.model('Post');
+var CommentModel = dynamoose.model('Comment');
 var scrapper = require('modules/scrapper/server/scrapper.service');
 var _ = require('lodash');
 var moment = require('moment');
@@ -27,17 +29,36 @@ exports.read = function (req, res) {
  * List of Users
  */
 exports.list = function (req, res) {
-  Promise.join(
-      addSnowflakeToAllUsers(),
-      addSnowflakeToAllPosts(),
-      migratePassword(),
-      migrateUser(),
-      migrateSlug(),
-      migratePost()
-    ).then(function(items){
-    res.json(items);
+  addFlakeFieldToComment().then(function(){
+    return addSnowflakeToAllUsers();
+  }).then(function(){
+    return addSnowflakeToAllPosts();
+  }).then(function(){
+    return addSnowflakeToAllComments();
+  }).then(function(){
+    return migratePassword();
+  }).then(function(){
+    return migrateUser();
+  }).then(function(){
+    return migrateSlug();
+  }).then(function(){
+    return migratePost();
+  }).then(function(){
+    return migrateComment();
+  }).then(function(){
+    res.json('ok');
   });
 };
+
+var addFlakeFieldToComment = Promise.method(function(){
+  return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
+    console.log('comment altered added migrate column');
+    return true;
+  }).catch(function(err){
+    console.log('comment migrate column exists');
+    return false;
+  });
+});
 
 var addSnowflakeToAllUsers = Promise.method(function(){
   return knex.select('*').from('users').whereNull('external_type').map(function(row) {
@@ -50,6 +71,13 @@ var addSnowflakeToAllPosts = Promise.method(function(){
   return knex.select('*').from('post').whereNull('title').map(function(row) {
     console.log('adding snowflake to post: ', row.id);
     return knex('post').where({id: row.id}).update({title: intformat(flakeIdGen.next(), 'dec')});
+  });
+});
+
+var addSnowflakeToAllComments = Promise.method(function(){
+  return knex.select('*').from('comment').whereNull('flake').map(function(row) {
+    console.log('adding snowflake to comment: ', row.id);
+    return knex('comment').where({id: row.id}).update({flake: intformat(flakeIdGen.next(), 'dec')});
   });
 });
 
@@ -142,53 +170,89 @@ var migratePost = Promise.method(function(){
     .whereNotNull('title')
     .options({ nestTables: true, rowMode: 'array' })
     .map(function(row) {
-      console.log('migrating post: ', row);
-      if(row.content.url){
-        console.log('get meta ', row.content.url);
-        return scrapper.getMeta(row.content.url).then(function(val){
-          console.log('got meta ', row.content.url);
-          var meta;
-          if(val){
-            meta = {
-              title: val.title(),
-              author: val.author(),
-              publisher: val.publisher(),
-              description: val.description(),
-              image: val.image(),
-              date: val.date()
-            };
-          }
+      console.log('migrating post: ', row.post.id);
+      return Promise.try(function(){
+        console.log('date: ', moment(row.post.created_at).format());
+        if(row.content.url){
+          return scrapper.getMeta(row.content.url).then(function(val){
+            console.log('got meta ', row.content.url);
+            var meta;
+            if(val){
+              meta = {
+                title: val.title(),
+                author: val.author(),
+                publisher: val.publisher(),
+                description: val.description(),
+                image: val.image(),
+                date: val.date()
+              };
+            }
 
+            var post = {
+              id: row.post.id,
+              created: moment(row.post.created_at).utc(),
+              userId: row.users.userId,
+              body: row.post.body,
+              meta: meta
+            };
+            return post;
+          });
+        }
+        else{
           var post = {
             id: row.post.id,
-            created: moment(row.post.created_at).utc().unix(),
+            created: moment(row.post.created_at).utc(),
             userId: row.users.userId,
-            body: row.post.body,
-            meta: meta
+            body: row.post.body
           };
           return post;
+        }
+      }).then(function(o){
+        var post = new Post(o);
+        return post.save(o).then(function(val){
+          console.log('post migrate success: ', val.id);
+          return val;
+        }).catch(function(err){
+          console.log('## post not migrated ## ', o.id);
+          return {id: o.id, status: 'post not migrated'};
         });
-      }
-      else{
-        var post = {
-          id: row.post.id,
-          created: moment(row.post.created_at).utc().unix(),
-          userId: row.users.userId,
-          body: row.post.body
-        };
-        return post;
-      }
-////      return user;
-//      return User.create(user).then(function(val){
-//        console.log('user migrate success: ', val.email);
-//        return val;
-//      }).catch(function(err){
-//        console.log('## user not migrated ## ', user.email);
-//        return {email: user.email, status: 'user not migrated'};
-//      });
+      });
   });
 });
 
+var migrateComment = Promise.method(function(){
+  return knex.select([
+      'comment.*',
+      'comment.flake as id',
+      'comment.body as body',
+      'post.title as id',
+      'users.external_type as userId'])
+    .from('comment')
+//    .debug(true)
+    .innerJoin('post', 'comment.ref_id', 'post.id')
+    .innerJoin('users', 'comment.user_id', 'users.id')
+    .where({ref_type: 'models.post'})
+    .whereNotNull('comment.ref_id')
+    .options({ nestTables: true, rowMode: 'array' })
+    .map(function(row) {
+      console.log('migrating comment: ', row);
+      var comment = new CommentModel({
+        id: row.comment.id,
+        created: moment(row.comment.created_at).utc(),
+        userId: row.users.userId,
+        body: row.comment.body,
+        refId: row.post.id,
+        refType: 'Post'
+      });
+      return comment.save().then(function(val){
+        console.log('comment migrate success: ', val.id);
+        return val;
+      }).catch(function(err){
+        console.log('## comment not migrated ## ', comment.id);
+        return {id: comment.id, status: 'comment not migrated'};
+      });
+    });
+});
 
 /**
  * upgrade
