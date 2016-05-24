@@ -64,7 +64,7 @@ exports.sendInvite = function(req, res) {
       _url = config.domains.creator + 'api/auth/invite/confirmation/' + token;
     }
     var to = req.body.invitee;
-    var subject = req.user.displayName + ' invited to join ' + _company.name + ' on SproutUp!';
+    var subject = req.user.displayName + ' invited you to join ' + _company.name + ' on SproutUp!';
     var substitutions = {
       ':inviter_name': [req.user.displayName],
       ':company_name': [_company.name],
