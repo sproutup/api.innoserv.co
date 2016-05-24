@@ -179,7 +179,7 @@ function sendNewCampaignEmails(campaign) {
         ':company_name': [_company.name]
       };
 
-      return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaign2Review);
+      return sendgridService.sendToAdminUsers(subject, substitutions, config.sendgrid.templates.campaignToReview);
     }).catch(function(err) {
       console.log('error sending new campaign email: ', err);
     });
