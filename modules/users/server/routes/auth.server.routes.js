@@ -25,7 +25,11 @@ module.exports = function (app) {
   app.route('/api/auth/signin').post(users.signin);
   app.route('/api/auth/signout').get(users.signout);
 
-  // validation
+  // Inivites
+  app.route('/api/auth/invite').post(users.sendInvite);
+  // app.route('/api/auth/invite/confirmation/:token').get(users.verifyInviteToken);
+
+  // Email validation
   app.route('/api/auth/validate/email').post(users.emailIsAvailable);
 
   // Setting the facebook oauth routes

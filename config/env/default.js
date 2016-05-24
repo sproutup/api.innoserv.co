@@ -124,7 +124,8 @@ module.exports = {
       forgot: {
         password: 'd46dbccc-3eb8-4788-9b8a-330d5d3aecdf'
       },
-      campaignStarted: 'missing template'
+      campaignStarted: 'missing template',
+      invite: 'e9a954ba-8ca4-45ba-b212-55b68cb1edfb'
     }
   },
   admin: {
