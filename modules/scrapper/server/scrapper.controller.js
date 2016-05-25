@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var scrapper = require('./scrapper.service');
+var debug = require('debug')('up:debug:scrapper:ctrl');
 
 /**
  * Show the company
