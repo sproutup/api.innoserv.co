@@ -31,6 +31,8 @@ exports.sendInvite = function(req, res) {
   var _company;
   var _url;
   var _user;
+  req.body.invitee = req.body.invitee.toLowerCase().trim();
+
   Company.getCached(req.body.companyId).then(function(item) {
     _company = item;
     if (!item) {
@@ -50,7 +52,9 @@ exports.sendInvite = function(req, res) {
       }).then(function(buffer) {
         var token = buffer.toString('hex');
         redis.hmset('token:' + token, { 'invitee': req.body.invitee, 'inviter': req.user.id, 'companyId': _company.id });
-        redis.hmset(req.body.invitee + ':' + _company.id, { 'token': token, 'inviter': req.user.id });
+        redis.hmset('invite:' + req.body.invitee + ':' + _company.id, { 'token': token, 'companyId': _company.id, 'inviter': req.user.id });
+        redis.expire('token:' + token, 604800);
+        redis.expire('invite:' + req.body.invitee + ':' + _company.id, 604800);
 
         if (_user) {
           _url = config.domains.creator + 'select';

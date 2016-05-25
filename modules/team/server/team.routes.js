@@ -26,6 +26,9 @@ module.exports = function (app) {
     .get(ctrl.listByUser)
     .delete(ctrl.deleteByUser);
 
+  app.route('/api/my/company/all').all(policy.isAllowed)
+    .get(ctrl.listAllByUser);
+
   // single routes
   app.route('/api/user/:userId/company/:companyId').all(policy.isAllowed)
     .get(ctrl.read)
