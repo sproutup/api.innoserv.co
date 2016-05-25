@@ -50,10 +50,6 @@ FacebookService.showUser = function(id, token){
   return request(options).then(function(response){
 //    console.log('facebook: ', response);
     return response;
-  })
-  .catch(function(err){
-    console.log('Error: ', err);
-    return {err: err};
   });
 };
 

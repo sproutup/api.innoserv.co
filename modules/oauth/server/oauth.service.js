@@ -371,11 +371,7 @@ OAuth2.refreshAccessToken = function(refreshToken, config){
     .then(function(res){
       console.log('[OAuth2] got access token');
       return res;
-    })
-  .catch(function(err){
-    console.log(err);
-    throw err;
-  });
+    });
 };
 
 
