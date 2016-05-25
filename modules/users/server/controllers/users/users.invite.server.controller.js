@@ -42,40 +42,41 @@ exports.sendInvite = function(req, res) {
     return Company.isMember(item.id, req.user.id);
 
   }).then(function(isMember) {
-    if (isMember) {
-      return User.queryOne('email').eq(req.body.invitee).exec();
+    if (isMember || (req.user && req.user.roles.indexOf('admin') > -1)) {
+      return User.queryOne('email').eq(req.body.invitee).exec().then(function(user) {
+        _user = user;
+
+        return crypto.randomBytes(20);
+      }).then(function(buffer) {
+        var token = buffer.toString('hex');
+        redis.hmset('token:' + token, { 'invitee': req.body.invitee, 'inviter': req.user.id, 'companyId': _company.id });
+        redis.hmset(req.body.invitee + ':' + _company.id, { 'token': token, 'inviter': req.user.id });
+
+        if (_user) {
+          _url = config.domains.creator + 'select';
+        } else {
+          _url = config.domains.creator + 'authentication/invite/' + token;
+        }
+
+        var to = req.body.invitee;
+        var subject = req.user.displayName + ' invited you to join ' + _company.name + ' on SproutUp!';
+        var substitutions = {
+          ':inviter_name': [req.user.displayName],
+          ':company_name': [_company.name],
+          ':url': [_url]
+        };
+
+        return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.invite);
+      }).then(function() {
+        return res.status(200).send({
+          message: 'Invite email sent.'
+        });
+      });
     } else {
       return res.status(400).send({
         message: 'The user sending the invite is not a member of this company.'
       });
     }
-  }).then(function(user) {
-    _user = user;
-
-    return crypto.randomBytes(20);
-  }).then(function(buffer) {
-    var token = buffer.toString('hex');
-    redis.set('token:' + token, { 'invitee': req.body.invitee, 'inviter': req.user.id, 'companyId': _company.id },  'EX', 604800);
-    redis.set(req.body.invitee + ':' + _company.id, { 'token': token, 'inviter': req.user.id }, 'EX', 604800);
-
-    if (_user) {
-      _url = config.domains.creator + 'select';
-    } else {
-      _url = config.domains.creator + 'api/auth/invite/confirmation/' + token;
-    }
-    var to = req.body.invitee;
-    var subject = req.user.displayName + ' invited you to join ' + _company.name + ' on SproutUp!';
-    var substitutions = {
-      ':inviter_name': [req.user.displayName],
-      ':company_name': [_company.name],
-      ':url': [_url]
-    };
-
-    return sendgridService.send(to, subject, substitutions, config.sendgrid.templates.invite);
-  }).then(function() {
-    return res.status(200).send({
-      message: 'Invite email sent.'
-    });
   }).catch(function(error) {
     console.log('error sending invite email: ', error);
     return res.status(400).send({
