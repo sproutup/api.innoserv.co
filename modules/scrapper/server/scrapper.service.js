@@ -25,11 +25,11 @@ exports.getMeta = Promise.method(function(url) {
   return rp(options)
     .then(function(body) {
       var data = extractor.lazy(body);
-      debug('title: ' + data.title());
+//      debug('title: ' + data.title());
       return data;
     })
     .catch(function(err) {
-      console.log(err);
+//      console.log(err);
       return err;
     });
 

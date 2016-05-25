@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var Promise = require('bluebird');
+var redis = require('config/lib/redis');
 var dynamoose = require('dynamoose');
 var knex = require('config/lib/bookshelf').knex;
 var User = dynamoose.model('User');
@@ -52,15 +53,16 @@ exports.list = function (req, res) {
   }).then(function(){
     return migrateSlug();
   }).then(function(){
-    return migratePost();
-  }).then(function(){
     return migrateComment();
+  }).then(function(){
+    return migratePost();
   }).then(function(){
     res.json('ok');
   });
 };
 
 var addFlakeFieldToComment = Promise.method(function(){
+  redis.flushall();
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
     return true;
