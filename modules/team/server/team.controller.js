@@ -7,6 +7,7 @@ var dynamoose = require('dynamoose');
 var Team = dynamoose.model('Team');
 var User = dynamoose.model('User');
 var Company = dynamoose.model('Company');
+var redis = require('config/lib/redis');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
  /* global -Promise */
@@ -157,11 +158,54 @@ exports.listByUser = function (req, res) {
       if(items.length === 0) return [];
       var query = _.map(items, function(val){ return {id: val.companyId}; });
       return Company.batchGet(query);
-    })
-    .then(function(items){
+    }).then(function(items){
       res.json(items);
     })
     .catch(function(err){
+      return res.status(400).send({
+        message: err
+      });
+    });
+  }
+};
+
+/**
+ * List by user with invitiations
+ */
+exports.listAllByUser = function (req, res) {
+  var _companies;
+
+  if (req.user && req.user.roles.indexOf('admin') > -1) {
+    Company.scan().exec().then(function(companies){
+      res.json(companies);
+    })
+    .catch(function(err){
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    });
+  } else {
+    Team.query({userId: req.user.id}).exec().then(function(items){
+      if(items.length === 0) return [];
+      var query = _.map(items, function(val){ return {id: val.companyId}; });
+      return Company.batchGet(query);
+    }).then(function(items){
+      _companies = items;
+      return redis.keys('invite:' + req.user.email + '*').map(function(item) {
+        return redis.hmget(item, ['companyId']);
+      });
+    }).then(function(ids) {
+      return Promise.map(ids, function(id) {
+        return Company.getCached(id);
+      });
+    }).then(function(companies){
+      return Promise.map(companies, function(company) {
+        company.invitation = true;
+        _companies.push(company);
+      });
+    }).then(function(){
+      res.json(_companies);
+    }).catch(function(err){
       return res.status(400).send({
         message: err
       });
