@@ -13,7 +13,16 @@ var debug = require('debug')('up:debug:scrapper:service');
  * Scrape html from a url and return unfluff'd data object 
  */
 exports.getMeta = Promise.method(function(url) {
-  return rp(url)
+  var agent = 'Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/534.3 (KHTML, like Gecko) Chrome/6.0.472.63 Safari/534.3';
+
+  var options = {
+    url: url,
+    headers: {
+      'User-Agent': agent
+    }
+  };
+
+  return rp(options)
     .then(function(body) {
       var data = extractor.lazy(body);
       debug('title: ' + data.title());
