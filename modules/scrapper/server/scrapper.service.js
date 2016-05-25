@@ -7,6 +7,7 @@
 var Promise = require('bluebird');
 var rp = require('request-promise');
 var extractor = require('unfluff');
+var debug = require('debug')('up:debug:scrapper:service');
 
 /**
  * Scrape html from a url and return unfluff'd data object 
@@ -15,11 +16,12 @@ exports.getMeta = Promise.method(function(url) {
   return rp(url)
     .then(function(body) {
       var data = extractor.lazy(body);
-      console.log('title: ' + data.title());
+      debug('title: ' + data.title());
       return data;
     })
     .catch(function(err) {
-      return null;
+      console.log(err);
+      return err;
     });
 
     // You can take the returned data object to access whichever data elements you need directly.
