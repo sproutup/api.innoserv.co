@@ -102,6 +102,14 @@ exports.slug = function (req, res) {
   });
 };
 
+exports.facebook = function (req, res) {
+  redis.flushall();
+  return migrateFacebook().then(function(){
+    res.json('ok');
+  });
+};
+
+
 var addFlakeFieldToComment = Promise.method(function(){
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
@@ -240,8 +248,6 @@ var migrateFacebook = Promise.method(function(){
           console.log('facebook: ', info.id);
           var time = moment().subtract(1,'day').utc().startOf('day').unix();
           var provider = new Provider({
-            id: info.id,
-            provider: 'facebook',
             userId: row.external_type,
             data: {
               accessToken: val.accessToken
@@ -252,8 +258,9 @@ var migrateFacebook = Promise.method(function(){
 
           // And save the provider
           return sleep(200).then(function(){
-            return provider.save().then(function(res){
-              console.log('new provider: ', res.id);
+            return provider.update({id: info.id,
+              provider: 'facebook'}, provider).then(function(res){
+              console.log('new facebook provider: ', res.id);
               return res;
             });
           });
