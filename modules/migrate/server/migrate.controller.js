@@ -247,18 +247,18 @@ var migrateFacebook = Promise.method(function(){
           if(!info) return null;
           console.log('facebook: ', info.id);
           var time = moment().subtract(1,'day').utc().startOf('day').unix();
-          var provider = new Provider({
+          var provider = {
             userId: row.external_type,
             data: {
               accessToken: val.accessToken
             },
             status: 1,
             timestamp: time
-          });
+          };
 
           // And save the provider
           return sleep(200).then(function(){
-            return provider.update({id: info.id,
+            return Provider.update({id: info.id,
               provider: 'facebook'}, provider).then(function(res){
               console.log('new facebook provider: ', res.id);
               return res;
