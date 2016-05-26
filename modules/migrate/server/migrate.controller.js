@@ -98,10 +98,17 @@ var addSnowflakeToAllComments = Promise.method(function(){
   });
 });
 
+function sleep(time) {
+  return new Promise(function(resolve) {
+    setTimeout(resolve, time);
+  });
+}
+
 var migratePassword = Promise.method(function(){
   return knex.from('users')
     .join('linked_account', 'users.id', 'linked_account.user_id')
-    .whereNotNull('external_type').whereNotNull('email').map(function(row) {
+    .whereNotNull('external_type').whereNotNull('email')
+    .map(function(row) {
       console.log('migrating password: ', row.email);
       var provider = {
         id: row.email.toLowerCase().trim(),
@@ -113,14 +120,17 @@ var migratePassword = Promise.method(function(){
           migrate_date: moment().valueOf()
         }
       };
-      return Provider.create(provider).then(function(val){
+
+      return sleep(200).then(function(){
+        return Provider.create(provider);
+      }).then(function(val){
         console.log('password migrate success: ', val.id);
         return val;
       }).catch(function(err){
         console.log('## password not migrated ## ', provider.id);
         return {email: provider.id, status: 'password not migrated'};
       });
-  });
+    });
 });
 
 var migrateLinkedAccount = Promise.method(function(){
@@ -136,8 +146,11 @@ var migrateLinkedAccount = Promise.method(function(){
         userId: row.users.external_type,
         status: -1
       };
-      return Provider.update({id: row.linked_account.provider_user_id,
-        provider: row.linked_account.provider_key}, provider).then(function(val){
+
+      return sleep(200).then(function(){
+        return Provider.update({id: row.linked_account.provider_user_id, 
+        provider: row.linked_account.provider_key}, provider);
+      }).then(function(val){
         console.log('linked account migrate success: ', val.id);
         return val;
       }).catch(function(err){
@@ -170,9 +183,11 @@ var migrateTwitter = Promise.method(function(){
           });
 
           // And save the provider
-          return provider.save().then(function(res){
-            console.log('new provider: ', res.id);
-            return res;
+          return sleep(200).then(function(){
+            return provider.save().then(function(res){
+              console.log('new provider: ', res.id);
+              return res;
+            });
           });
         });
       });
@@ -201,9 +216,11 @@ var migrateFacebook = Promise.method(function(){
           });
 
           // And save the provider
-          return provider.save().then(function(res){
-            console.log('new provider: ', res.id);
-            return res;
+          return sleep(200).then(function(){
+            return provider.save().then(function(res){
+              console.log('new provider: ', res.id);
+              return res;
+            });
           });
         }).catch(function(err){
           console.log('facebook err: ', err.message);
@@ -237,9 +254,11 @@ var migrateGoogle = Promise.method(function(){
           });
 
           // And save the provider
-          return provider.save().then(function(res){
-            console.log('new google provider: ', res.id);
-            return res;
+          return sleep(200).then(function(){
+            return provider.save().then(function(res){
+              console.log('new google provider: ', res.id);
+              return res;
+            });
           });
         });
       }).catch(function(err){
@@ -266,12 +285,14 @@ var migrateUser = Promise.method(function(){
         email: row.email
       };
 //      return user;
-      return User.create(user).then(function(val){
-        console.log('user migrate success: ', val.email);
-        return val;
-      }).catch(function(err){
-        console.log('## user not migrated ## ', user.email);
-        return {email: user.email, status: 'user not migrated'};
+      return sleep(200).then(function(){
+        return User.create(user).then(function(val){
+          console.log('user migrate success: ', val.email);
+          return val;
+        }).catch(function(err){
+          console.log('## user not migrated ## ', user.email);
+          return {email: user.email, status: 'user not migrated'};
+        });
       });
   });
 });
@@ -290,12 +311,14 @@ var migrateSlug = Promise.method(function(){
         refType: 'User'
       };
 //      return slug;
-      return Slug.create(slug).then(function(val){
-        console.log('slug migrate success: ', val.id);
-        return val;
-      }).catch(function(err){
-        console.log('## slug not migrated ## ', slug.id);
-        return {slug: slug.id, status: 'slug not migrated', err: err};
+      return sleep(200).then(function(){
+        return Slug.create(slug).then(function(val){
+          console.log('slug migrate success: ', val.id);
+          return val;
+        }).catch(function(err){
+          console.log('## slug not migrated ## ', slug.id);
+          return {slug: slug.id, status: 'slug not migrated', err: err};
+        });
       });
   });
 });
@@ -353,12 +376,14 @@ var migratePost = Promise.method(function(){
         }
       }).then(function(o){
         var post = new Post(o);
-        return post.save(o).then(function(val){
-          console.log('post migrate success: ', val.id);
-          return val;
-        }).catch(function(err){
-          console.log('## post not migrated ## ', o.id);
-          return {id: o.id, status: 'post not migrated'};
+        return sleep(200).then(function(){
+          return post.save(o).then(function(val){
+            console.log('post migrate success: ', val.id);
+            return val;
+          }).catch(function(err){
+            console.log('## post not migrated ## ', o.id);
+            return {id: o.id, status: 'post not migrated'};
+          });
         });
       });
   });
@@ -388,12 +413,14 @@ var migrateComment = Promise.method(function(){
         refId: row.post.id,
         refType: 'Post'
       });
-      return comment.save().then(function(val){
-        console.log('comment migrate success: ', val.id);
-        return val;
-      }).catch(function(err){
-        console.log('## comment not migrated ## ', comment.id);
-        return {id: comment.id, status: 'comment not migrated'};
+      return sleep(200).then(function(){
+        return comment.save().then(function(val){
+          console.log('comment migrate success: ', val.id);
+          return val;
+        }).catch(function(err){
+          console.log('## comment not migrated ## ', comment.id);
+          return {id: comment.id, status: 'comment not migrated'};
+        });
       });
     });
 });
