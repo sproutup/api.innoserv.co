@@ -34,14 +34,11 @@ exports.read = function (req, res) {
  * List of Users
  */
 exports.list = function (req, res) {
-  addFlakeFieldToComment().then(function(){
-    return addSnowflakeToAllUsers();
+  redis.flushall();
+  addSnowflakeToAllUsers().then(function(){
+   return migratePassword();
   }).then(function(){
-    return addSnowflakeToAllPosts();
-  }).then(function(){
-    return addSnowflakeToAllComments();
-  }).then(function(){
-    return migratePassword();
+    return migrateLinkedAccount();
   }).then(function(){
     return migrateTwitter();
   }).then(function(){
@@ -53,6 +50,15 @@ exports.list = function (req, res) {
   }).then(function(){
     return migrateSlug();
   }).then(function(){
+    res.json('ok');
+  });
+};
+
+exports.post = function (req, res) {
+  redis.flushall();
+  addFlakeFieldToComment().then(function(){
+    return addSnowflakeToAllPosts();
+  }).then(function(){
     return migrateComment();
   }).then(function(){
     return migratePost();
@@ -62,7 +68,6 @@ exports.list = function (req, res) {
 };
 
 var addFlakeFieldToComment = Promise.method(function(){
-  redis.flushall();
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
     return true;
@@ -114,6 +119,30 @@ var migratePassword = Promise.method(function(){
       }).catch(function(err){
         console.log('## password not migrated ## ', provider.id);
         return {email: provider.id, status: 'password not migrated'};
+      });
+  });
+});
+
+var migrateLinkedAccount = Promise.method(function(){
+  return knex.from('users')
+    .join('linked_account', 'users.id', 'linked_account.user_id')
+    .whereNotNull('external_type')
+    .where('linked_account.provider_key', 'twitter')
+    .orWhere('linked_account.provider_key', 'facebook')
+    .options({ nestTables: true, rowMode: 'array' })
+    .map(function(row) {
+      console.log('migrating LinkedAccount: ', row.linked_account.provider_key);
+      var provider = {
+        userId: row.users.external_type,
+        status: -1
+      };
+      return Provider.update({id: row.linked_account.provider_user_id,
+        provider: row.linked_account.provider_key}, provider).then(function(val){
+        console.log('linked account migrate success: ', val.id);
+        return val;
+      }).catch(function(err){
+        console.log('## linked account not migrated ## ', provider.id);
+        return null;
       });
   });
 });

@@ -7,6 +7,9 @@ var migratePolicy = require('./migrate.policy'),
   migrate = require('./migrate.controller');
 
 module.exports = function (app) {
+  app.route('/api/migrate/post')//.all(migratePolicy.isAllowed)
+    .get(migrate.post);
+
   app.route('/api/migrate')//.all(migratePolicy.isAllowed)
     .get(migrate.list);
 
