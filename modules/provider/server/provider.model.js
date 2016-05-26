@@ -575,19 +575,21 @@ ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
     .then(function(items){
       return _.forEach(items, function(item) {
         switch (item.provider){
-         case 'twitter':
-            item.screen_name = item.data.screen_name;
+          case 'twitter':
+            if(item.data && item.data.screen_name){
+              item.screen_name = item.data.screen_name;
+            }
             break;
-         case 'facebook':
+          case 'facebook':
             break;
-         case 'instagram':
+          case 'instagram':
             console.log('data', item);
             item.username = item.data ? item.data.username : '';
             break;
-         case 'google':
+          case 'google':
             item.account = 'todo';
             break;
-         case 'password':
+          case 'password':
             item.id = 'yeah we dont show the email';
             break;
         }

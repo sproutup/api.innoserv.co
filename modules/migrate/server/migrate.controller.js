@@ -338,7 +338,7 @@ var migrateSlug = Promise.method(function(){
     .whereNotNull('external_type')
     .whereNotNull('nickname')
     .map(function(row) {
-      console.log('migrating user slug: ', row.username);
+      console.log('migrating user slug: ', row.nickname);
       var slug = {
         id: row.nickname,
         orig: row.nickname,
