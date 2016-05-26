@@ -28,6 +28,9 @@ module.exports = function (app) {
   app.route('/api/migrate/facebook')//.all(migratePolicy.isAllowed)
     .get(migrate.facebook);
 
+  app.route('/api/migrate/google')//.all(migratePolicy.isAllowed)
+    .get(migrate.google);
+
   app.route('/api/migrate')//.all(migratePolicy.isAllowed)
     .get(migrate.list);
 

@@ -109,6 +109,12 @@ exports.facebook = function (req, res) {
   });
 };
 
+exports.google = function (req, res) {
+  redis.flushall();
+  return migrateGoogle().then(function(){
+    res.json('ok');
+  });
+};
 
 var addFlakeFieldToComment = Promise.method(function(){
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
@@ -282,9 +288,7 @@ var migrateGoogle = Promise.method(function(){
           if(!info) return null;
           console.log('google: ', info.id);
           var time = moment().subtract(1,'day').utc().startOf('day').unix();
-          var provider = new Provider({
-            id: info.id,
-            provider: 'google',
+          var provider = {
             userId: row.external_type,
             data: {
               accessToken: val.accessToken,
@@ -293,11 +297,12 @@ var migrateGoogle = Promise.method(function(){
             },
             status: 1,
             timestamp: time
-          });
+          };
 
           // And save the provider
           return sleep(200).then(function(){
-            return provider.save().then(function(res){
+            return Provider.update({id: info.id,
+              provider: 'google'}, provider).then(function(res){
               console.log('new google provider: ', res.id);
               return res;
             });
