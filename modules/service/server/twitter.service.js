@@ -137,7 +137,7 @@ TwitterService.getFlag = function(id){
 TwitterService.cacheUser = function(user){
 };
 
-TwitterService.verifyCredentials = function(token,secret){
+TwitterService.verifyCredentials = Promise.method(function(token,secret){
   debug('verify credientials:', token, secret);
 //  var oauth = new OAuth.OAuth(
 //      'https://api.twitter.com/oauth/request_token',
@@ -160,7 +160,7 @@ TwitterService.verifyCredentials = function(token,secret){
       console.log(err.stack);
       return err;
     });
-};
+});
 
 // https://api.twitter.com/1.1/users/show.json
 TwitterService.showUser = function(id, token, secret){

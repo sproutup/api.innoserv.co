@@ -4,14 +4,19 @@
  * Module dependencies.
  */
 var Promise = require('bluebird');
+var redis = require('config/lib/redis');
 var dynamoose = require('dynamoose');
 var knex = require('config/lib/bookshelf').knex;
 var User = dynamoose.model('User');
 var Provider = dynamoose.model('Provider');
 var Slug = dynamoose.model('Slug');
 var Post = dynamoose.model('Post');
+var oauthModel = dynamoose.model('oauth');
 var CommentModel = dynamoose.model('Comment');
 var scrapper = require('modules/scrapper/server/scrapper.service');
+var twitter = require('modules/service/server/twitter.service');
+var facebook = require('modules/service/server/facebook.service');
+var googleplus = require('modules/service/server/googleplus.service');
 var _ = require('lodash');
 var moment = require('moment');
 var FlakeId = require('flake-idgen');
@@ -38,19 +43,26 @@ exports.list = function (req, res) {
   }).then(function(){
     return migratePassword();
   }).then(function(){
+    return migrateTwitter();
+  }).then(function(){
+    return migrateFacebook();
+  }).then(function(){
+    return migrateGoogle();
+  }).then(function(){
     return migrateUser();
   }).then(function(){
     return migrateSlug();
   }).then(function(){
-    return migratePost();
-  }).then(function(){
     return migrateComment();
+  }).then(function(){
+    return migratePost();
   }).then(function(){
     res.json('ok');
   });
 };
 
 var addFlakeFieldToComment = Promise.method(function(){
+  redis.flushall();
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
     return true;
@@ -105,6 +117,109 @@ var migratePassword = Promise.method(function(){
       });
   });
 });
+
+var migrateTwitter = Promise.method(function(){
+  return knex.from('users')
+    .whereNotNull('external_type').map(function(row) {
+      console.log('migrating twitter: ', row.id);
+      return oauthModel.getAccessToken(row.id, 'tw').then(function(val){
+        if(!val) return null;
+        return twitter.verifyCredentials(val.accessToken, val.accessSecret).then(function(info){
+          if(!info) return null;
+          console.log('twitter: ', info.id);
+          var time = moment().subtract(1,'day').utc().startOf('day').unix();
+          var provider = new Provider({
+            id: info.id,
+            provider: 'twitter',
+            userId: row.external_type,
+            data: {
+              token: val.accessToken,
+              tokenSecret: val.accessSecret
+            },
+            status: 1,
+            timestamp: time
+          });
+
+          // And save the provider
+          return provider.save().then(function(res){
+            console.log('new provider: ', res.id);
+            return res;
+          });
+        });
+      });
+  });
+});
+
+var migrateFacebook = Promise.method(function(){
+  return knex.from('users')
+    .whereNotNull('external_type').map(function(row) {
+      return oauthModel.getAccessToken(row.id, 'fb').then(function(val){
+        if(!val) return null;
+        console.log('facebook: ', val.userId);
+        return facebook.showUser('me', val.accessToken).then(function(info){
+          if(!info) return null;
+          console.log('facebook: ', info.id);
+          var time = moment().subtract(1,'day').utc().startOf('day').unix();
+          var provider = new Provider({
+            id: info.id,
+            provider: 'facebook',
+            userId: row.external_type,
+            data: {
+              accessToken: val.accessToken
+            },
+            status: 1,
+            timestamp: time
+          });
+
+          // And save the provider
+          return provider.save().then(function(res){
+            console.log('new provider: ', res.id);
+            return res;
+          });
+        }).catch(function(err){
+          console.log('facebook err: ', err.message);
+          return null;
+        });
+      });
+  });
+});
+
+var migrateGoogle = Promise.method(function(){
+  return knex.from('users')
+    .whereNotNull('external_type').map(function(row) {
+      return oauthModel.getAccessToken(row.id, 'google').then(function(val){
+        if(!val) return null;
+        console.log('google: ', val.userId);
+        return googleplus.showUser('me', val.accessToken).then(function(info){
+          if(!info) return null;
+          console.log('google: ', info.id);
+          var time = moment().subtract(1,'day').utc().startOf('day').unix();
+          var provider = new Provider({
+            id: info.id,
+            provider: 'google',
+            userId: row.external_type,
+            data: {
+              accessToken: val.accessToken,
+              refreshToken: val.refreshToken,
+              expires: val.expires
+            },
+            status: 1,
+            timestamp: time
+          });
+
+          // And save the provider
+          return provider.save().then(function(res){
+            console.log('new google provider: ', res.id);
+            return res;
+          });
+        });
+      }).catch(function(err){
+        console.log('google err: ', err.message);
+        return null;
+      });
+  });
+});
+
 
 var migrateUser = Promise.method(function(){
   return knex.from('users')
