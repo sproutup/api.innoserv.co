@@ -67,6 +67,41 @@ exports.post = function (req, res) {
   });
 };
 
+exports.flake = function (req, res) {
+  redis.flushall();
+  addSnowflakeToAllUsers().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.linked = function (req, res) {
+  redis.flushall();
+  return migrateLinkedAccount().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.password = function (req, res) {
+  redis.flushall();
+  return migratePassword().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.user = function (req, res) {
+  redis.flushall();
+  return migrateUser().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.slug = function (req, res) {
+  redis.flushall();
+  return migrateSlug().then(function(){
+    res.json('ok');
+  });
+};
+
 var addFlakeFieldToComment = Promise.method(function(){
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
