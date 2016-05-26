@@ -17,7 +17,6 @@ module.exports = function (app) {
 
   // Setting up the users authentication api
   app.route('/api/auth/signup').post(users.signup);
-  app.route('/api/auth/invite/signup').post(users.inviteSignup);
   app.route('/api/auth/join').post(users.join);
   // app.route('/api/auth/sendGridTest').get(users.sendGridTest);
   app.route('/api/auth/verifyToken').post(users.verifyToken);

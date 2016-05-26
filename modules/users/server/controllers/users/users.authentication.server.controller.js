@@ -151,48 +151,6 @@ exports.signup = function (req, res) {
 };
 
 /**
- * Invite Signup
- */
-exports.inviteSignup = function (req, res) {
-  delete req.body.roles;
-  var token = req.body.token;
-  delete req.body.token;
-
-  // Make sure the the email has only lowercase letters
-  if(req.body.email){
-    req.body.email = req.body.email.toLowerCase();
-  }
-
-  // Init Variables
-  var user = req.body;
-  var _newuser;
-  var message = null;
-
-  // Add missing user fields
-  user.provider = 'local';
-  user.displayName = user.firstName + ' ' + user.lastName;
-  user.emailConfirmed = true;
-
-  // Then save the user
-  User.createWithSlug(user).then(function(newuser) {
-    debug('user created: ', newuser.id);
-
-    req.login(newuser, function (err) {
-      if (err) {
-        res.status(400).send(err);
-      } else {
-        newuser.joining = true;
-        return res.json(newuser);
-      }
-    });
-  }).catch(function(err){
-    return res.status(400).send({
-      message: err
-    });
-  });
-};
-
-/**
  * Check if email is available
  */
 exports.emailIsAvailable = function (req, res) {
