@@ -55,7 +55,7 @@ TeamSchema.methods.populate = Promise.method(function (_schema) {
 });
 
 /**
- * Populate method
+ * Add member method
  */
 TeamSchema.statics.addTeamMember = Promise.method(function (userId, companyId) {
   var Team = dynamoose.model('Team');
@@ -65,6 +65,14 @@ TeamSchema.statics.addTeamMember = Promise.method(function (userId, companyId) {
   };
 
   return Team.create(member);
+});
+
+/**
+ * Remove member method
+ */
+TeamSchema.statics.removeMember = Promise.method(function (userId, companyId) {
+  var Team = dynamoose.model('Team');
+  return Team.delete({ companyId: companyId, userId: userId });
 });
 
 /*

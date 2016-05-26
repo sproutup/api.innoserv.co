@@ -12,6 +12,9 @@ module.exports = function (app) {
     .get(ctrl.list)
     .post(ctrl.create);
 
+  app.route('/api/team/leave').all(policy.isAllowed)
+    .post(ctrl.leave);
+
   // collection routes
   app.route('/api/company/:companyId/user').all(policy.isAllowed)
     .get(ctrl.listByCompany);

@@ -24,6 +24,9 @@ exports.invokeRolesPolicies = function () {
       resources: '/api/team',
       permissions: ['get', 'post']
     }, {
+      resources: '/api/team/leave',
+      permissions: ['post']
+    }, {
       resources: '/api/company/:companyId/user',
       permissions: ['get']
     }, {

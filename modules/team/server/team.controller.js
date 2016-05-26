@@ -198,13 +198,11 @@ exports.listAllByUser = function (req, res) {
       return Promise.map(ids, function(id) {
         return Company.getCached(id);
       });
-    }).then(function(companies){
-      return Promise.map(companies, function(company) {
-        company.invitation = true;
-        _companies.push(company);
+    }).then(function(invitations){
+      res.json({
+        companies: _companies,
+        invitations: invitations
       });
-    }).then(function(){
-      res.json(_companies);
     }).catch(function(err){
       return res.status(400).send({
         message: err
@@ -213,6 +211,28 @@ exports.listAllByUser = function (req, res) {
   }
 };
 
+/**
+ * Leave
+ */
+exports.leave = function (req, res) {
+  if (!req.user || !req.user.id || !req.body.companyId) {
+    console.log('error removing team member—missing parameters:', error);
+    return res.status(400).send({
+      message: 'Missing parameters.'
+    });
+  }
+
+  Team.removeMember(req.user.id, req.body.companyId).then(function() {
+    return res.status(200).send({
+      message: 'Left team.'
+    });
+  }).catch(function(error) {
+    console.log('error removing team member', error);
+    return res.status(400).send({
+      message: 'Something went wrong.'
+    });
+  })
+};
 
 /**
  * middleware
