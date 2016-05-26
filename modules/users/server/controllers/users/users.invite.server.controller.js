@@ -14,6 +14,7 @@ var Promise = require('bluebird'),
   sendgridService = Promise.promisifyAll(require('modules/sendgrid/server/sendgrid.service')),
   Company = dynamoose.model('Company'),
   User = dynamoose.model('User'),
+  Team = dynamoose.model('Team'),
   redis = require('config/lib/redis'),
   crypto = Promise.promisifyAll(require('crypto'));
 
@@ -85,6 +86,30 @@ exports.sendInvite = function(req, res) {
     console.log('error sending invite email: ', error);
     return res.status(400).send({
       message: 'Error sending invite email.'
+    });
+  });
+};
+
+exports.useInvite = function(req, res) {
+  redis.hmget('invite:' + req.user.email + ':' + req.body.companyId, ['token']).then(function(result) {
+    if (result[0] === null) {
+      return res.status(400).send({
+        message: 'This token is invalid'
+      });
+    } else {
+      return Team.addTeamMember(req.user.id, req.body.companyId).then(function() {
+        redis.del('invite:' + req.user.email + ':' + req.body.companyId);
+        redis.del('token:' + result[0]);
+        cache.del('company:' + req.body.companyId);
+        return res.status(200).send({
+          message: 'User added to team.'
+        });
+      });
+    }
+  }).catch(function(err){
+    console.log('error using invite: ', err);
+    return res.status(400).send({
+      message: 'Something went wrong.'
     });
   });
 };

@@ -198,13 +198,11 @@ exports.listAllByUser = function (req, res) {
       return Promise.map(ids, function(id) {
         return Company.getCached(id);
       });
-    }).then(function(companies){
-      return Promise.map(companies, function(company) {
-        company.invitation = true;
-        _companies.push(company);
+    }).then(function(invitations){
+      res.json({
+        companies: _companies,
+        invitations: invitations
       });
-    }).then(function(){
-      res.json(_companies);
     }).catch(function(err){
       return res.status(400).send({
         message: err

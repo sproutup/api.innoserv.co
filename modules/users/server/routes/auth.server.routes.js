@@ -22,6 +22,7 @@ module.exports = function (app) {
   // app.route('/api/auth/sendGridTest').get(users.sendGridTest);
   app.route('/api/auth/verifyToken').post(users.verifyToken);
   app.route('/api/auth/verifyInviteToken').post(users.verifyInviteToken);
+  app.route('/api/auth/useInvite').post(users.useInvite);
   app.route('/api/auth/email/verification').post(users.sendEmailVerification);
   app.route('/api/auth/email/confirmation/:token').get(users.verifyEmailToken);
   app.route('/api/auth/signin').post(users.signin);
