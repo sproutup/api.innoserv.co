@@ -216,7 +216,7 @@ exports.listAllByUser = function (req, res) {
  */
 exports.leave = function (req, res) {
   if (!req.user || !req.user.id || !req.body.companyId) {
-    console.log('error removing team member—missing parameters:', error);
+    console.log('error removing team member—missing parameters');
     return res.status(400).send({
       message: 'Missing parameters.'
     });
@@ -231,7 +231,7 @@ exports.leave = function (req, res) {
     return res.status(400).send({
       message: 'Something went wrong.'
     });
-  })
+  });
 };
 
 /**
