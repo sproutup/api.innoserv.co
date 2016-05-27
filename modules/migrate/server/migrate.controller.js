@@ -407,7 +407,8 @@ var migratePost = Promise.method(function(){
               created: moment(row.post.created_at).utc(),
               userId: row.users.userId,
               body: row.post.body,
-              meta: meta
+              meta: meta,
+              url: row.content.url
             };
             return post;
           });
