@@ -67,6 +67,55 @@ exports.post = function (req, res) {
   });
 };
 
+exports.flake = function (req, res) {
+  redis.flushall();
+  addSnowflakeToAllUsers().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.linked = function (req, res) {
+  redis.flushall();
+  return migrateLinkedAccount().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.password = function (req, res) {
+  redis.flushall();
+  return migratePassword().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.user = function (req, res) {
+  redis.flushall();
+  return migrateUser().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.slug = function (req, res) {
+  redis.flushall();
+  return migrateSlug().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.facebook = function (req, res) {
+  redis.flushall();
+  return migrateFacebook().then(function(){
+    res.json('ok');
+  });
+};
+
+exports.google = function (req, res) {
+  redis.flushall();
+  return migrateGoogle().then(function(){
+    res.json('ok');
+  });
+};
+
 var addFlakeFieldToComment = Promise.method(function(){
   return knex.raw('ALTER TABLE comment ADD flake VARCHAR(20)').then(function(){
     console.log('comment altered added migrate column');
@@ -204,21 +253,20 @@ var migrateFacebook = Promise.method(function(){
           if(!info) return null;
           console.log('facebook: ', info.id);
           var time = moment().subtract(1,'day').utc().startOf('day').unix();
-          var provider = new Provider({
-            id: info.id,
-            provider: 'facebook',
+          var provider = {
             userId: row.external_type,
             data: {
               accessToken: val.accessToken
             },
             status: 1,
             timestamp: time
-          });
+          };
 
           // And save the provider
           return sleep(200).then(function(){
-            return provider.save().then(function(res){
-              console.log('new provider: ', res.id);
+            return Provider.update({id: info.id,
+              provider: 'facebook'}, provider).then(function(res){
+              console.log('new facebook provider: ', res.id);
               return res;
             });
           });
@@ -240,9 +288,7 @@ var migrateGoogle = Promise.method(function(){
           if(!info) return null;
           console.log('google: ', info.id);
           var time = moment().subtract(1,'day').utc().startOf('day').unix();
-          var provider = new Provider({
-            id: info.id,
-            provider: 'google',
+          var provider = {
             userId: row.external_type,
             data: {
               accessToken: val.accessToken,
@@ -251,11 +297,12 @@ var migrateGoogle = Promise.method(function(){
             },
             status: 1,
             timestamp: time
-          });
+          };
 
           // And save the provider
           return sleep(200).then(function(){
-            return provider.save().then(function(res){
+            return Provider.update({id: info.id,
+              provider: 'google'}, provider).then(function(res){
               console.log('new google provider: ', res.id);
               return res;
             });
@@ -303,7 +350,7 @@ var migrateSlug = Promise.method(function(){
     .whereNotNull('external_type')
     .whereNotNull('nickname')
     .map(function(row) {
-      console.log('migrating user slug: ', row.username);
+      console.log('migrating user slug: ', row.nickname);
       var slug = {
         id: row.nickname,
         orig: row.nickname,
@@ -360,7 +407,8 @@ var migratePost = Promise.method(function(){
               created: moment(row.post.created_at).utc(),
               userId: row.users.userId,
               body: row.post.body,
-              meta: meta
+              meta: meta,
+              url: row.content.url
             };
             return post;
           });
