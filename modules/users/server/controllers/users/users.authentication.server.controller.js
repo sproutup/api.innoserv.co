@@ -116,6 +116,8 @@ var saveClaimedCompany = function(token, userId) {
  */
 exports.signup = function (req, res) {
   // For security measurement we remove the roles from the req.body object
+  var token = req.body.token;
+  delete req.body.token;
   delete req.body.roles;
 
   // Make sure the the email has only lowercase letters
@@ -135,6 +137,7 @@ exports.signup = function (req, res) {
   // Then save the user
   User.createWithSlug(user).then(function(newuser) {
     debug('user created: ', newuser.id);
+    redis.del('token:' + token);
 
     req.login(newuser, function (err) {
       if (err) {
