@@ -7,6 +7,7 @@ var path = require('path'),
   _ = require('lodash'),
   dynamoose = require('dynamoose'),
   User = dynamoose.model('User'),
+  cache = require('config/lib/cache'),
   errorHandler = require(path.resolve('./modules/core/server/errors.controller'));
 
 /**
@@ -38,6 +39,19 @@ exports.update = function (req, res) {
     res.json(user);
   });
 };
+
+/**
+ * clear cache
+ */
+exports.clear = function (req, res) {
+  var user = req.model;
+  var key = 'user:' + user.id;
+
+  cache.del(key, function() {
+    res.json({result: 'ok', key: key});
+  });
+};
+
 
 /**
  * Delete a user
