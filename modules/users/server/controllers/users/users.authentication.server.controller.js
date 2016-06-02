@@ -523,6 +523,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
   } else {
     debug('User is already logged in, join the provider data to the existing user');
     user = req.user;
+    var time = moment().subtract(1,'day').utc().startOf('day').unix();
 
     Provider.get({id: _identifier, provider: _provider}, function (err, provider) {
       if (err) {
@@ -531,8 +532,7 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
       } else {
         // provider not found -> add to user
         if (!provider) {
-          debug('add ', _provider, ' provider to user');
-          var time = moment().subtract(1,'day').utc().startOf('day').unix();
+          debug('add ', _provider, ' provider to user: ', user.id);
           provider = new Provider({
             id: _identifier,
             provider: _provider,
@@ -551,8 +551,16 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         }
         // provider found -> don't add the provider again
         else{
-          debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again');
-          return done(new Error('Looks like another SproutUp account is already connected with this ' + _provider + ' account'), user);
+          if(_provider !== 'twitter' && _provider !== 'facebook') {
+            debug('Someone is already connected with this ' + _provider + ' account -> move provider to this account'); 
+            Provider.update({id: _identifier, provider: _provider}, {userId: user.id}).then(function(){
+              return done(null, user);
+            });
+          }
+          else {
+            debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again'); 
+            return done(new Error('Looks like another SproutUp account is already connected with this ' + _provider + ' account'), user);
+          }
         }
       }
     });
