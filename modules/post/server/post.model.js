@@ -71,6 +71,10 @@ var PostSchema = new Schema({
   meta: {},
   url: {
     type: String
+  },
+  visibility: {
+    type: Boolean,
+    default: true
   }
 });
 

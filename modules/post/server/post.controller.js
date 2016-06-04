@@ -52,7 +52,8 @@ exports.update = function (req, res) {
   var item = req.model;
 
   //For security purposes only merge these parameters
-  item.body = req.body.body;
+  //item.body = req.body.body;
+  item.visibility = req.body.visibility;
 
   item.save().then(function(data){
     res.json(item);
