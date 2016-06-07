@@ -76,7 +76,7 @@ var ServiceSchema = new Schema({
 
 ServiceSchema.statics.refresh = Promise.method(function(serviceName, accessToken, userId, accessSecret){
   var _this = this;
-  debug('refresh ' + serviceName + ' service');
+  debug('refresh ' + serviceName + ' service for user: ' + userId);
   switch(serviceName){
     case 'twitter':
       return twitter.verifyCredentials(accessToken, accessSecret)
@@ -249,6 +249,21 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
       debug('fetching ' + metric + ' metric');
       return Metric.fetch(_this.identifier, _this.service, _this.id, token);
     });
+  });
+});
+
+/**
+ * Get Metrics
+ * Look for the metric in cache -> db -> fetch from provider
+ */
+ServiceSchema.methods.getYoutubeMetrics = Promise.method(function(videoId){
+  var _this = this;
+  var Metric = dynamoose.model('Metric');
+  var Provider = dynamoose.model('Provider');
+
+  debug('get youtube metrics');
+  return Provider.getAccessToken(_this.id, _this.provider).then(function(token){
+    return Metric.updateYoutubeMetrics(videoId, _this.identifier, _this.service, token);
   });
 });
 

@@ -18,6 +18,7 @@ var moment = require('moment');
 
 var facebook = require('modules/service/server/facebook.service');
 var youtube = require('modules/youtube/server/youtube.service');
+var youtubeAnalytics = require('modules/service/server/youtubeAnalytics.service');
 var instagram = require('modules/service/server/instagram.service');
 var twitter = require('modules/service/server/twitter.service');
 var googleplus = require('modules/service/server/googleplus.service');
@@ -49,6 +50,26 @@ var MetricSchema = new Schema({
     type: Number,
     required: true
   }
+});
+
+MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, channelId, service, accessToken){
+  var _this = this;
+  debug('update youtube metrics');
+  return youtubeAnalytics.query(videoId, channelId, accessToken).then(function(data){
+    if(data.rows){
+      debug('youtube analytics value: ', data.rows);
+      return Promise.join(
+        _this.updateWrapper(videoId + ':' + 'youtube' + ':views', 'Content:Service:Metric', data.rows[0][0]),
+        _this.updateWrapper(videoId + ':' + 'youtube' + ':likes', 'Content:Service:Metric', data.rows[0][1]),
+        _this.updateWrapper(videoId + ':' + 'youtube' + ':comments', 'Content:Service:Metric', data.rows[0][2]),
+        _this.updateWrapper(videoId + ':' + 'youtube' + ':shares', 'Content:Service:Metric', data.rows[0][3]),
+        _this.updateWrapper(videoId + ':' + 'youtube' + ':averageViewDuration', 'Content:Service:Metric', data.rows[0][4]),
+        function(){
+          return 1;
+        }
+      );
+    }
+  });
 });
 
 MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, userId, accessToken){
