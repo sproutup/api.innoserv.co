@@ -88,18 +88,6 @@ var ContentSchema = new Schema({
     default: '',
     trim: true,
     required: true
-  },
-  impressions: {
-    type: Number,
-    default: 0
-  },
-  engagements: {
-    type: Number,
-    default: 0
-  },
-  shares: {
-    type: Number,
-    default: 0
   }
 });
 
