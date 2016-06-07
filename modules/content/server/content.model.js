@@ -93,8 +93,8 @@ var ContentSchema = new Schema({
 
 ContentSchema.static('processOldestContent', function() {
   var _this = this;
-//  var time = moment().utc().startOf('day').unix();
-  var time = moment().utc().startOf('minute').unix();
+  var time = moment().utc().startOf('day').unix();
+//  var time = moment().utc().startOf('minute').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
     if(val){
       debug('updating content ' +  val.media + ' : ' + val.id);
