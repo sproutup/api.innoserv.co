@@ -552,14 +552,14 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
         // provider found -> don't add the provider again
         else{
           if(_provider !== 'twitter' && _provider !== 'facebook') {
-            debug('Someone is already connected with this ' + _provider + ' account -> move provider to this account'); 
+            debug('Someone is already connected with this ' + _provider + ' account -> move provider to this account');
             Provider.update({id: _identifier, provider: _provider}, {userId: user.id}).then(function(){
               return done(null, user);
             });
           }
           else {
-            debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again'); 
-            return done(new Error('Looks like another SproutUp account is already connected with this ' + _provider + ' account'), user);
+            debug('Someone is already connected with this ' + _provider + ' account -> dont add the provider again');
+            return done(new Error('Connection is not successful, because another SproutUp user – most likely another account of yours – is already connected with this ' + _provider + ' account.'), user);
           }
         }
       }
