@@ -42,13 +42,12 @@ else {
 }
 
 // Load the mongoose models
-module.exports.loadModels = function (callback) {
+module.exports.loadModels = Promise.method(function () {
   console.log('loadModels');
-  Promise.each(config.files.server.models, function(path){
+  return Promise.each(config.files.server.models, function(path){
     console.log('model: ', path);
     require(path);
-  }).then(function(){
-    if (callback) callback();
+    return path;
   });
 
  // Globbing model files
@@ -56,5 +55,4 @@ module.exports.loadModels = function (callback) {
 //    require(modelPath);
 //  });
 
-  if (callback) callback();
-};
+});

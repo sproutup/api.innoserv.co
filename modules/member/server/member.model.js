@@ -46,7 +46,9 @@ var MemberSchema = new Schema({
       throughput: 5 // read and write are both 5
     }
   },
-  isCreator: Boolean,
+  companyId: {
+    type: String
+  },
   created: {
     type: Date,
     default: Date.now
@@ -66,9 +68,9 @@ MemberSchema.method('populate', function (_schema) {
   });
 });
 
-MemberSchema.statics.addMember = Promise.method(function(userId, channelId, isCreator){
+MemberSchema.statics.addMember = Promise.method(function(userId, channelId, companyId){
   var Member = dynamoose.model('Member');
-  var item = new Member({userId: userId, channelId: channelId, isCreator: isCreator});
+  var item = new Member({userId: userId, channelId: channelId, companyId: companyId});
   return item.save();
 });
 

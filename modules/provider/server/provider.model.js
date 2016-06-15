@@ -321,6 +321,7 @@ ProviderSchema.statics.createPassword = Promise.method(function(email, password,
     return Provider.hashPassword(password);
   }).then(function(hash){
     debug('create password provider for user: ', userId);
+    console.log('provider: ', email, password, userId);
     return Provider.create({
       id: email,
       password: password,
@@ -527,9 +528,8 @@ ProviderSchema.methods.purge = Promise.method(function() {
   var _this = this;
 
   debug('purge: ', this.id);
-  return Service.query('id').eq(this.userId)
-    .filter('provider').eq(this.provider).exec().then(function(items) {
-    if(_.isUndefined(items)) return 0;
+  return Service.query('id').eq(this.userId).where('provider').eq(this.provider).exec().then(function(items) {
+    if(!items) return 0;
     debug('purge ' + items.length + ' items');
     // delete all user providers
     return Promise.each(items, function(item){

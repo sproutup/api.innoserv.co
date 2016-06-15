@@ -173,7 +173,7 @@ var sendMessageEmail = function(message) {
     };
 
     for (var i = 0; i < members.length; i++) {
-      if (members[i].isCreator) {
+      if (members[i].companyId) {
         substitutions[':url'] = [config.domains.creator + 'messages/' + message.channelId];
       } else {
         substitutions[':url'] = [config.domains.mvp + 'messages/' + message.channelId];

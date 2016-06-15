@@ -170,22 +170,34 @@ gulp.task('peter', function (done) {
 
 
 // Mocha tests task
-gulp.task('mocha', function (done) {
+gulp.task('mocha', function () {
   require('app-module-path').addPath(__dirname);
   var dynamooselib = require('./config/lib/dynamoose');
-  dynamooselib.loadModels();
-  var error;
+  return dynamooselib.loadModels().then(function(){
+    var error;
+    var assets = testAssets.tests.server;
 
-  // Run the tests
-  gulp.src(testAssets.tests.server)
-    .pipe(debug({title: 'mocha:'}))
-    .pipe(plugins.mocha({ reporter: 'spec',
-      globals: {
-        path: require('app-module-path').addPath(__dirname)
-      }}))
-    .on('error', gutil.log)
-    .on('end', function(){
-      done();
+    if(argv.path) {
+      assets = [argv.path];
+    }
+
+    // Run the tests
+    return gulp.src(assets)
+      .pipe(debug({title: 'mocha:'}))
+      .pipe(plugins.mocha({ reporter: 'spec',
+        globals: {
+          path: require('app-module-path').addPath(__dirname)
+        }}))
+      .once('error', () => {
+        process.exit(1);
+      })
+      .once('end', () => {
+        process.exit();
+      });
+//      .on('end', function(){
+//        console.log('mocha done');
+//        return;
+//      });
     });
 });
 
@@ -249,12 +261,12 @@ gulp.task('protractor', function () {
 
 // Lint CSS and JavaScript files.
 gulp.task('lint', function(done) {
-  runSequence('less', ['csslint', 'jshint'], done);
+  runSequence('less', ['csslint','jshint'], done);
 });
 
 // Lint project files and minify them into two production files.
 gulp.task('build', function(done) {
-  runSequence('env:dev' ,'lint', ['uglify', 'cssmin'], done);
+  runSequence('env:prod' ,'lint', ['uglify', 'cssmin'], done);
 });
 
 gulp.task('test:server', function (done) {
@@ -286,5 +298,5 @@ gulp.task('debug', function(done) {
 
 // Run the project in production mode
 gulp.task('prod', function(done) {
-  runSequence('build', 'lint', ['nodemon', 'watch'], done);
+  runSequence('build', 'env:prod', 'lint', ['nodemon', 'watch'], done);
 });

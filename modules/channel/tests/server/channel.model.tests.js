@@ -5,7 +5,7 @@
  */
 
 var dynamoose = require('dynamoose');
-var dynamooselib = require('config/lib/dynamoose');
+//var dynamooselib = require('config/lib/dynamoose');
 /* global -Promise */
 var Promise = require('bluebird');
 var chai = require('chai');
@@ -26,16 +26,23 @@ var Channel = dynamoose.model('Channel'),
 /**
  * Globals
  */
-var channel1, channel2, _user1, _user2, _company, _campaign, _message;
+var channel1, channel2, _user, _user1, _user2, _company, _campaign, _message;
 
 /**
  * Unit tests
  */
-describe('Messaging Models Unit Tests:', function () {
+describe('Channel Model Unit Tests:', function () {
   this.timeout(5000);
 
   before(function () {
-    Channel.delete({});
+    _user = {
+      firstName: 'MVP',
+      lastName: 'USER',
+      displayName: 'MVP USER',
+      email: 'mvp@test.com',
+      username: 'mvp',
+      password: 'password'
+    };
 
     _user1 = {
       firstName: 'Full',
@@ -43,8 +50,7 @@ describe('Messaging Models Unit Tests:', function () {
       displayName: 'Full Name',
       email: 'test@test.com',
       username: 'username',
-      password: 'password',
-      provider: 'local'
+      password: 'password'
     };
 
     _user2 = {
@@ -53,8 +59,7 @@ describe('Messaging Models Unit Tests:', function () {
       displayName: 'Full Name',
       email: 'test2@test.com',
       username: 'username2',
-      password: 'password',
-      provider: 'local'
+      password: 'password'
     };
 
     _company = new Company({
@@ -71,9 +76,10 @@ describe('Messaging Models Unit Tests:', function () {
     }).then(function() {
       // Create 2 users
 
+      _user = new User(_user);
       _user1 = new User(_user1);
       _user2 = new User(_user2);
-      return Promise.each([_user1, _user2], function(item){
+      return Promise.each([_user, _user1, _user2], function(item){
         return item.save();
       });
     }).then(function(res) {
@@ -90,49 +96,50 @@ describe('Messaging Models Unit Tests:', function () {
 
       return Campaign.create({ companyId: _company.id }).then(function(item) {
         _campaign = item;
+        return true;
       });
     });
   });
 
-  after(function (done) {
-    Channel.scan().exec().then(function(items){
-      Promise.all(items, function(item){
+  after(function () {
+    return Channel.scan().exec().then(function(items){
+      return Promise.all(items, function(item){
         return item.delete();
       }).then(function(val){
-        Member.scan().exec().then(function(items){
-          Promise.all(items, function(item){
+        return Member.scan().exec().then(function(items){
+          return Promise.all(items, function(item){
             return item.delete();
           });
         });
       });
     }).then(function() {
-      User.scan().exec().then(function(items){
-        Promise.all(items, function(item){
+      return User.scan().exec().then(function(items){
+        return Promise.all(items, function(item){
+          return item.purge();
+        });
+      });
+    }).then(function(){
+      return Message.scan().exec().then(function(items){
+        return Promise.each(items, function(item){
           return item.delete();
         });
       });
     }).then(function(){
-      Message.scan().exec().then(function(items){
-        Promise.each(items, function(item){
-          return item.delete();
+      return Company.scan().exec().then(function(items){
+        return Promise.each(items, function(item){
+          return item.purge();
         });
       });
     }).then(function(){
-      redis.flushall();
+      return redis.flushall();
     }).then(function() {
-      done();
+      return true;
     });
   });
 
   describe('Channel Model Unit Tests: ', function () {
     it('should create channel and add member', function () {
-      var create = Channel.createNewChannel('1', '123', 'Campaign:User').then(function (data) {
-        channel1 = data;
-        data.members[0].channelId.should.equal(data.id);
-        return data;
-      }).catch(function(err){
-        return err;
-      });
+      var create = Channel.createNewChannel(_user.id, '123', 'Campaign:User');
 
       return Promise.all([
         expect(create).to.eventually.have.property('id').that.equals('123'),
@@ -141,66 +148,81 @@ describe('Messaging Models Unit Tests:', function () {
           .that.is.an('array')
           .with.deep.property('[0]')
           .that.deep.property('userId')
-          .that.equals('1')
+          .that.equals(_user.id)
       ]);
     });
 
     it('should be able to create a campaign channel', function () {
-      var create = Channel.createCampaignChannel('1', _campaign.id);
+      var create = Channel.createCampaignChannel(_user.id, _campaign.id);
       return Promise.all([
         expect(create).to.eventually.be.fulfilled,
-        expect(create).to.eventually.have.property('id').that.equals(_campaign.id + ':1'),
+        expect(create).to.eventually.have.property('id').that.equals(_campaign.id + ':' + _user.id),
         expect(create).to.eventually.have.property('type').that.equals('Campaign:User'),
         expect(create).to.eventually.have.property('members')
-          .that.is.an('array')
-          .with.deep.property('[0]')
+          .with.deep.property(_user.id)
           .that.deep.property('userId')
-          .that.equals('1')
+          .that.equals(_user.id),
+        expect(create).to.eventually.not.have.property('members.' + _user1.id + '.companyId'),
+        expect(create).to.eventually.have.property('members')
+          .with.deep.property(_user1.id)
+          .that.deep.property('companyId')
+          .that.equals(_campaign.companyId),
+        expect(create).to.eventually.have.property('members')
+          .with.deep.property(_user2.id)
+          .that.deep.property('companyId')
+          .that.equals(_campaign.companyId)
       ]);
     });
 
-    it('should not a create channel without a userId', function () {
+    it('should not create channel without a userId', function () {
       var create = Channel.createNewChannel('');
       return expect(create).to.eventually.be.rejected;
     });
 
+    it('should not be able to add a user that doesnt exist', function () {
+      var create = Channel.addMember('2', '123');
+      return expect(create).to.eventually.be.rejected;
+    });
+
     it('should be able to add a member to a channel', function () {
-      var create = Channel.addMember('2', channel1.id);
+      var create = Channel.addMember(_user1.id, '123');
 
       return Promise.all([
         expect(create).to.eventually.be.fulfilled,
-        expect(create).to.eventually.have.property('userId').that.equals('2'),
-        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+        expect(create).to.eventually.have.property('userId').that.equals(_user1.id),
+        expect(create).to.eventually.have.property('channelId').that.equals('123')
       ]);
     });
 
     it('should return the member when we try to add it a second time', function () {
-      var create = Channel.addMember('2', channel1.id);
+      var create = Channel.addMember(_user1.id, '123');
 
       return Promise.all([
         expect(create).to.eventually.be.fulfilled,
-        expect(create).to.eventually.have.property('userId').that.equals('2'),
-        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+        expect(create).to.eventually.have.property('userId').that.equals(_user1.id),
+        expect(create).to.eventually.have.property('channelId').that.equals('123')
       ]);
     });
 
     it('should not add a member to a channel twice', function () {
-      var query = Member.query('channelId').eq(channel1.id).where('userId').eq('2').exec();
+      return Channel.addMember(_user1.id, '123').then(function(){
+        var query = Member.query('channelId').eq('123').where('userId').eq(_user1.id).exec();
 
-      return Promise.all([
-        expect(query).to.eventually.be.fulfilled,
-        expect(query).to.eventually.have.length.of.at.most(1),
-        expect(query).to.eventually.have.deep.property('[0]')
-      ]);
+        return Promise.all([
+          expect(query).to.eventually.be.fulfilled,
+          expect(query).to.eventually.have.length.of.at.most(1),
+          expect(query).to.eventually.have.deep.property('[0]')
+        ]);
+      });
     });
 
     it('should not add a member to a channel that doesn\'t exsist', function () {
-      var create = Channel.addMember('1', '666');
+      var create = Channel.addMember(_user1.id, '666');
       return expect(create).to.eventually.be.rejectedWith(TypeError, 'This channel doesn\'t exist');
     });
 
     it('should be able to add company members to a channel', function () {
-      var create = Channel.addCompanyMembers(_company.id, channel1.id);
+      var create = Channel.addCompanyMembers(_company.id, 123);
 
       return Promise.all([
         expect(create).to.eventually.be.fulfilled,
@@ -210,18 +232,13 @@ describe('Messaging Models Unit Tests:', function () {
           .that.equals(_user1.id)
       ]);
     });
-
-    // it('should not add company members to a channel that doesn\'t exsist', function () {
-    //   var create = Channel.addCompanyMembers(_company.id, '666');
-    //   return expect(create).to.eventually.be.rejectedWith(TypeError, 'This channel doesn\'t exirt');
-    // });
   });
 
   describe('Message Model Unit Tests:', function () {
     it('should be able to create a message', function () {
       _message = new Message({
         userId: '1',
-        channelId: channel1.id,
+        channelId: '123',
         body: 'Testing 1, 2'
       });
 
@@ -230,11 +247,11 @@ describe('Messaging Models Unit Tests:', function () {
       return Promise.all([
         expect(create).to.eventually.be.fulfilled,
         expect(create).to.eventually.have.property('userId').that.equals('1'),
-        expect(create).to.eventually.have.property('channelId').that.equals(channel1.id)
+        expect(create).to.eventually.have.property('channelId').that.equals('123')
       ]);
     });
 
-    it('should be able to add a messgage to a channel', function () {
+    it('should be able to add a message to a channel', function () {
       var add = _message.addMessageToChannel();
 
       return Promise.all([
@@ -253,7 +270,7 @@ describe('Messaging Models Unit Tests:', function () {
     });
 
     it('should be able to get a channel\'s messages', function () {
-      var get = Message.getChannelMessages(channel1.id);
+      var get = Message.getChannelMessages('123');
 
       return Promise.all([
         expect(get).to.eventually.be.fulfilled,

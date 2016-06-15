@@ -25,8 +25,6 @@ describe('Channel routes tests', function () {
     // Get application
     app = express.init(dynamooselib);
     agent = request.agent(app);
-    done();
-  });
 /*
   after(function (done) {
     Channel.scan().exec().then(function(items){
@@ -38,7 +36,6 @@ describe('Channel routes tests', function () {
     });
   });
 */
-  beforeEach(function (done) {
     // Create user credentials
     credentials = {
       username: 'test@test.com',
@@ -72,8 +69,10 @@ describe('Channel routes tests', function () {
     });
   });
 
-  afterEach(function () {
-    return  User.purge(user.id);
+  after(function (done) {
+    User.purge(user.id).then(function(){
+      done();
+    });
   });
 
   it('should not be able to save a channel if not logged in', function (done) {

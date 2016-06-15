@@ -9,12 +9,13 @@ var should = require('should'),
   express = require('config/lib/express'),
   User = dynamoose.model('User'),
   Campaign = dynamoose.model('Campaign'),
+  Company = dynamoose.model('Company'),
   debug = require('debug')('up:debug:campaign:routes:tests');
 
 /**
  * Globals
  */
-var app, agent, credentials, credentials_admin, user, userdata, campaign, _campaign, admin;
+var app, agent, credentials, credentials_admin, user, company, userdata, campaign, _campaign, admin;
 
 /**
  * Company routes tests
@@ -26,10 +27,7 @@ describe('Campaign routes tests', function () {
     // Get application
     app = express.init(dynamooselib);
     agent = request.agent(app);
-    done();
-  });
 
-  beforeEach(function(done) {
     credentials = {
       username: 'test@test.com',
       password: 'password'
@@ -45,7 +43,7 @@ describe('Campaign routes tests', function () {
       firstName: 'Full',
       lastName: 'Name',
       displayName: 'Full Name',
-      email: 'test@test.com',
+      email: 'test123@test.com',
       username: 'username',
       password: credentials.password,
       provider: 'local'
@@ -64,32 +62,44 @@ describe('Campaign routes tests', function () {
       roles: ['user', 'admin']
     });
 
-    campaign = {
-      name: 'Get The Keys',
-      companyId: '123',
-      description: 'marketing key',
-      hashtag: 'ifihadthekeys',
-      instructions: '1. ball out. 2. ball out mas.',
-      productId: '321',
-      tagline: 'Get the keys you need',
-      type: 'trial'
-    };
+    // Create a new company
+    company = new Company({
+      id: '123',
+      name: 'microsoft',
+      url: 'www.microsoft.com',
+      slug: 'microsoft'
+    });
 
-    User.createWithSlug(user).then(function(res) {
-      debug('user created: ', res.id);
-      user = res;
-      return User.createWithSlug(admin);
-    }).then(function(adminRes) {
-      debug('admin created: ', adminRes.id);
-      admin = adminRes;
-      done();
+    Company.createWithSlug(company).then(function(res2) {
+      company = res2;
+
+      campaign = {
+        name: 'Get The Keys',
+        companyId: company.id,
+        description: 'marketing key',
+        hashtag: 'ifihadthekeys',
+        instructions: '1. ball out. 2. ball out mas.',
+        productId: '321',
+        tagline: 'Get the keys you need',
+        type: 'trial'
+      };
+
+      return User.createWithSlug(user).then(function(res) {
+        debug('user created: ', res.id);
+        user = res;
+        return User.createWithSlug(admin);
+      }).then(function(res1){
+        admin = res1;
+        done();
+      });
     });
   });
 
-  afterEach(function (done) {
+  after(function (done) {
     Promise.join(
       User.purge(user.id),
-      User.purge(admin.id)
+      User.purge(admin.id),
+      Company.purge(company.id)
     ).then(function() {
       done();
     });

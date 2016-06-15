@@ -307,6 +307,11 @@ UserSchema.statics.createWithSlug = Promise.method(function(body) {
   });
 });
 
+UserSchema.method('purge', Promise.method(function() {
+  var User = dynamoose.model('User');
+  return User.purge(this.id);
+}));
+
 UserSchema.static('purge', Promise.method(function(userId) {
   var User = dynamoose.model('User');
   var Slug = dynamoose.model('Slug');
@@ -314,7 +319,8 @@ UserSchema.static('purge', Promise.method(function(userId) {
   var _item;
 
   return User.get(userId).then(function(item) {
-    if(_.isUndefined(item)) return false;
+    if(!item) return false;
+
     _item = item;
     if(item.username){
       return Slug.delete(item.username);

@@ -207,6 +207,11 @@ CompanySchema.static('createWithSlug', Promise.method(function(body) {
   });
 }));
 
+CompanySchema.method('purge', Promise.method(function() {
+  var Company = dynamoose.model('Company');
+  return Company.purge(this.id);
+}));
+
 CompanySchema.static('purge', Promise.method(function(companyId) {
   if (!companyId) {
     return;
