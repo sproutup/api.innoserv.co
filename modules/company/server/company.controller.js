@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var cache = require('config/lib/cache');
 var Company = dynamoose.model('Company');
 var Team = dynamoose.model('Team');
  /* global -File */
@@ -71,6 +72,8 @@ exports.update = function (req, res) {
       } else {
         res.json(company);
       }
+      console.log('delete com cache');
+      cache.del('company:' + req.model.id);
     }
   });
 };
