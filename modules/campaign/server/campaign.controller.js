@@ -124,7 +124,8 @@ exports.update = function (req, res) {
   }
 
   // If the hashtag changed, update the slug before update the campaign
-  if (req.model.hashtag !== req.body.hashtag) {
+  if (req.body.hashtag && req.model.hashtag !== req.body.hashtag) {
+    debug('hashtag changed found');
     Slug.change({id: req.body.hashtag, refId: req.body.id, refType: 'Campaign'}, req.model.hashtag)
       .then(function() {
         updateCampaign();
@@ -136,6 +137,7 @@ exports.update = function (req, res) {
   }
 
   function updateCampaign() {
+    debug('updating campaign');
     Campaign.update({ id: req.model.id }, obj, function (error, campaign) {
       if (error) {
         console.log('error:', error);
