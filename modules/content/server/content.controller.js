@@ -6,6 +6,7 @@
 var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Content = dynamoose.model('Content');
+var Metric = dynamoose.model('Metric');
 var Campaign = dynamoose.model('Campaign');
 var Contributor = dynamoose.model('Contributor');
 var User = dynamoose.model('User');
@@ -135,13 +136,13 @@ exports.list = function (req, res) {
 exports.listByCampaign = function (req, res) {
   Content.query('campaignId').eq(req.params.campaignId).exec().then(function(items){
     return Promise.map(items, function(val){
-      return val.populate('User');
+      return val.populate('User').then(function(){
+        return Metric.getYoutubeMetrics(val.ref).then(function(metrics){
+          val.metrics = metrics;
+          return val;
+        });
+      });
     });
-
-//    return Promise.map(items, function(item){
-      // wont work because we havent migrated the mvp user yet
-//      return item.populate('User');
-//    });
   })
   .then(function(items){
     res.json(items);

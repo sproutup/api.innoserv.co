@@ -72,6 +72,28 @@ MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, cha
   });
 });
 
+MetricSchema.statics.getYoutubeMetrics = Promise.method(function(videoId){
+  var _this = this;
+  debug('get youtube metrics');
+
+  return Promise.join(
+    _this.getCached(videoId, 'youtube', 'views'),
+    _this.getCached(videoId, 'youtube', 'likes'),
+    _this.getCached(videoId, 'youtube', 'comments'),
+    _this.getCached(videoId, 'youtube', 'shares'),
+    _this.getCached(videoId, 'youtube', 'averageViewDuration'),
+    function(views, likes, comments, shares, duration){
+      return {
+        views: views,
+        likes: likes,
+        comments: comments,
+        shares: shares,
+        averageViewDuration: duration
+      };
+    }
+  );
+});
+
 MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, userId, accessToken){
   var _this = this;
   debug('fetch metrics for ' + serviceName + ' service');
