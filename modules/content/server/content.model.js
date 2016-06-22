@@ -78,7 +78,7 @@ var ContentSchema = new Schema({
     index: {
       global: true,
       rangeKey: 'timestamp',
-      name: 'ContemtStatusTimestampIndex',
+      name: 'ContentStatusTimestampIndex',
       project: true, // ProjectionType: ALL
       throughput: 1 // read and write are both 1
     }
