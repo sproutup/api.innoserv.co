@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+var newrelic = require('newrelic');
 var config = require('../config'),
   bookshelf = require('./bookshelf'),
   dynamoose = require('config/lib/dynamoose'),

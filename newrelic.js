@@ -10,7 +10,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['sproutup'],
+  app_name: ['api.sproutup;localhost'],
   /**
    * Your New Relic license key.
    */
