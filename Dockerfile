@@ -29,6 +29,7 @@ COPY modules modules
 COPY public public
 COPY server.js gulpfile.js ./
 COPY .csslintrc .jshintrc makefile .slugignore ./
+COPY newrelic.js ./
 
 RUN gulp build lint
 
