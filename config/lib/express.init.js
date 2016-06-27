@@ -222,6 +222,25 @@ module.exports.configureSocketIO = function (app) {
 module.exports.init = function (db) {
   // Initialize express app
   var app = express();
+  var version = express && express.version && express.version[0];
+  console.log('express version:', version);
+
+  if (!version && express && express.application &&
+      express.application.init && express.response &&
+      express.response.render && express.Router &&
+      express.Router.prototype.matchRequest) {
+    version = '3';
+  } else if (!version && express && express.application &&
+           express.application.init && express.response &&
+           express.response.render && express.Router &&
+           express.Router.process_params && express.application.del) {
+    version = '4';
+  } else if (!version && express && express.application &&
+             !express.application.del) {
+    version = '5';
+  }
+
+  console.log('express version:', version);
 
   // Initialize local variables
   this.initLocalVariables(app);

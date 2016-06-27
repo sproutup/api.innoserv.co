@@ -3,13 +3,12 @@
 /**
  * Module dependencies.
  */
-var newrelic = require('newrelic');
 var config = require('../config'),
   bookshelf = require('./bookshelf'),
   dynamoose = require('config/lib/dynamoose'),
   google = require('config/lib/google'),
   redis = require('./redis'),
-  express = require('./express'),
+  express = require('./express.init'),
   chalk = require('chalk'),
   core = require('modules/core/server/core.controller');
 

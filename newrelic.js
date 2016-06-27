@@ -10,12 +10,13 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['api.sproutup;localhost'],
+  app_name: ['api.sproutup;api.localhost'],
   /**
    * Your New Relic license key.
    */
   license_key: '804e8f49f033cb0cc754faa2f571126525ff4fa0',
   logging: {
+    filepath: 'stdout',
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
      * issues with the agent, 'info' and higher will impose the least overhead on
