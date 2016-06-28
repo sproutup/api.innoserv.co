@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var dynamoose = require('dynamoose');
+var cache = require('config/lib/cache');
 var Slug = dynamoose.model('Slug');
 var errorHandler = require('modules/core/server/errors.controller');
 var _ = require('lodash');
@@ -119,7 +120,9 @@ exports.delete = function (req, res) {
  * List
  */
 exports.list = function (req, res) {
-  Slug.scan().exec().then(function(items){
+  return cache.wrap('slug:list', function() {
+    return Slug.scan().exec();
+  },{ttl: 3600}).then(function(items){
     res.json(items);
   })
   .catch(function(err){
