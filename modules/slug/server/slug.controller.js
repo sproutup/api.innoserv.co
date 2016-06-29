@@ -159,7 +159,7 @@ exports.findByID = function (req, res, next, id) {
   // look up slug
   return Slug.getCached(id).then(function(item){
     if(_.isUndefined(item)) {
-      return res.status(400).send({
+      return res.status(404).send({
         ok: false,
         error: 'slug not found'
       });
