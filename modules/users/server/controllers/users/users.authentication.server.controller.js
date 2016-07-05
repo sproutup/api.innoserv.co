@@ -163,29 +163,12 @@ exports.emailIsAvailable = function (req, res) {
   if(req.user && req.user.email === email){
     return res.json({result: 1});
   }
-
-  User.queryOne('email').eq(email).exec().then(function(result) {
+  Provider.get({id: email, provider: 'password'}).then(function (result) {
     if (result) {
       return res.json({result: 0});
     } else {
       return res.json({result: 1});
-/*
-      var domain = email.substring(email.lastIndexOf('@')+1, email.length);
-      console.log('domain:', domain);
-      Company.queryOne('domain').eq(domain).exec().then(function(company){
-        console.log('res:',company);
-        return res.json({
-          result: 1,
-          company: company
-        });
-      })
-      .catch(function(err){
-        console.log('err: ', err);
-      }); */
     }
-  })
-  .catch(function(err){
-    console.log(err);
   });
 };
 
@@ -335,7 +318,7 @@ exports.signin = function (req, res, next) {
       debug('err: ', err);
       debug('err: ', info);
       res.status(400).send({
-        message: 'We couldn\'t authenticate a user.'
+        message: 'Authentication credentials provided were invalid'
       });
     } else {
       debug('user authenticated: ', user.username);
