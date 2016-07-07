@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 var config = require('../config'),
+  debug = require('debug'),
   bookshelf = require('./bookshelf'),
   dynamoose = require('config/lib/dynamoose'),
   google = require('config/lib/google'),
@@ -11,6 +12,8 @@ var config = require('../config'),
   express = require('./express.init'),
   chalk = require('chalk'),
   core = require('modules/core/server/core.controller');
+
+debug.log = console.info.bind(console);
 
 // Initialize Models
 bookshelf.loadModels();
