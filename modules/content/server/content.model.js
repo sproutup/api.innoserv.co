@@ -69,7 +69,8 @@ var ContentSchema = new Schema({
   timestamp: {
     type: Number,
     required: true,
-    default: moment().utc().unix()
+//    default: moment().utc().unix()
+    default: moment().subtract(1,'day').utc().startOf('day').unix()
   },
   status: {
     type: Number,
@@ -93,6 +94,7 @@ var ContentSchema = new Schema({
 
 ContentSchema.static('processOldestContent', function() {
   var _this = this;
+
   var time = moment().utc().startOf('day').unix();
 //  var time = moment().utc().startOf('minute').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){

@@ -63,17 +63,18 @@ var sendContentEmail = function(content) {
 exports.create = function (req, res) {
   var item = new Content(req.body);
   item.userId = req.user.id;
-  debug('Saving content', item);
+  item.timestamp = 0; // force metrics update
+  debug('add content' + item.title);
 
   item.save().then(function(val) {
-    debug('After saving content', val.id);
+    debug('content id: ', val.id);
     sendContentEmail(item);
     Contributor.updateState(val.campaignId, val.userId, 2);
     res.json(item);
   })
   .catch(function(err){
     res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+      message: errorHandler.getErrorMessage(err)
     });
   });
 };
