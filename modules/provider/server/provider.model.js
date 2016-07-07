@@ -528,7 +528,7 @@ ProviderSchema.methods.purge = Promise.method(function() {
   var _this = this;
 
   debug('purge: ', this.id);
-  return Service.query('id').eq(this.userId).where('provider').eq(this.provider).exec().then(function(items) {
+  return Service.query('id').eq(this.userId).filter('provider').eq(this.provider).exec().then(function(items) {
     if(!items) return 0;
     debug('purge ' + items.length + ' items');
     // delete all user providers
@@ -538,9 +538,6 @@ ProviderSchema.methods.purge = Promise.method(function() {
     });
   }).then(function(){
     return _this.delete();
-  }).catch(function(err){
-    debug('err', err.stack);
-    throw err;
   });
 });
 
