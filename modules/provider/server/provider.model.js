@@ -526,6 +526,9 @@ ProviderSchema.statics.add = Promise.method(function(data) {
 ProviderSchema.methods.purge = Promise.method(function() {
   var Service = dynamoose.model('Service');
   var _this = this;
+  var key = 'services:provider:' + _this.provider + ':user:' + _this.userId;
+
+  cache.del(key);
 
   debug('purge: ', this.id);
   return Service.query('id').eq(this.userId).filter('provider').eq(this.provider).exec().then(function(items) {
