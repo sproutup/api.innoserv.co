@@ -244,6 +244,7 @@ UserSchema.statics.getCached = Promise.method(function(id){
   var key = 'user:' + id;
   var _item;
 
+  debug('get: ' + key);
   return cache.wrap(key, function() {
     debug('cache miss: ', key);
     return User.get(id).then(function(item){

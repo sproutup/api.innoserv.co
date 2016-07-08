@@ -5,6 +5,7 @@
  */
  /* global -Promise */
 var Promise = require('bluebird');
+var debug = require('debug')('up:debug:contributor:model');
 var _ = require('lodash');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
@@ -92,11 +93,11 @@ ContributorSchema.methods.populate = Promise.method(function (_schema) {
 
   var _attribute = _schema.toLowerCase() + 'Id';
   if (!this[_attribute]){
-    console.log('populate: null value');
+    debug('populate: null value');
     return null;
   }
 
-  console.log('populate: ', _schema);
+  debug('populate: ' + _schema + ' id: ' + _this[_attribute]);
   var model = dynamoose.model(_schema);
   return model.getCached(this[_attribute]).then(function(item){
     _this[_schema.toLowerCase().trim()] = item;
