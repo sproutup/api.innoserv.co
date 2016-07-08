@@ -583,7 +583,6 @@ ProviderSchema.statics.getUserProviders = Promise.method(function(userId){
           case 'facebook':
             break;
           case 'instagram':
-            console.log('data', item);
             item.username = item.data ? item.data.username : '';
             break;
           case 'google':
