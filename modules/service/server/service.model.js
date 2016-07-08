@@ -289,8 +289,9 @@ ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) 
         debug(val.service + ' service ' + (index+1) + ' of ' + length);
         val.metrics = {};
         return val.getMetrics('followers').then(function(metric) {
-          val.metrics.followers = metric.value;
-          followers += metric.value;
+          debug('followers: ' + metric.value);
+          val.metrics.followers = metric.value ? metric.value : 0;
+          followers += metric.value ? metric.value : 0;
           return val;
         });
       }).then(function(res){
