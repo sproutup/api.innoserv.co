@@ -11,6 +11,10 @@ module.exports = {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: process.env.REDIS_PORT || '6379'
   },
+  elasticsearch: {
+    host: process.env.ELASTICSEARCH_HOST || '127.0.0.1:9200',
+    port: process.env.ELASTICSEARCH_LOG || 'INFO'
+  },
   knex: {
     client: 'mysql',
     connection: {

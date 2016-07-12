@@ -9,6 +9,7 @@ var config = require('../config'),
   dynamoose = require('config/lib/dynamoose'),
   google = require('config/lib/google'),
   redis = require('./redis'),
+  elasticsearch = require('./elasticsearch'),
   express = require('./express.init'),
   chalk = require('chalk'),
   core = require('modules/core/server/core.controller');

@@ -7,7 +7,6 @@ var chalk = require('chalk');
 const https = require('https');
 
 console.log('--');
-console.log('db: ', config.db);
 console.log(chalk.green('Dynamodb'));
 console.log(chalk.green('Local:\t', config.db.local));
 console.log(chalk.green('Region:\t', config.db.region));
