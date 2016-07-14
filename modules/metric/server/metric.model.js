@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var debug = require('debug')('up:metric:model');
 var cache = require('config/lib/cache');
+var elasticsearch = require('config/lib/elasticsearch');
 var config = require('config/config');
 var dynamoose = require('dynamoose');
 var Schema = dynamoose.Schema;
@@ -46,24 +47,36 @@ var MetricSchema = new Schema({
     required: true,
     default: 'User' // Content, Service, User etc
   },
+  userId: {
+    type: String
+  },
+  contentId: {
+    type: String
+  },
+  campaignId: {
+    type: String
+  },
+  companyId: {
+    type: String
+  },
   value: {
     type: Number,
     required: true
   }
 });
 
-MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, channelId, service, accessToken){
+MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, channelId, service, accessToken, userId, campaignId, companyId){
   var _this = this;
   debug('update youtube metrics');
   return youtubeAnalytics.query(videoId, channelId, accessToken).then(function(data){
     if(data.rows){
       debug('youtube analytics value: ', data.rows);
       return Promise.join(
-        _this.updateWrapper(videoId + ':' + 'youtube' + ':views', 'Content:Service:Metric', data.rows[0][0]),
-        _this.updateWrapper(videoId + ':' + 'youtube' + ':likes', 'Content:Service:Metric', data.rows[0][1]),
-        _this.updateWrapper(videoId + ':' + 'youtube' + ':comments', 'Content:Service:Metric', data.rows[0][2]),
-        _this.updateWrapper(videoId + ':' + 'youtube' + ':shares', 'Content:Service:Metric', data.rows[0][3]),
-        _this.updateWrapper(videoId + ':' + 'youtube' + ':averageViewDuration', 'Content:Service:Metric', data.rows[0][4]),
+        _this.updateWrapper(videoId + ':' + 'youtube:views', 'Content:Service:Metric', 'views', data.rows[0][0]),
+        _this.updateWrapper(videoId + ':' + 'youtube:likes', 'Content:Service:Metric', 'likes', data.rows[0][1]),
+        _this.updateWrapper(videoId + ':' + 'youtube:comments', 'Content:Service:Metric', 'comments', data.rows[0][2]),
+        _this.updateWrapper(videoId + ':' + 'youtube:shares', 'Content:Service:Metric', 'shares', data.rows[0][3]),
+        _this.updateWrapper(videoId + ':' + 'youtube:averageViewDuration', 'Content:Service:Metric', 'averageViewDuration', data.rows[0][4]),
         function(){
           return 1;
         }
@@ -71,6 +84,35 @@ MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, cha
     }
   });
 });
+
+MetricSchema.statics.updateYoutubeDailyMetrics = Promise.method(function(videoId, channelId, service, accessToken, userId, contentId, campaignId, companyId){
+  var _this = this;
+  debug('update youtube metrics');
+  return youtubeAnalytics.queryByDay(videoId, channelId, accessToken).then(function(data){
+    if(data.rows){
+      debug('youtube daily analytics value: ', data.rows);
+      return Promise.each(data.rows, function(item){
+        var day = moment(item[0], 'YYYY-MM-DD');
+        debug('youtube values: ', item);
+        debug('day: ', day);
+        return Promise.join(
+          _this.updateWrapper(contentId + ':' + 'youtube:day:views', 'Content:Service:Dimension:Metric', 'views', item[1], day, userId, contentId, campaignId, companyId),
+          _this.updateWrapper(contentId + ':' + 'youtube:day:likes', 'Content:Service:Dimension:Metric', 'likes', item[2], day, userId, contentId, campaignId, companyId),
+          _this.updateWrapper(contentId + ':' + 'youtube:day:comments', 'Content:Service:Dimension:Metric', 'comments', item[3], day, userId, contentId, campaignId, companyId),
+          _this.updateWrapper(contentId + ':' + 'youtube:day:shares', 'Content:Service:Dimension:Metric', 'shares', item[4], day, userId, contentId, campaignId, companyId),
+          _this.updateWrapper(contentId + ':' + 'youtube:day:averageViewDuration', 'Content:Service:Dimension:Metric', 'averageViewDuration', item[5], day, userId, contentId, campaignId, companyId),
+          function(){
+            return 1;
+          }
+        );
+      });
+    }
+    else{
+      return 0;
+    }
+  });
+});
+
 
 MetricSchema.statics.getYoutubeMetrics = Promise.method(function(videoId){
   var _this = this;
@@ -157,18 +199,46 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
   }
 });
 
-MetricSchema.static('updateWrapper', Promise.method(function(id, type, value) {
-  var timestamp = moment().utc().startOf('day').unix();
+MetricSchema.static('updateWrapper', Promise.method(function(id, type, metric, value, timestamp, userId, contentId, campaignId, companyId) {
+  if(!value || value===0){
+    return 0;
+  }
+
+  if (!timestamp){
+    timestamp = moment().utc().startOf('day');
+  }
+
   debug('update ' + id + ' == ' + value);
   cache.del(id);
   return this.update({
     id: id,
-    timestamp: timestamp
+    timestamp: timestamp.unix()
   }, {
     refType: type,
+    userId: userId,
+    name: metric,
+    contentId: contentId,
+    campaignId: campaignId,
+    companyId: companyId,
     value: value
+  }).then(function(obj){
+    return elasticsearch.index({
+      index: 'sproutup',
+      type: 'metric',
+      id: obj.id + ':' + obj.timestamp,
+      body: {
+        id: id,
+        userId: userId,
+        contentId: contentId,
+        campaignId: campaignId,
+        companyId: companyId,
+        type: type,
+        name: metric,
+        value: value,
+        timestamp: timestamp.format('YYYY-MM-DD')
+      }
+    });
   });
-
 }));
 
 MetricSchema.static('updateFollowers', Promise.method(function(userId, network, value) {

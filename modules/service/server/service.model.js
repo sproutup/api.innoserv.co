@@ -256,14 +256,18 @@ ServiceSchema.methods.getMetrics = Promise.method(function(metric){
  * Get Metrics
  * Look for the metric in cache -> db -> fetch from provider
  */
-ServiceSchema.methods.getYoutubeMetrics = Promise.method(function(videoId){
+ServiceSchema.methods.getYoutubeMetrics = Promise.method(function(videoId, userId, contentId, campaignId, companyId){
   var _this = this;
   var Metric = dynamoose.model('Metric');
   var Provider = dynamoose.model('Provider');
+  var token;
 
   debug('get youtube metrics');
-  return Provider.getAccessToken(_this.id, _this.provider).then(function(token){
-    return Metric.updateYoutubeMetrics(videoId, _this.identifier, _this.service, token);
+  return Provider.getAccessToken(_this.id, _this.provider).then(function(_token){
+    token = _token;
+    return Metric.updateYoutubeMetrics(videoId, _this.identifier, _this.service, token, userId, campaignId, companyId);
+  }).then(function(res){
+    return Metric.updateYoutubeDailyMetrics(videoId, _this.identifier, _this.service, token, userId, contentId, campaignId, companyId);
   });
 });
 

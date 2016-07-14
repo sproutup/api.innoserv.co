@@ -44,5 +44,30 @@ YoutubeAnalyticsService.query = function(id, channel, token){
   });
 };
 
+YoutubeAnalyticsService.queryByDay = function(id, channel, token, startdate){
+  debug('query by day:', id);
+
+  var start = moment().subtract(10,'year').utc().startOf('day').format('YYYY-MM-DD');
+  var finish = moment().subtract(1,'day').utc().format('YYYY-MM-DD'); // yesterday
+
+  var options = {
+    uri: 'https://www.googleapis.com/youtube/analytics/v1/reports',
+    qs: {
+      ids: 'channel==' + channel,
+      'start-date': start,
+      'end-date': finish,
+      metrics: 'views,likes,comments,shares,averageViewDuration',
+      dimensions: 'day',
+      filters: 'video==' + id,
+      access_token: token
+    },
+    json: true
+  };
+
+  return request(options).then(function(response){
+    return response;
+  });
+};
+
 
 module.exports = YoutubeAnalyticsService;

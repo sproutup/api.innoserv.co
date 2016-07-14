@@ -12,6 +12,9 @@ module.exports = function (app) {
     .get(ctrl.list)
     .post(ctrl.create);
 
+  app.route('/api/metric/query').all(policy.isAllowed)
+    .post(ctrl.query);
+
   // Single routes
   app.route('/api/metric/:metricId').all(policy.isAllowed)
     .get(ctrl.read)

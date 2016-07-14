@@ -24,7 +24,7 @@ exports.invokeRolesPolicies = function () {
   }, {
     roles: ['user'],
     allows: [{
-      resources: '/api/metric',
+      resources: ['/api/metric', '/api/metric/query' ],
       permissions: ['get', 'post', 'provider']
     }, {
       resources: '/api/metric/:metricId',
@@ -33,7 +33,7 @@ exports.invokeRolesPolicies = function () {
   }, {
     roles: ['guest'],
     allows: [{
-      resources: '/api/metric',
+      resources: ['/api/metric', '/api/metric/query' ],
       permissions: ['*']
     }, {
       resources: '/api/metric/:metricId',
