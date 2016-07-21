@@ -147,7 +147,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
           return _this.updateWrapper(
               userId + ':' + serviceName + ':followers',
               'User:Service:Metric',
-              data.followers_count);
+              'followers',
+              data.followers_count,
+              null,
+              userId);
       }).catch(function(err){
           debug('err: ', err);
       });
@@ -157,7 +160,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.friends ? data.friends.summary.total_count : 0);
+          'followers',
+          data.friends ? data.friends.summary.total_count : 0,
+          null,
+          userId);
       });
     case 'youtube':
       return youtube.showUser('self', accessToken).then(function(data){
@@ -165,7 +171,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.statistics.subscriberCount);
+          'followers',
+          data.statistics.subscriberCount,
+          null,
+          userId);
       });
     case 'googleplus':
       return googleplus.showUser('me', accessToken).then(function(data){
@@ -173,7 +182,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.circledByCount);
+          'followers',
+          data.circledByCount,
+          null,
+          userId);
      });
     case 'googleanalytics':
       return googleanalytics.showUser('me', accessToken).then(function(data){
@@ -181,7 +193,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.friends.summary.total_count);
+          'followers',
+          data.friends.summary.total_count,
+          null,
+          userId);
      }).catch(function(err){
         debug(serviceName + ' not found for this provider');
         return null;
@@ -192,7 +207,10 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
         return _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
-          data.counts.followed_by);
+          'followers',
+          data.counts.followed_by,
+          null,
+          userId);
       });
     default:
       return 0;
@@ -223,8 +241,8 @@ MetricSchema.static('updateWrapper', Promise.method(function(id, type, metric, v
     value: value
   }).then(function(obj){
     return elasticsearch.index({
-      index: 'sproutup',
-      type: 'metric',
+      index: 'metric',
+      type: metric,
       id: obj.id + ':' + obj.timestamp,
       body: {
         id: id,

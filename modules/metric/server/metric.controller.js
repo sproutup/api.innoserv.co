@@ -91,30 +91,35 @@ exports.list = function (req, res) {
  */
 exports.query = function (req, res) {
   var query = {
-    'aggs' : {
-      'results' : {
-        'filter' : {
-          'bool' : {
-            'must' : []
-          }
-        },
-        'aggs' : {
-          'views_per_day' : {
-            'date_histogram' : {
-              'field' : 'timestamp',
-              'interval' : 'day',
-              'format': 'yyyy-MM-dd',
-              'min_doc_count': 0
-            },
-            'aggs': {
-              'sum': {
-                'sum': {
-                  'field': 'value'
-                }
+    index: 'metric',
+    type: 'views',
+    searchType: 'count',
+    body: {
+      'aggs' : {
+        'results' : {
+          'filter' : {
+            'bool' : {
+              'must' : []
+            }
+          },
+          'aggs' : {
+            'views_per_day' : {
+              'date_histogram' : {
+                'field' : 'timestamp',
+                'interval' : 'day',
+                'format': 'yyyy-MM-dd',
+                'min_doc_count': 0
               },
-              'cumulative': {
-                'cumulative_sum': {
-                  'buckets_path': 'sum'
+              'aggs': {
+                'sum': {
+                  'sum': {
+                    'field': 'value'
+                  }
+                },
+                'cumulative': {
+                  'cumulative_sum': {
+                    'buckets_path': 'sum'
+                  }
                 }
               }
             }
@@ -125,29 +130,25 @@ exports.query = function (req, res) {
   };
 
   if(req.body.metric){
-    query.aggs.results.filter.bool.must.push({'term': { 'name': req.body.metric }});
+    query.type = req.body.metric;
+//    query.body.aggs.results.filter.bool.must.push({'term': { 'name': req.body.metric }});
   }
   if(req.body.userId){
-    query.aggs.results.filter.bool.must.push({'term': { 'userId': req.body.userId }});
+    query.body.aggs.results.filter.bool.must.push({'term': { 'userId': req.body.userId }});
   }
   if(req.body.contentId){
-    query.aggs.results.filter.bool.must.push({'term': { 'contentId': req.body.contentId }});
+    query.body.aggs.results.filter.bool.must.push({'term': { 'contentId': req.body.contentId }});
   }
   if(req.body.campaignId){
-    query.aggs.results.filter.bool.must.push({'term': { 'campaignId': req.body.campaignId }});
+    query.body.aggs.results.filter.bool.must.push({'term': { 'campaignId': req.body.campaignId }});
   }
   if(req.body.companyId){
-    query.aggs.results.filter.bool.must.push({'term': { 'companyId': req.body.companyId }});
+    query.body.aggs.results.filter.bool.must.push({'term': { 'companyId': req.body.companyId }});
   }
 
 
-  elasticsearch.search({
-    index: 'sproutup',
-    type: 'metric',
-    searchType: 'count',
-    body: query
-  }).then(function(items){
-    res.json(items);
+  elasticsearch.search(query).then(function(items){
+    res.json(items.aggregations.results);
   }).catch(function(err){
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
