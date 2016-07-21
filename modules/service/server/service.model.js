@@ -181,16 +181,15 @@ ServiceSchema.static('updateWrapper', Promise.method(function(userId, service, d
 
 ServiceSchema.static('fetchMetricForOldest', function() {
   var _this = this;
-  var time = moment().utc().startOf('day').unix();
+  var time = moment().utc().subtract(1, 'minutes').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
     if(val){
       debug('updating expired service ' +  val.service + ' : ' + val.timestamp);
-      return _this.update({id: val.id, service: val.service}, {timestamp: time}).then(function(val){
+      return _this.update({id: val.id, service: val.service}, {timestamp: moment().utc().unix()}).then(function(val){
         var key = val.id + ':' + val.service + ':' + 'followers';
         debug('delete cache: ' + key);
         cache.del(key);
-        return val.getMetrics('followers').then(function(metric) {
-          debug('metric: ' +  metric.value);
+        return val.fetchMetrics('followers').then(function(metric) {
           return metric;
         });
       });
@@ -228,6 +227,15 @@ ServiceSchema.static('fetchMetricForOldest', function() {
 //  });
 //});
 
+ServiceSchema.methods.fetchMetrics = Promise.method(function(metric){
+  var _this = this;
+  var Provider = dynamoose.model('Provider');
+  var Metric = dynamoose.model('Metric');
+  return Provider.getAccessToken(_this.id, _this.provider).then(function(token){
+    debug('fetching ' + metric + ' metric');
+    return Metric.fetch(_this.identifier, _this.service, _this.id, token);
+  });
+});
 
 /**
  * Get Metrics

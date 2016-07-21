@@ -149,7 +149,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
               'User:Service:Metric',
               'followers',
               data.followers_count,
-              null,
+              moment(1000),
               userId);
       }).catch(function(err){
           debug('err: ', err);
@@ -162,19 +162,36 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
           'User:Service:Metric',
           'followers',
           data.friends ? data.friends.summary.total_count : 0,
-          null,
+          moment(1000),
           userId);
       });
     case 'youtube':
       return youtube.showUser('self', accessToken).then(function(data){
         debug('youtube value: ', data.statistics.subscriberCount);
-        return _this.updateWrapper(
+        var subscriberCount = _this.updateWrapper(
           userId + ':' + serviceName + ':followers',
           'User:Service:Metric',
           'followers',
           data.statistics.subscriberCount,
-          null,
+          moment(1000),
           userId);
+        var viewCount = _this.updateWrapper(
+          userId + ':' + serviceName + ':viewCount',
+          'User:Service:Metric',
+          'viewCount',
+          data.statistics.viewCount,
+          moment(1000),
+          userId);
+        var videoCount = _this.updateWrapper(
+          userId + ':' + serviceName + ':videoCount',
+          'User:Service:Metric',
+          'videoCount',
+          data.statistics.videoCount,
+          moment(1000),
+          userId);
+        return Promise.join(subscriberCount, viewCount, videoCount, function(sub, view, video){
+          return [sub, view, video]; 
+        });
       });
     case 'googleplus':
       return googleplus.showUser('me', accessToken).then(function(data){
@@ -184,7 +201,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
           'User:Service:Metric',
           'followers',
           data.circledByCount,
-          null,
+          moment(1000),
           userId);
      });
     case 'googleanalytics':
@@ -195,7 +212,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
           'User:Service:Metric',
           'followers',
           data.friends.summary.total_count,
-          null,
+          moment(1000),
           userId);
      }).catch(function(err){
         debug(serviceName + ' not found for this provider');
@@ -209,7 +226,7 @@ MetricSchema.statics.fetch = Promise.method(function(identifier, serviceName, us
           'User:Service:Metric',
           'followers',
           data.counts.followed_by,
-          null,
+          moment(1000),
           userId);
       });
     default:
@@ -226,7 +243,7 @@ MetricSchema.static('updateWrapper', Promise.method(function(id, type, metric, v
     timestamp = moment().utc().startOf('day');
   }
 
-  debug('update ' + id + ' == ' + value);
+  debug('update ' + id + ' == ' + value + ' time:' + timestamp.unix());
   cache.del(id);
   return this.update({
     id: id,
@@ -297,14 +314,15 @@ MetricSchema.static('getAll', Promise.method(function(userId) {
 MetricSchema.statics.getCached = Promise.method(function(userId, service, metric) {
   var _this = this;
   var key = userId + ':' + service + ':' + metric;
-  var timestamp = moment().utc().startOf('day').unix();
+//  var timestamp = moment().utc().startOf('day').unix();
+  var timestamp = moment(1000).utc().unix();
 
   return cache.wrap(key, function() {
     debug('cache miss: ', key);
     return _this.get({id: key, timestamp: timestamp}).then(function(val){
       return val || null;
     });
-  },{ttl: 3600});
+  },{ttl: 60});
 });
 
 dynamoose.model('Metric', MetricSchema);
