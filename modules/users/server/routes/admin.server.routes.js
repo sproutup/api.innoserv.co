@@ -23,6 +23,9 @@ module.exports = function (app) {
   app.route('/api/users/:userId/clear')
     .get(admin.clear);
 
+  app.route('/api/users/:userId/upgrade')
+    .get(admin.upgrade);
+
   // Finish by binding the user middleware
   app.param('userId', admin.userByID);
 };

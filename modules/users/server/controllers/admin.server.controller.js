@@ -46,9 +46,26 @@ exports.update = function (req, res) {
 exports.clear = function (req, res) {
   var user = req.model;
   var key = 'user:' + user.id;
+  var metric_key = 'service:metric:' + user.id;
 
   cache.del(key, function() {
-    res.json({result: 'ok', key: key});
+    cache.del(metric_key, function() {
+      res.json({result: 'ok', key: key});
+    });
+  });
+};
+
+
+/**
+ * upgrade user to admin
+ */
+exports.upgrade = function (req, res) {
+  var user = req.model;
+  var key = 'user:' + user.id;
+
+  user.roles = ['user', 'admin'];
+  user.save().then(function() {
+    res.json({result: 'ok'});
   });
 };
 
