@@ -65,18 +65,18 @@ var MetricSchema = new Schema({
   }
 });
 
-MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, channelId, service, accessToken, userId, campaignId, companyId){
+MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, channelId, service, accessToken, userId, contentId, campaignId, companyId){
   var _this = this;
   debug('update youtube metrics');
   return youtubeAnalytics.query(videoId, channelId, accessToken).then(function(data){
     if(data.rows){
       debug('youtube analytics value: ', data.rows);
       return Promise.join(
-        _this.updateWrapper(videoId + ':' + 'youtube:views', 'Content:Service:Metric', 'views', data.rows[0][0]),
-        _this.updateWrapper(videoId + ':' + 'youtube:likes', 'Content:Service:Metric', 'likes', data.rows[0][1]),
-        _this.updateWrapper(videoId + ':' + 'youtube:comments', 'Content:Service:Metric', 'comments', data.rows[0][2]),
-        _this.updateWrapper(videoId + ':' + 'youtube:shares', 'Content:Service:Metric', 'shares', data.rows[0][3]),
-        _this.updateWrapper(videoId + ':' + 'youtube:averageViewDuration', 'Content:Service:Metric', 'averageViewDuration', data.rows[0][4]),
+        _this.updateWrapper(videoId + ':' + 'youtube:views', 'Content:Service:Metric', 'totalViews', data.rows[0][0], moment(1000), userId, contentId, campaignId, companyId),
+        _this.updateWrapper(videoId + ':' + 'youtube:likes', 'Content:Service:Metric', 'totalLikes', data.rows[0][1], moment(1000), userId, contentId, campaignId, companyId),
+        _this.updateWrapper(videoId + ':' + 'youtube:comments', 'Content:Service:Metric', 'totalComments', data.rows[0][2], moment(1000), userId, contentId, campaignId, companyId),
+        _this.updateWrapper(videoId + ':' + 'youtube:shares', 'Content:Service:Metric', 'totalShares', data.rows[0][3], moment(1000), userId, contentId, campaignId, companyId),
+        _this.updateWrapper(videoId + ':' + 'youtube:averageViewDuration', 'Content:Service:Metric', 'totalAverageViewDuration', data.rows[0][4], moment(1000), userId, contentId, campaignId, companyId),
         function(){
           return 1;
         }
@@ -87,7 +87,7 @@ MetricSchema.statics.updateYoutubeMetrics = Promise.method(function(videoId, cha
 
 MetricSchema.statics.updateYoutubeDailyMetrics = Promise.method(function(videoId, channelId, service, accessToken, userId, contentId, campaignId, companyId){
   var _this = this;
-  debug('update youtube metrics');
+  debug('update youtube daily metrics');
   return youtubeAnalytics.queryByDay(videoId, channelId, accessToken).then(function(data){
     if(data.rows){
       debug('youtube daily analytics value: ', data.rows);
@@ -100,7 +100,7 @@ MetricSchema.statics.updateYoutubeDailyMetrics = Promise.method(function(videoId
           _this.updateWrapper(contentId + ':' + 'youtube:day:likes', 'Content:Service:Dimension:Metric', 'likes', item[2], day, userId, contentId, campaignId, companyId),
           _this.updateWrapper(contentId + ':' + 'youtube:day:comments', 'Content:Service:Dimension:Metric', 'comments', item[3], day, userId, contentId, campaignId, companyId),
           _this.updateWrapper(contentId + ':' + 'youtube:day:shares', 'Content:Service:Dimension:Metric', 'shares', item[4], day, userId, contentId, campaignId, companyId),
-          _this.updateWrapper(contentId + ':' + 'youtube:day:averageViewDuration', 'Content:Service:Dimension:Metric', 'averageViewDuration', item[5], day, userId, contentId, campaignId, companyId),
+          _this.updateWrapper(contentId + ':' + 'youtube:day:estimatedMinutesWatched', 'Content:Service:Dimension:Metric', 'estimatedMinutesWatched', item[5], day, userId, contentId, campaignId, companyId),
           function(){
             return 1;
           }
@@ -108,6 +108,7 @@ MetricSchema.statics.updateYoutubeDailyMetrics = Promise.method(function(videoId
       });
     }
     else{
+      console.log('no data found: ', data);
       return 0;
     }
   });
@@ -126,11 +127,11 @@ MetricSchema.statics.getYoutubeMetrics = Promise.method(function(videoId){
     _this.getCached(videoId, 'youtube', 'averageViewDuration'),
     function(views, likes, comments, shares, duration){
       return {
-        views: views,
-        likes: likes,
-        comments: comments,
-        shares: shares,
-        averageViewDuration: duration
+        views: views || {value: 0},
+        likes: likes || {value: 0},
+        comments: comments || {value: 0},
+        shares: shares || {value: 0},
+        averageViewDuration: duration || {value: 0}
       };
     }
   );

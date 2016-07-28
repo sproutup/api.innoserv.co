@@ -181,7 +181,7 @@ ServiceSchema.static('updateWrapper', Promise.method(function(userId, service, d
 
 ServiceSchema.static('fetchMetricForOldest', function() {
   var _this = this;
-  var time = moment().utc().subtract(1, 'minutes').unix();
+  var time = moment().utc().subtract(1, 'hour').unix();
   return _this.queryOne('status').eq(1).ascending().where('timestamp').lt(time).exec().then(function(val){
     if(val){
       debug('updating expired service ' +  val.service + ' : ' + val.timestamp);
@@ -273,7 +273,7 @@ ServiceSchema.methods.getYoutubeMetrics = Promise.method(function(videoId, userI
   debug('get youtube metrics');
   return Provider.getAccessToken(_this.id, _this.provider).then(function(_token){
     token = _token;
-    return Metric.updateYoutubeMetrics(videoId, _this.identifier, _this.service, token, userId, campaignId, companyId);
+    return Metric.updateYoutubeMetrics(videoId, _this.identifier, _this.service, token, userId, contentId, campaignId, companyId);
   }).then(function(res){
     return Metric.updateYoutubeDailyMetrics(videoId, _this.identifier, _this.service, token, userId, contentId, campaignId, companyId);
   });

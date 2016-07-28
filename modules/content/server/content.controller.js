@@ -86,7 +86,7 @@ exports.update = function (req, res) {
   var item = req.model;
 
   //For security purposes only merge these parameters
-  _.extend(item, _.pick(req.body, ['title']));
+  _.extend(item, _.pick(req.body, ['title', 'timestamp']));
 
   item.save().then(function(data){
     res.json(item);

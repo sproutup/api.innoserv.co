@@ -56,13 +56,15 @@ YoutubeAnalyticsService.queryByDay = function(id, channel, token, startdate){
       ids: 'channel==' + channel,
       'start-date': start,
       'end-date': finish,
-      metrics: 'views,likes,comments,shares,averageViewDuration',
+      metrics: 'views,likes,comments,shares,estimatedMinutesWatched',
       dimensions: 'day',
       filters: 'video==' + id,
       access_token: token
     },
     json: true
   };
+
+  console.log(options);
 
   return request(options).then(function(response){
     return response;

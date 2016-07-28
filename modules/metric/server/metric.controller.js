@@ -106,7 +106,7 @@ exports.query = function (req, res) {
             'views_per_day' : {
               'date_histogram' : {
                 'field' : 'timestamp',
-                'interval' : 'day',
+                'interval' : 'month',
                 'format': 'yyyy-MM-dd',
                 'min_doc_count': 0
               },
@@ -133,6 +133,13 @@ exports.query = function (req, res) {
     query.type = req.body.metric;
 //    query.body.aggs.results.filter.bool.must.push({'term': { 'name': req.body.metric }});
   }
+  if(req.body.dimension){
+    if(req.body.dimension!=='day'){
+      // do something
+      console.log('dimension: ' + req.body.dimension);
+    }
+  }
+
   if(req.body.userId){
     query.body.aggs.results.filter.bool.must.push({'term': { 'userId': req.body.userId }});
   }
