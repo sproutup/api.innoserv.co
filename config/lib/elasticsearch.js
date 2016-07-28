@@ -6,8 +6,8 @@ var chalk = require('chalk');
 var elasticsearch = require('elasticsearch');
 
 var client = new elasticsearch.Client({
-  host: 'localhost:9200',
-  log: 'debug'
+  host: config.elasticsearch.host,
+  log: config.elasticsearch.log
 });
 
 console.log('--');
