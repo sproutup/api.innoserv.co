@@ -157,8 +157,9 @@ exports.query = function (req, res) {
   elasticsearch.search(query).then(function(items){
     res.json(items.aggregations.results);
   }).catch(function(err){
+    console.log('err: ', err);
     return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+      message: err
     });
   });
 };
