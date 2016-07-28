@@ -106,8 +106,8 @@ exports.query = function (req, res) {
             'views_per_day' : {
               'date_histogram' : {
                 'field' : 'timestamp',
-                'interval' : 'month',
-                'format': 'yyyy-MM-dd',
+                'interval' : 'week',
+                'format': 'dd-MM-yyyy',
                 'min_doc_count': 0
               },
               'aggs': {
