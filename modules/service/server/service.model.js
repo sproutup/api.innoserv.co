@@ -300,12 +300,31 @@ ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) 
       return Promise.each(services, function(val, index, length) {
         debug(val.service + ' service ' + (index+1) + ' of ' + length);
         val.metrics = {};
+	if(val.service != 'youtube'){
         return val.getMetrics('followers').then(function(metric) {
           debug('followers: ' + metric.value);
           val.metrics.followers = metric.value ? metric.value : 0;
           followers += metric.value ? metric.value : 0;
           return val;
         });
+	}
+	else{
+        return Promise.join(
+          val.getMetrics('followers'),
+          val.getMetrics('viewCount'),
+          val.getMetrics('videoCount'),
+	  function(followers, viewCount, videoCount) {
+            debug('followers: ' + followers.value);
+            val.metrics.followers = followers.value ? followers.value : 0;
+            val.metrics.viewCount = viewCount.value ? viewCount.value : 0;
+            val.metrics.videoCount = videoCount.value ? videoCount.value : 0;
+            followers += followers.value ? followers.value : 0;
+            viewCount += viewCount.value ? viewCount.value : 0;
+            videoCount += videoCount.value ? videoCount.value : 0;
+            return val;
+          }
+	);
+	}
       }).then(function(res){
         var srvs = _.keyBy(res, 'service');
         srvs.followers = followers;
