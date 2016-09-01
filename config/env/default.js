@@ -119,6 +119,7 @@ module.exports = {
     templates: {
       recommend2brand: '0a7e7b26-cf1e-4b0f-9184-9329088abb2a',
       recommended: '6c37cd0c-784d-4541-9991-092853e1bfef',
+      requested: '8962b293-6fb7-43c8-b3bf-e43a2882d8ce',
       approved: '2e5f3c3f-921a-4e36-808f-fe927c3ec267',
       message: '2530a4ef-a779-4050-b1ff-01a8c5dfe1ff',
       verification: '4ff03cde-62c2-4148-ab56-fe467a3fe5ef',

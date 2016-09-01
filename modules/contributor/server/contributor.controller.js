@@ -65,7 +65,10 @@ exports.create = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      res.json(item);
+      return item.populate('User').then(function(){
+        sendRequestNotificationEmails(item);
+        res.json(item);
+     });
     }
   });
 };
@@ -258,6 +261,33 @@ var sendApprovedEmail = function(data) {
   })
   .catch(function(error) {
     console.log('approved email error: ', error);
+  });
+};
+
+// sendRequestNotificationEmails sends out an email to all company users
+// letting them know that a creator made a request
+var sendRequestNotificationEmails = function(data) {
+  var _campaign;
+
+  return Campaign.get(data.campaignId).then(function(campaign) {
+    _campaign = campaign;
+    return Company.get(campaign.companyId);
+  })
+  .then(function(company) {
+    var url = config.domains.creator + company.slug + '/campaign/' + _campaign.id + '/view/' + _campaign.type + '/requests/contributor/' + data.userId;
+    var substitutions = {
+      ':campaign_name': [_campaign.name],
+      ':user_name': [data.user.displayName],
+      ':user_profile_url': [url],
+      ':pitch_text': [data.comment],
+      ':campaign_url': [url],
+      ':brand_name': [company.name]
+    };
+
+    sendgridService.sendToCompanyUsers(company.id, data.user.displayName + ' made a request on ' + _campaign.name, substitutions, config.sendgrid.templates.requested);
+  })
+  .catch(function(error) {
+    console.log('requested email error: ', error);
   });
 };
 
