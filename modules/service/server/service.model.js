@@ -300,7 +300,7 @@ ServiceSchema.statics.fetchUserServiceMetrics = Promise.method(function(userId) 
       return Promise.each(services, function(val, index, length) {
         debug(val.service + ' service ' + (index+1) + ' of ' + length);
         val.metrics = {};
-	if(val.service != 'youtube'){
+	if(val.service !== 'youtube'){
         return val.getMetrics('followers').then(function(metric) {
           debug('followers: ' + metric.value);
           val.metrics.followers = metric.value ? metric.value : 0;
